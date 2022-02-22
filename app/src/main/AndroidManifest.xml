@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.makepe.blackout">
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true"
+        tools:ignore="ManifestOrder" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+
+    <application
+        android:name=".GettingStarted.OtherClasses.BlackOut"
+        android:allowBackup="true"
+        android:icon="@drawable/dudoo_logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/dudoo_logo"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator">
+        <activity android:name=".GettingStarted.InAppActivities.PostListActivity"></activity>
+        <activity android:name=".GettingStarted.InAppActivities.ChatListActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.FeedbackActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.FullScreenVideoActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.SharePostActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.FullScreenImageActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.NotificationsActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.EditProfileActivity" />
+        <activity android:name=".GettingStarted.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".GettingStarted.InAppActivities.PostDetailActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.InteractionsActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.MyContactsActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.ConnectionsActivity" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.SavedPostsActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.ContactsActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.StoryActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.AddStoryActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.ChatActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.ViewProfileActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.PostActivity"
+            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.HomeConsoleActivity"
+            android:parentActivityName=".GettingStarted.UserDetailsActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.UserDetailsActivity"
+            android:parentActivityName=".GettingStarted.VerifyPhoneActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.VerifyPhoneActivity"
+            android:parentActivityName=".GettingStarted.MainActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".GettingStarted.MainActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".GettingStarted.Notifications.MyFirebaseMessaging"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>

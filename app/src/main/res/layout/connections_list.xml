@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@color/colorWhite"
+    tools:ignore="UnusedAttribute">
+
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white_greyish">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/tabs">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorPrimaryDark"
+                    android:padding="5dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_back_black_24dp"
+                        android:padding="8dp"
+                        android:id="@+id/connectBackBTN"
+                        android:layout_centerVertical="true"
+                        android:tint="@color/colorWhite"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@+id/connectionsSearchBTN"
+                        android:layout_toEndOf="@+id/connectBackBTN"
+                        android:text="Connections"
+                        android:textAllCaps="true"
+                        android:layout_centerVertical="true"
+                        android:textColor="@color/colorWhite"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/righteous_regular"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_search_black_24dp"
+                        android:layout_centerVertical="true"
+                        android:padding="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:id="@+id/connectionsSearchBTN"/>
+
+                </RelativeLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/connectRecycler"/>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.tabs.TabLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tabs"
+            android:layout_gravity="bottom"
+            app:tabPadding="5dp"
+            app:tabIndicatorGravity="top"
+            app:tabGravity="fill"
+            android:layout_marginTop="5dp"
+            android:overScrollMode="ifContentScrolls"
+            android:layout_alignParentBottom="true"
+            app:tabIndicatorColor="@color/colorPrimaryDark"
+            app:tabMode="scrollable"
+            android:layout_centerHorizontal="true"
+            app:tabTextColor="@color/colorPrimaryDark">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Followers"
+                android:id="@+id/followersTAB"/>
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Following"
+                android:id="@+id/followingTAB"/>
+
+        </com.google.android.material.tabs.TabLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GettingStarted.InAppActivities.HomeConsoleActivity"
+    android:background="@null">
+
+    <FrameLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="45dp"
+        android:background="@null"
+        />
+
+    <com.luseen.spacenavigation.SpaceNavigationView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/space"
+        android:layout_gravity="bottom"
+        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        app:active_item_color="@color/colorWhite"
+        android:forceHasOverlappingRendering="true"
+        app:inactive_item_color="@color/white_greyish"
+        app:centre_button_icon="@drawable/ic_baseline_explore_24"
+        app:centre_button_color="@color/colorWhite"
+        app:centre_button_icon_color="@color/colorAccent"
+        app:space_item_icon_size="30dp"
+        app:space_background_color="@color/colorPrimaryDark"
+        tools:ignore="UnusedAttribute" />
+
+</RelativeLayout>

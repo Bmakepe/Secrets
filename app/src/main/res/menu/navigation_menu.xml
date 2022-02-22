@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn = "@layout/navigation_header_layout">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/createEvent"
+            android:icon="@drawable/ic_create_black_24dp"
+            android:title="@string/create_event"/>
+
+        <item
+            android:id="@+id/viewEvent"
+            android:icon="@drawable/ic_date_range_black_24dp"
+            android:title="@string/view_events"/>
+
+        <item
+            android:id="@+id/buyTicket"
+            android:icon="@drawable/ic_attach_money_black_24dp"
+            android:title="@string/buy_tickets"/>
+
+        <item
+            android:id="@+id/purhasedTickets"
+            android:icon="@drawable/ic_archive_black_24dp"
+            android:title="@string/my_tickets"/>
+
+    </group>
+
+</menu>

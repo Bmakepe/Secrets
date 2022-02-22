@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/contactsToolbar"
+        android:background="@color/colorPrimaryDark"
+        android:padding="5dp">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:tint="@color/colorWhite"
+            android:layout_margin="8dp"
+            android:layout_alignParentStart="true"
+            android:id="@+id/fBaseBackBTN"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/chatContactsSearch"
+            android:src="@drawable/ic_search_black_24dp"
+            android:padding="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="end"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_contact"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="@font/righteous_regular"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:id="@+id/selectTV"
+            android:textStyle="bold"
+            android:visibility="visible"
+            android:padding="5dp"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/fBaseBackBTN"
+            android:layout_toStartOf="@+id/chatContactsSearch"/>
+
+    </RelativeLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/createGroupBTN"
+                android:padding="5dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="2dp"
+                    android:src="@drawable/ic_group_add_black_24dp"
+                    android:padding="5dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="New Group"
+                    android:textColor="#000"
+                    android:textSize="16sp"
+                    android:layout_margin="2dp"
+                    android:padding="2dp"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/myContactsRecycler"
+                android:layout_margin="2dp"
+                android:layout_below="@+id/createGroupBTN"/>
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

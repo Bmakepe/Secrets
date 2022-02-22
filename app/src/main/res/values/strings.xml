@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">Secrets</string>
+    <string name="welcome">Welcome To Dynasty</string>
+    <string name="input_number">Enter Your Phone Number</string>
+    <string name="register">Register</string>
+    <string name="verification">Verification Code</string>
+    <string name="verify">Verify</string>
+    <string name="sms_data_rates">By tapping \"Register\", an sms may or will be sent to you. Standard SMS and Data rates may apply. Please check with your local service provider</string>
+    <string name="verification_request">Please Enter The Verification Code Below</string>
+    <string name="welcome_text">Let Us Help You Setup Your Profile</string>
+    <string name="username">Username</string>
+    <string name="please_select_your_gender">Select Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="propic_request">Click To Upload Profile Pic</string>
+    <string name="terms_conditions">By clicking continue, I hereby agree to all the Terms and Conditions.</string>
+    <string name="continue_string">Continue</string>
+    <string name="setup_biography">Tell Us About Yourself</string>
+    <string name="other">Other</string>
+    <string name="resend_otp">Click here to resend verification code</string>
+
+    <string name="bio">Bio: </string>
+    <string name="biography">This is where your biography is going to be displayed. You will be able to fill up all this space.</string>
+    <string name="messages">Messages</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="whats_up">Whats Up?</string>
+    <string name="postContent">Contents of the post will go here</string>
+    <string name="likes">10000</string>
+    <string name="throw_count">10000</string>
+    <string name="comment_count">0 Comments</string>
+    <string name="bokang_makepe">Bokang Makepe</string>
+    <string name="date">02-September-2019</string>
+
+
+    <string name="navigation_drawer_open">Open navigation Drawer</string>
+    <string name="navigation_drawer_close">Close navigation Drawer</string>
+    <string name="create_event">Create Event</string>
+    <string name="view_events">View Events</string>
+    <string name="buy_tickets">Buy Tickets</string>
+    <string name="my_tickets">My Tickets</string>
+    <string name="phone_number">+26659911018</string>
+    <string name="contact_name">Contact Name</string>
+    <string name="contact_number">Contact Number</string>
+    <string name="events_welcome">Welcome to Boomerang Events Management. Please create your event by filling approriately the form below</string>
+    <string name="poster_hint">click to add event poster</string>
+    <string name="event_name">Event Name</string>
+    <string name="event_venue">Event Venue</string>
+    <string name="event_bio">Tell us more about your event</string>
+    <string name="event_date_hint">Choose the date for your event</string>
+    <string name="event_start_date">Event Start Date</string>
+    <string name="event_end_date">Event End Date</string>
+    <string name="start_time">Pick Start Time</string>
+    <string name="end_time">Pick End Time</string>
+    <string name="tagged_names">with: Bokang Makepe, Retselisitsoe Moabi</string>
+    <string name="location">Masowe II</string>
+    <string name="target_heading">Let Us Help You Reach Your Target Market With Ease</string>
+    <string name="all_genders">All Genders</string>
+    <string name="minimum_age">Minimum Age</string>
+    <string name="maximum_age">Maximum Age</string>
+    <string name="proceed_to_payment">Proceed To Payment</string>
+    <string name="campaign_start_date">Campaign Start Date</string>
+    <string name="campaign_end_date">Campaign End Date</string>
+    <string name="write_on_my_timeline">Write on my timeline</string>
+    <string name="add_a_comment">Add a comment</string>
+    <string name="dob_text">Click Here To Select Your Date of Birth</string>
+    <string name="encryption">N.B.: This Chat Is Protected By an End-To-End Encryption.</string>
+    <string name="select_contact">Select Contact</string>
+    <string name="see_more">See more</string>
+    <string name="record_status">Recording Status…</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="invite">INVITE</string>
+    <string name="saved_media">Saved Media</string>
+    <string name="saved_posts">Saved Posts</string>
+    <string name="message_hint">Type a message</string>
+    <string name="comment">Type your comment here</string>
+
+</resources>

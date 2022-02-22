@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <RelativeLayout
+        android:id="@+id/searchHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:padding="5dp"
+            android:id="@+id/searchBackBTN"
+            android:layout_alignParentStart="true"
+            android:tint="@color/colorBlack"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/searchEd"
+            android:background="@null"
+            android:singleLine="true"
+            android:hint="Search"
+            android:layout_toEndOf="@+id/searchBackBTN"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@+id/searchFilterBTN"
+            android:layout_marginEnd="5dp"
+            android:padding="5dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_filter_list_24"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/searchFilterBTN"
+            android:layout_centerVertical="true"
+            android:padding="5dp"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="3px"
+        android:background="@color/colorPrimary"
+        android:id="@+id/line"
+        android:layout_below="@+id/searchHeader"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/line"
+        android:id="@+id/searchRecycler"/>
+
+</RelativeLayout>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_margin="1dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="@color/white_greyish"
+    tools:ignore="UnusedAttribute">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/default_profile_display_pic"
+            android:id="@+id/comProPic"
+            android:layout_margin="5dp"
+            app:civ_border_color="@color/colorBlack"
+            app:civ_border_width="1dp"
+            app:civ_border_overlay="true"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_toStartOf="@+id/comButtons"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/comProPic">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/nameHeading"
+                    android:padding="2dp"
+                    tools:ignore="RtlSymmetry">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:text="@string/bokang_makepe"
+                        android:id="@+id/commentOwner"
+                        android:layout_toStartOf="@+id/commentTime"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/commentTime"
+                        android:layout_alignParentEnd="true"
+                        android:text="about 5 mins ago"
+                        android:layout_centerVertical="true"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="10sp"/>
+
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/commentCaption"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:layout_below="@+id/nameHeading"
+                    tools:ignore="RtlSymmetry" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/comLikesCounter"
+                    android:textStyle="normal"
+                    android:padding="2dp"
+                    android:textSize="12sp"/>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_delete_black_24dp"
+                    android:id="@+id/deleteComBTN"
+                    android:layout_alignParentEnd="true"
+                    android:visibility="gone"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/comButtons"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/ic_favorite_border_black_24dp"
+                android:id="@+id/likeComBTN"
+                android:visibility="visible"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>

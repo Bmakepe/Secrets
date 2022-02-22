@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "107631559384",
+    "firebase_url": "https://boomerang-3f1ab.firebaseio.com",
+    "project_id": "boomerang-3f1ab",
+    "storage_bucket": "boomerang-3f1ab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107631559384:android:0f79060aab6d95e8124dad",
+        "android_client_info": {
+          "package_name": "com.makepe.blackout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107631559384-dq227rp0ru0opo5aa243qktp0ikotm83.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.makepe.blackout",
+            "certificate_hash": "69d01ef450af84aa93a158886d8c5ae28942f6dd"
+          }
+        },
+        {
+          "client_id": "107631559384-nj09mksn0521fbh6bu614veefr3em7nv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCF1g47PGCoW8JEet16u_zuxq021Ww0sC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107631559384-nj09mksn0521fbh6bu614veefr3em7nv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

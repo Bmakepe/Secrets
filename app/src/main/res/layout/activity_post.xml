@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GettingStarted.InAppActivities.PostActivity"
+    android:background="@color/colorPrimaryDark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/postToolbar">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:id="@+id/addPostToolbar"
+            android:padding="5dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_arrow_back_black_24dp"
+                android:tint="@color/white"
+                android:layout_centerVertical="true"
+                android:padding="5dp"
+                android:id="@+id/backBTN"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/addPostProPic"
+                android:src="@drawable/default_profile_display_pic"
+                android:tint="@color/colorBlack"
+                app:civ_border_color="@color/white"
+                app:civ_border_width="2dp"
+                app:civ_border_overlay="true"
+                android:layout_toEndOf="@+id/backBTN"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_toStartOf="@+id/postFAB"
+                android:layout_toEndOf="@+id/addPostProPic"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center_vertical"
+                    android:padding="5dp"
+                    android:id="@+id/dudooLogo"
+                    android:fontFamily="@font/righteous_regular"
+                    android:textSize="16sp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Share"
+                android:textSize="16sp"
+                android:drawablePadding="5dp"
+                android:layout_alignParentEnd="true"
+                android:padding="5dp"
+                android:layout_centerVertical="true"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:id="@+id/postFAB"
+                android:layout_margin="5dp"
+                tools:ignore="UseCompatTextViewDrawableXml"
+                app:drawableTint="@color/white" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/postProgress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        tools:ignore="MissingConstraints" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/postToolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_edittext"
+            android:backgroundTint="@color/white"
+            android:layout_margin="5dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/postCaptionArea"
+                    style="@style/parent"
+                    android:visibility="visible"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@+id/recButtonArea"
+                    android:layout_marginTop="5dp">
+
+                    <EditText
+                        android:id="@+id/addPostArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:background="@null"
+                        android:gravity="top|left"
+                        android:hint="Whats Up???"
+                        android:inputType="textMultiLine|textNoSuggestions"
+                        android:padding="5dp"
+                        android:textColor="@color/colorBlack"
+                        android:textColorHint="@color/white_greyish" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:visibility="gone"
+                    android:id="@+id/playAudioArea"
+                    android:layout_toStartOf="@+id/recButtonArea">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/share_playVoiceIcon"
+                        android:src="@drawable/ic_baseline_play_circle_outline_24"
+                        app:civ_border_width="2dp"
+                        android:padding="5dp"
+                        android:tint="@color/colorRed"
+                        app:civ_border_color="@color/colorRed" />
+
+                    <SeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/share_playVoiceIcon"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/seekTimer"
+                        android:soundEffectsEnabled="true"
+                        android:id="@+id/post_voiceSeekbar"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:25"
+                        android:padding="5dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:id="@+id/seekTimer"/>
+
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Recording..."
+                    android:layout_toStartOf="@+id/recButtonArea"
+                    android:textAllCaps="false"
+                    android:textAlignment="center"
+                    android:textSize="16sp"
+                    android:padding="5dp"
+                    android:id="@+id/recordingAlert"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorBlack"
+                    android:visibility="gone"
+                    android:layout_centerVertical="true"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/recButtonArea"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/transparent_circle_with_border"
+                    android:backgroundTint="@color/colorRed"
+                    android:layout_centerVertical="true"
+                    android:padding="5dp"
+                    android:visibility="gone"
+                    android:layout_marginEnd="5dp"
+                    android:orientation="horizontal">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/share_recVoiceIcon"
+                        android:src="@drawable/ic_baseline_fiber_manual_record_24"
+                        app:civ_border_width="1dp"
+                        android:padding="2dp"
+                        android:tint="@color/colorRed"
+                        app:civ_border_color="@color/colorRed" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/recVoiceBTN"
+                        android:text="Rec"
+                        android:layout_gravity="center_vertical"
+                        android:padding="2dp"
+                        android:textColor="@color/colorRed"/>
+
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/imageCardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:backgroundTint="@color/white"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="5dp"
+                app:cardUseCompatPadding="false"
+                tools:ignore="UnusedAttribute">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/picToUpload"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_black_24dp"
+                        android:visibility="visible" />
+
+                    <ImageView
+                        android:id="@+id/editImageBTN"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/rounded_edittext"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_edit_black_24dp"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:drawableTint="@color/colorPrimary" />
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/videoCardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:baselineAligned="false"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="5dp"
+                app:cardUseCompatPadding="false"
+                tools:ignore="UnusedAttribute">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="500dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/videoArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone">
+
+                        <VideoView
+                            android:id="@+id/previewCameraSelectedVideo"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <ImageView
+                        android:id="@+id/editVideoBTN"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/rounded_edittext"
+                        android:drawablePadding="5dp"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_edit_black_24dp"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:drawableTint="@color/colorPrimary" />
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2"
+                    android:layout_toStartOf="@+id/imageButtons"
+                    android:layout_weight="4">
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="5dp"
+                        android:id="@+id/privacySettingsBTN"
+                        tools:ignore="Suspicious0dp">
+
+                        <LinearLayout
+                            android:id="@+id/audience_set"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/audience"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Privacy"
+                                android:textColor="@color/colorBlack"
+                                android:singleLine="true"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:drawablePadding="5dp"
+                                app:drawableStartCompat="@drawable/ic_lock_black_24dp"
+                                app:drawableTint="@color/colorBlack" />
+
+                            <TextView
+                                android:id="@+id/audience_picker"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Public"
+                                android:singleLine="true"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="5dp"
+                        android:id="@+id/postLocationBTN"
+                        tools:ignore="Suspicious0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tagLocation"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Check In"
+                                android:textColor="@color/colorBlack"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:drawablePadding="5dp"
+                                app:drawableTint="@color/colorBlack"
+                                app:drawableStartCompat="@drawable/ic_my_location_black_24dp" />
+
+                            <TextView
+                                android:id="@+id/locationCheckIn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:text="No Location"
+                                android:textColor="@color/colorBlack"
+                                android:singleLine="true"/>
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:id="@+id/imageButtons">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_image_black_24dp"
+                        android:padding="10dp"
+                        android:id="@+id/goToCamera"
+                        app:tint="@color/colorBlack" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_baseline_video_library_24"
+                        android:padding="10dp"
+                        android:id="@+id/goToVideos"
+                        app:tint="@color/colorBlack" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_person_add_black_24dp"
+                        android:padding="10dp"
+                        android:id="@+id/tagFriends"
+                        app:tint="@color/colorBlack" />
+
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

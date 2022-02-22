@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:backgroundTint="@color/white"
+    android:padding="5dp"
+    tools:ignore="UnusedAttribute">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        tools:ignore="RtlSymmetry"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:id="@+id/nameLayout">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/picLayout"
+            android:layout_gravity="center">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/chatListPropic"
+                android:src="@drawable/default_profile_display_pic"
+                android:layout_centerInParent="true"
+                app:civ_border_color="@color/colorPrimaryDark"
+                app:civ_border_width="1dp"
+                app:civ_border_overlay="true"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:src="@drawable/online_circle"
+                android:id="@+id/chatlistStatus"
+                android:layout_alignParentTop="true"
+                android:padding="2dp"
+                android:layout_alignParentStart="true"
+                android:visibility="visible"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="2dp" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/chatlistUsername"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/chatlistMessage"
+                android:textStyle="normal"
+                android:layout_below="@+id/chatlistUsername"
+                android:textSize="12sp"
+                android:singleLine="true"
+                android:layout_marginEnd="2dp"
+                android:textColor="@color/colorBlack"
+                android:layout_toStartOf="@+id/cl_message_timeStamp"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/cl_message_timeStamp"
+                android:textStyle="italic"
+                android:layout_below="@+id/chatlistUsername"
+                android:layout_alignParentEnd="true"
+                android:textSize="12sp"
+                android:layout_marginStart="2dp"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="typing..."
+                android:textSize="12sp"
+                android:id="@+id/typingTV"
+                tools:ignore="RtlHardcoded"
+                android:layout_alignParentEnd="true"
+                android:textStyle="bold|italic"
+                android:padding="5dp"
+                android:visibility="gone"
+                android:layout_margin="2dp"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

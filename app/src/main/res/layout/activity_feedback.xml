@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".GettingStarted.InAppActivities.FeedbackActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_collapseMode="pin"
+        android:id="@+id/hisProfileToolbar">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_arrow_back_black_24dp"
+                android:padding="5dp"
+                android:layout_alignParentStart="true"
+                android:id="@+id/feedbackBackBTN"
+                android:layout_centerVertical="true"
+                android:tint="@color/white"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:padding="5dp"
+                android:layout_toEndOf="@+id/feedbackBackBTN"
+                android:maxLines="1"
+                android:textStyle="bold"
+                android:text="Feedback"
+                android:layout_centerVertical="true"
+                android:singleLine="true"
+                android:fontFamily="@font/righteous_regular"
+                android:textColor="@color/white"/>
+
+        </RelativeLayout>
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/hisProfileToolbar">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/profileAppBAr"
+            android:fitsSystemWindows="true">
+
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                android:background="@color/colorPrimaryDark"
+                app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
+                android:id="@+id/profileCollapsingToolbar">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/viewPicArea"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/default_profile_display_pic"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/feedbackPic"
+                        app:civ_circle_background_color="@color/white"
+                        app:civ_border_width="2dp"
+                        app:civ_border_color="@color/white"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Send Us Your Feedback"
+                        android:textSize="16sp"
+                        android:textColor="@color/white"
+                        android:textAlignment="center"
+                        android:padding="10dp"
+                        android:textStyle="bold"
+                        android:singleLine="true" />
+
+                </LinearLayout>
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/layout_bg"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="2"
+                    android:text="Do you have a suggestion or found some bugs? Please write to us and tell us where we can improve"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    android:textColor="@color/colorBlack"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textInputName"
+                        style="@style/parent"
+                        android:background="@drawable/transparent_circle_with_border"
+                        android:padding="5dp"
+                        android:backgroundTint="@color/colorPrimaryDark">
+
+                        <EditText
+                            android:id="@+id/feedbackName"
+                            style="@style/modifiedEditText"
+                            android:inputType="textPersonName"
+                            android:maxLines="1"
+                            android:hint="Name"
+                            android:background="@null"
+                            android:padding="10dp"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textInputMobile"
+                        style="@style/parent"
+                        android:background="@drawable/transparent_circle_with_border"
+                        android:padding="5dp"
+                        android:backgroundTint="@color/colorPrimaryDark"
+                        android:layout_marginTop="5dp">
+
+                        <EditText
+                            android:id="@+id/feedbackNumber"
+                            style="@style/modifiedEditText"
+                            android:inputType="phone"
+                            android:maxLines="1"
+                            android:hint="Mobile Number"
+                            android:background="@null"
+                            android:padding="10dp"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textMessage"
+                        style="@style/parent"
+                        android:background="@drawable/transparent_circle_with_border"
+                        android:padding="5dp"
+                        android:backgroundTint="@color/colorPrimaryDark"
+                        android:layout_marginTop="5dp">
+
+                        <EditText
+                            android:id="@+id/feedbackMessage"
+                            style="@style/modifiedEditText"
+                            android:inputType="textMultiLine"
+                            android:maxLines="8"
+                            android:lines="8"
+                            android:gravity="top|left"
+                            android:background="@null"
+                            android:padding="10dp"
+                            android:hint="Message"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Please Kindly Rate Your Experience below"
+                        android:padding="5dp"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp"/>
+
+                    <RatingBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/feedbackRating"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="5dp"
+                        android:theme="@style/RatingBar"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_gravity="center"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:id="@+id/feedbackRateCounter" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/submitFeedback"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:text="Submit"
+                    android:background="@drawable/rounded_edittext"
+                    android:backgroundTint="@color/colorPrimaryDark"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="true" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</RelativeLayout>

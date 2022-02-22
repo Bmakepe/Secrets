@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".GettingStarted.InAppActivities.StoryActivity">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/storyImage"
+        android:scaleType="centerCrop"
+        android:layout_above="@+id/likeLayout"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_above="@+id/likeLayout">
+
+        <View
+            android:id="@+id/reverse"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/skip"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/userDetails"
+        android:layout_margin="10dp"
+        android:padding="5dp"
+        android:gravity="top"
+        android:background="@drawable/round_white">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:layout_alignParentStart="true"
+            android:id="@+id/viewStoryBackBTN"
+            android:padding="5dp"
+            android:layout_centerVertical="true"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/viewStoryBackBTN"
+            android:id="@+id/storyProPic"
+            android:src="@drawable/default_profile_display_pic"
+            app:civ_border_width="1dp"
+            app:civ_border_color="@color/colorPrimaryDark"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="username"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="15sp"
+            android:id="@+id/storyUsername"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/storyProPic"
+            android:layout_margin="5dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorBlack"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:id="@+id/storyTimeStamp"
+            android:layout_marginEnd="10dp"/>
+
+    </RelativeLayout>
+
+    <jp.shts.android.storiesprogressview.StoriesProgressView
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:id="@+id/stories"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:layout_below="@+id/userDetails"
+        android:padding="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/likeLayout">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
+            android:padding="5dp"
+            android:id="@+id/replyStory"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/likeLayout"
+        android:padding="5dp"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/storyLikeLayout"
+            android:padding="5dp"
+            android:textSize="18sp"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            android:id="@+id/storyCap"
+            android:background="@drawable/round_white"
+            android:visibility="visible"
+            android:layout_toStartOf="@+id/storyCommentBTN"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_insert_comment_black_24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/storyCommentBTN"
+            android:tint="@color/colorPrimaryDark"
+            android:padding="5dp"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -1,0 +1,118 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:settings="http://schemas.android.com/tools">
+
+    <PreferenceCategory app:title="Account Settings">
+
+        <Preference
+            app:key="profile"
+            app:title="Edit Profile"
+            android:icon="@drawable/ic_person_black_24dp"
+            app:useSimpleSummaryProvider="true">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.makepe.blackout"
+                android:targetClass="com.makepe.blackout.GettingStarted.InAppActivities.EditProfileActivity"/>
+
+        </Preference>
+
+        <Preference
+            app:key="number"
+            app:title="Change My Number"
+            android:icon="@drawable/ic_baseline_dialpad_24"
+            app:useSimpleSummaryProvider="true">
+
+            <!--<intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.example.menyaka"
+                android:targetClass="com.example.menyaka.ChangeNumberActivity"/>-->
+
+        </Preference>
+
+        <Preference
+            app:key="account"
+            app:title="Deactivate My Account"
+            android:icon="@drawable/ic_baseline_phonelink_erase_24"
+            app:useSimpleSummaryProvider="true">
+
+
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Privacy, Security and Safety">
+
+        <Preference
+            app:key="data_storage"
+            app:title="Data and Storage"
+            android:icon="@drawable/ic_baseline_data_usage_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+        <Preference
+            app:key="terms"
+            app:title="Terms of Service"
+            android:icon="@drawable/ic_baseline_menu_book_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+        <Preference
+            app:key="privacy_policy"
+            app:title="Privacy Policy"
+            android:icon="@drawable/ic_baseline_privacy_tip_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+        <Preference
+            app:key="cookie_policy"
+            app:title="Cookie Policy"
+            android:icon="@drawable/ic_baseline_security_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+        <Preference
+            app:key="legal_notices"
+            app:title="Legal Notices"
+            android:icon="@drawable/ic_baseline_rule_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Help">
+
+        <Preference
+            app:key="help"
+            app:title="Help and Feedback Centre"
+            android:icon="@drawable/ic_baseline_help_center_24"
+            app:useSimpleSummaryProvider="true">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.makepe.blackout"
+                android:targetClass="com.makepe.blackout.GettingStarted.InAppActivities.FeedbackActivity"/>
+
+        </Preference>
+
+        <Preference
+            app:key="invite"
+            app:title="Invite a friend"
+            android:icon="@drawable/ic_baseline_person_add_alt_1_24"
+            app:useSimpleSummaryProvider="true">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.makepe.blackout"
+                android:targetClass="com.makepe.blackout.GettingStarted.InAppActivities.ContactsActivity"/>
+
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
