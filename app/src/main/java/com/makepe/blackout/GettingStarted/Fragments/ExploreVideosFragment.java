@@ -3,6 +3,9 @@ package com.makepe.blackout.GettingStarted.Fragments;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -16,7 +19,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -37,6 +40,12 @@ public class ExploreVideosFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -50,13 +59,6 @@ public class ExploreVideosFragment extends Fragment {
 
         getVideos();
 
-        view.findViewById(R.id.videosBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
         return view;
     }
 
@@ -68,11 +70,12 @@ public class ExploreVideosFragment extends Fragment {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel videos = ds.getValue(PostModel.class);
 
+                    assert videos != null;
                     if (videos.getPostType().equals("videoPost"))
                         videoList.add(videos);
 
                     Collections.shuffle(videoList);
-                    videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));
+                    videoPager.setAdapter(new VideoFootageAdapter(videoList, getActivity()));
 
                 }
                 videoLoader.setVisibility(View.GONE);

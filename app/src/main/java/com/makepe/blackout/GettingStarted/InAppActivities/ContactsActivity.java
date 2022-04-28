@@ -2,65 +2,38 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.ContactsAdapter;
-import com.makepe.blackout.GettingStarted.CountryIso2Phone;
-import com.makepe.blackout.GettingStarted.MainActivity;
+import com.makepe.blackout.GettingStarted.RegisterActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ContactsActivity extends AppCompatActivity {
 
-    private TextView textView;
     private RecyclerView contactsRecycler;
     private SearchManager searchManager;
 
-    private ImageView searchView;
-
-    private Dialog searchDialog;
-
     private String uid;
+    private Toolbar contactsToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +41,9 @@ public class ContactsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_contacts);
 
         contactsRecycler = findViewById(R.id.contactsRecycler);
-        searchView = findViewById(R.id.contactSearch);
-        textView = findViewById(R.id.selectTV);
-
-        iniSearchDialog();
+        contactsToolbar = findViewById(R.id.contactsToolbar);
+        setSupportActionBar(contactsToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         contactsRecycler.setHasFixedSize(true);
         contactsRecycler.hasFixedSize();
@@ -88,41 +60,6 @@ public class ContactsActivity extends AppCompatActivity {
         ContactsAdapter contactsAdapter = new ContactsAdapter(contactsList, ContactsActivity.this);
         contactsRecycler.setAdapter(contactsAdapter);
 
-        findViewById(R.id.cBack).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        findViewById(R.id.createGroup).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(ContactsActivity.this, "You will be able to create a group", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        searchView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                searchDialog.show();
-            }
-        });
-    }
-
-    private void iniSearchDialog() {
-        searchDialog = new Dialog(ContactsActivity.this);
-        searchDialog.setContentView(R.layout.search_pop_up);
-        searchDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        searchDialog.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
-        searchDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
-
-        searchDialog.findViewById(R.id.searchBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                searchDialog.dismiss();
-            }
-        });
     }
 
     public void checkUserStatus(){
@@ -134,7 +71,7 @@ public class ContactsActivity extends AppCompatActivity {
             uid = user.getUid();
 
         } else {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, RegisterActivity.class));
             finish();
         }
     }
@@ -168,4 +105,27 @@ public class ContactsActivity extends AppCompatActivity {
         super.onResume();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.contacts_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.contactSearch:
+                Toast.makeText(this, "Search Contacts", Toast.LENGTH_SHORT).show();
+
+            default:
+                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 }

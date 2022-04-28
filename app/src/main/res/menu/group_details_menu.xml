@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/addGroupMembers"
+        android:icon="@drawable/ic_baseline_person_add_24"
+        app:showAsAction="always"
+        android:title="Add Members" />
+    <item
+        android:id="@+id/editGroup"
+        android:title="Edit Group Details" />
+    <item
+        android:id="@+id/reportGroup"
+        android:title="Report Group" />
+</menu>

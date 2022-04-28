@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -30,12 +31,13 @@ public class SettingsActivity extends AppCompatActivity  {
 
     private static final String TITLE_TAG = "settingsActivityTitle";
 
-    CircleImageView settingsPropic;
-    TextView settingsName;
-    ImageView settingVerify;
+    private CircleImageView settingsPropic;
+    private TextView settingsName;
+    private ImageView settingVerify;
 
-    FirebaseUser firebaseUser;
-    DatabaseReference userRef;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference userRef;
+    private Toolbar settingsToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +51,14 @@ public class SettingsActivity extends AppCompatActivity  {
                     .commit();
         }
 
-        ActionBar actionBar = getSupportActionBar();
+        settingsToolbar = findViewById(R.id.settingsToolbar);
+        setSupportActionBar(settingsToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        /*ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        }*/
 
         settingsName = findViewById(R.id.settingsName);
         settingsPropic = findViewById(R.id.settingsPropic);
@@ -62,13 +68,6 @@ public class SettingsActivity extends AppCompatActivity  {
         userRef = FirebaseDatabase.getInstance().getReference("Users");
 
         getUserDetails();
-
-        findViewById(R.id.settingsBack).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
 
     }
 
@@ -96,6 +95,12 @@ public class SettingsActivity extends AppCompatActivity  {
 
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     public static class HeaderFragment extends PreferenceFragmentCompat {

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="2dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/msg_pic"
+        android:src="@drawable/default_profile_display_pic"
+        app:civ_border_color="@color/colorPrimary"
+        android:layout_marginTop="5dp"
+        app:civ_border_width="1dp"
+        app:civ_border_overlay="true"
+        android:layout_centerVertical="false"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toEndOf="@+id/msg_pic"
+        android:id="@+id/textArea">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="2dp"
+            android:layout_marginStart="5dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bokang Makepe"
+                android:id="@+id/chatUsername"
+                android:layout_alignParentStart="true"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:backgroundTint="@color/white_greyish"
+                android:id="@+id/showAudioMsg"
+                android:layout_below="@+id/chatUsername"
+                app:cardElevation="1dp"
+                android:visibility="visible"
+                app:cardUseCompatPadding="true"
+                tools:ignore="UnusedAttribute">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/mediaPlayer">
+
+                    <ImageButton
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentStart="true"
+                        android:src="@drawable/ic_baseline_play_circle_outline_24"
+                        android:id="@+id/playVoiceBTN"
+                        app:tint="@color/colorPrimary" />
+
+                    <SeekBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/postTimeText"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/postTimeDuration"
+                        android:id="@+id/voiceNoteSeekbar"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/postTimeText"
+                        android:text="00:00"
+                        android:padding="5dp"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@+id/playVoiceBTN"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/postTimeDuration"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp"
+                        android:text="00:00"
+                        android:padding="5dp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true"/>
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_gravity="start"
+                android:text="14 minutes ago"
+                android:layout_below="@id/showAudioMsg"
+                android:textStyle="italic"
+                android:id="@+id/msg_time"
+                android:textColor="@color/colorBlack"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

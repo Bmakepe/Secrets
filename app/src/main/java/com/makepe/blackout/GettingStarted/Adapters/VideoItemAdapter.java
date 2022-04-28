@@ -34,7 +34,7 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
     private List<PostModel> videoList;
     private Context context;
 
-    DatabaseReference userRef;
+    DatabaseReference userRef, videoReference;
     UniversalFunctions universalFunctions;
 
     public VideoItemAdapter(List<PostModel> videoList, Context context) {
@@ -55,11 +55,24 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
 
         PostModel post = videoList.get(position);
         userRef = FirebaseDatabase.getInstance().getReference("Users");
+        videoReference = FirebaseDatabase.getInstance().getReference("Posts");
         universalFunctions = new UniversalFunctions(context);
 
-        getVideoOwnerDetails(post, holder);
-        getVideoDetails(post, holder);
-        universalFunctions.checkVideoViewCount(holder.videoViews, post);
+        switch(post.getPostType()){
+            case "videoPost":
+                getVideoOwnerDetails(post, holder);
+                getVideoDetails(post, holder);
+                universalFunctions.checkVideoViewCount(holder.videoViews, post);
+                break;
+
+            case "sharedVideoPost":
+                getSharedVideoDetails(post, holder);
+                universalFunctions.checkVideoViewCount(holder.videoViews, post);
+                break;
+
+            default:
+                Toast.makeText(context, "Unknown type recognized", Toast.LENGTH_SHORT).show();
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,7 +87,27 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
 
             }
         });
+    }
 
+    private void getSharedVideoDetails(PostModel post, ViewHolder holder) {
+        videoReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel postModel = ds.getValue(PostModel.class);
+
+                    if (post.getSharedPost().equals(postModel.getPostID())){
+                        getVideoDetails(postModel, holder);
+                        getVideoOwnerDetails(postModel, holder);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getVideoOwnerDetails(PostModel post, ViewHolder holder) {

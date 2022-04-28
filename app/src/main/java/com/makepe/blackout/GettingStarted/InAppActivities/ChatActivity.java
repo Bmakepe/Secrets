@@ -3,144 +3,122 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.SystemClock;
-import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.MessageAdapter;
-import com.makepe.blackout.GettingStarted.Fragments.APIService;
-import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.Chat;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
-import com.makepe.blackout.GettingStarted.Notifications.Client;
-import com.makepe.blackout.GettingStarted.Notifications.Data;
-import com.makepe.blackout.GettingStarted.Notifications.MyResponse;
-import com.makepe.blackout.GettingStarted.Notifications.Sender;
-import com.makepe.blackout.GettingStarted.Notifications.Token;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
-import com.makepe.blackout.GettingStarted.RecordingClasses.ViewProxy;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import retrofit2.Call;
-import retrofit2.Response;
 
 public class  ChatActivity extends AppCompatActivity {
 
-    CircleImageView profileImage;
-    TextView username, onlineStatusTV;
-    ImageView chatback, callBTN, videoBTN, chatMenu;
-    ImageButton voiceBTN;
-    RecyclerView chatRecycler;
-    LinearLayout chatNameLayout;
-    RelativeLayout messageArea;
+    private CircleImageView profileImage;
+    private TextView username, onlineStatusTV;
+    private ImageButton voiceBTN, attachFiles;
+    private RecyclerView chatRecycler;
+    private LinearLayout chatNameLayout; 
+    private Toolbar messageToolbar;
 
-    EditText myMessage;
-    GetTimeAgo getTimeAgo;
+    private EditText myMessage;
+    private GetTimeAgo getTimeAgo;
 
-    View rootView;
+    private View rootView;
 
-    FirebaseUser firebaseUser;
-    DatabaseReference userReference, chatReference;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference userReference, chatReference, movementReference;
 
-    List<Chat> mChat;
+    private List<Chat> mChat;
 
-    Intent intent;
-    String hisImage, receiverID;
+    private Intent intent;
+    private String hisImage, receiverID, textMessage;
 
     private ContactsList contactsList;
     private List<ContactsModel> phoneBook;
 
     //for checking if user has seen message or not
-    ValueEventListener seenListener;
-    DatabaseReference userRefForSeen;
+    private ValueEventListener seenListener;
+    private DatabaseReference userRefForSeen;
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_chat);
+
+        messageToolbar = findViewById(R.id.chatToolbar);
+        setSupportActionBar(messageToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         profileImage = findViewById(R.id.profileCIV);
         username = findViewById(R.id.hisNameTV);
-        chatback = findViewById(R.id.chatBackBTN);
         chatRecycler = findViewById(R.id.chatRecyclerView);
-        callBTN = findViewById(R.id.callBTN);
-        videoBTN = findViewById(R.id.videoBTN);
         chatNameLayout = findViewById(R.id.chatNameLayout);
         onlineStatusTV = findViewById(R.id.statusTV);
-        chatMenu = findViewById(R.id.chatMenu);
         myMessage = findViewById(R.id.messageEt);
         rootView = findViewById(R.id.root_view);
         voiceBTN = findViewById(R.id.voiceBTN);
-        messageArea = findViewById(R.id.messageArea);
+        attachFiles = findViewById(R.id.attachFiles); 
 
         intent = getIntent();
         receiverID = intent.getStringExtra("userid");
+        getTimeAgo = new GetTimeAgo();
+
+        phoneBook = new ArrayList<>();
+        contactsList = new ContactsList(phoneBook, ChatActivity.this);
+
+        chatRecycler.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        chatRecycler.setLayoutManager(layoutManager);
+
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        chatReference = FirebaseDatabase.getInstance().getReference("Chats");
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
 
         myMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -162,48 +140,63 @@ public class  ChatActivity extends AppCompatActivity {
 
             }
         });
-        getTimeAgo = new GetTimeAgo();
-
-        phoneBook = new ArrayList<>();
-        contactsList = new ContactsList(phoneBook, ChatActivity.this);
-
-        chatRecycler.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        layoutManager.setStackFromEnd(true);
-        chatRecycler.setLayoutManager(layoutManager);
-
-        chatback.setOnClickListener(v -> finish());
-
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        chatReference = FirebaseDatabase.getInstance().getReference("Chats");
-        userReference = FirebaseDatabase.getInstance().getReference("Users");
 
         getUserDetails();
         readMessages();
+        seenMessage();
+        
+        attachFiles.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final PopupMenu popupMenu = new PopupMenu(ChatActivity.this, attachFiles, Gravity.END);
+                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Send Images");
+                popupMenu.getMenu().add(Menu.NONE, 1, 0, "Send Video");
+                popupMenu.getMenu().add(Menu.NONE, 2, 0, "Send Documents");
+
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+
+                        switch (menuItem.getItemId()){
+                            case 0:
+                                Toast.makeText(ChatActivity.this, "You will be able to send images", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case 1:
+                                Toast.makeText(ChatActivity.this, "You will be able to send videos", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case 2:
+                                Toast.makeText(ChatActivity.this, "You will be able to send documents", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            default:
+                                throw new IllegalStateException("Unexpected value " + menuItem.getItemId());
+                        }
+
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
 
         voiceBTN.setOnClickListener(v -> {
-            String msg = myMessage.getText().toString();
+            textMessage = myMessage.getText().toString();
 
-            if(!TextUtils.isEmpty(msg)){
-                sendMessage(msg);
+            if(!TextUtils.isEmpty(textMessage)){
+                sendMessage("noAudio");
             }else{
                 Toast.makeText(ChatActivity.this, "You can't send empty message", Toast.LENGTH_SHORT).show();
             }
             myMessage.setText("");
         });
 
-        callBTN.setOnClickListener(v -> Toast.makeText(ChatActivity.this, "Voice Call", Toast.LENGTH_SHORT).show());
-
-        videoBTN.setOnClickListener(v -> Toast.makeText(ChatActivity.this, "Video Call", Toast.LENGTH_SHORT).show());
-
         chatNameLayout.setOnClickListener(v -> {
             Intent intent = new Intent(ChatActivity.this, ViewProfileActivity.class);
             intent.putExtra("uid", receiverID);
             startActivity(intent);
         });
-
-        chatMenu.setOnClickListener(v -> showMoreOptions(receiverID));
     }
 
     private void getUserDetails() {
@@ -247,7 +240,31 @@ public class  ChatActivity extends AppCompatActivity {
                             }catch (NullPointerException e){
                                 Picasso.get().load(R.drawable.default_profile_display_pic).into(profileImage);
                             }
-                            seenMessage(firebaseUser.getUid(), receiverID);
+                        }else{
+                            movementReference.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    for (DataSnapshot ds : snapshot.getChildren()){
+                                        Movement movement = ds.getValue(Movement.class);
+
+                                        if (movement.getMovementID().equals(receiverID)){
+                                            username.setText(movement.getMovementName());
+
+                                            try{
+                                                hisImage = movement.getMovementProPic();
+                                                Picasso.get().load(hisImage).into(profileImage);
+                                            }catch (NullPointerException e){
+                                                Picasso.get().load(R.drawable.default_profile_display_pic).into(profileImage);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
                         }
                     }
                 }
@@ -260,45 +277,15 @@ public class  ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void showMoreOptions(final String hisUID) {
-        PopupMenu popupMenu = new PopupMenu(ChatActivity.this, chatMenu, Gravity.END);
-        popupMenu.getMenu().add(Menu.NONE, 0,0,"View Profile");
-        popupMenu.getMenu().add(Menu.NONE, 1,0,"Send Alert");
-        popupMenu.getMenu().add(Menu.NONE, 2,0,"Search");
-        popupMenu.getMenu().add(Menu.NONE, 3,0,"Send Files");
-
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                int id = item.getItemId();
-                if(id == 0){
-                    Intent intent = new Intent(ChatActivity.this, ViewProfileActivity.class);
-                    intent.putExtra("uid", hisUID);
-                    startActivity(intent);
-                }else if(id == 1){
-                    Toast.makeText(ChatActivity.this, "Ping", Toast.LENGTH_SHORT).show();
-                    sendMessage("Ayoooo");
-                }else if (id == 2){
-                    Toast.makeText(ChatActivity.this, "Search the chat", Toast.LENGTH_SHORT).show();
-                }else if(id == 3){
-                    Toast.makeText(ChatActivity.this, "Send Media to your friend", Toast.LENGTH_SHORT).show();
-                }
-                return false;
-            }
-        });
-        popupMenu.show();
-    }
-
-    private void seenMessage(final String uid, final String userid) {
+    private void seenMessage() {
         userRefForSeen = FirebaseDatabase.getInstance().getReference("Chats");
-        userRefForSeen.keepSynced(true);
         seenListener = userRefForSeen.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     Chat chat = ds.getValue(Chat.class);
                     try{
-                        if(chat.getReceiver().equals(uid) && chat.getSender().equals(userid)){
+                        if(chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(receiverID)){
                             HashMap<String, Object> hasSeenHashMap = new HashMap<>();
                             hasSeenHashMap.put("isSeen", true);
                             ds.getRef().updateChildren(hasSeenHashMap);
@@ -314,7 +301,7 @@ public class  ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void sendMessage(String message) {
+    private void sendMessage(String choice) {
 
         String timeStamp = String.valueOf(System.currentTimeMillis());
 
@@ -324,41 +311,55 @@ public class  ChatActivity extends AppCompatActivity {
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("sender", firebaseUser.getUid());
         hashMap.put("receiver", receiverID);
-        hashMap.put("message", message);
-        hashMap.put("audio", "noAudio");
+
+        switch (choice){
+            case "location":
+                Toast.makeText(this, "You will be able to send location", Toast.LENGTH_SHORT).show();
+                break;
+
+            case "alert":
+                hashMap.put("message", "Haibooo!!!");
+                hashMap.put("message_type", "text");
+                break;
+
+            case "noAudio":
+                hashMap.put("message", textMessage);
+                hashMap.put("message_type", "text");
+                break;
+
+            default:
+                Toast.makeText(this, "Error sending message", Toast.LENGTH_SHORT).show();
+
+        }
+
         hashMap.put("isSeen", false);
         hashMap.put("timeStamp", timeStamp);
 
-        reference.child("Chats").push().setValue(hashMap);
-
-        final String msg = message;
-
-        /*reference = FirebaseDatabase.getInstance().getReference("").child(firebaseUser.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
+        reference.child("Chats").push().setValue(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        myMessage.setText("");
+                        myMessage.setHint("Write Your Message");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                if (notify) {
-                    sendNotification(hisUID, user.getUsername(), msg);
-                }
-                notify = false;
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ChatActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
+        });
 
         //create chatlist node/child in firebase database
-        final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("ChatList")
+        final DatabaseReference senderReference = FirebaseDatabase.getInstance()
+                .getReference("ChatList")
                 .child(firebaseUser.getUid())
                 .child(receiverID);
-        chatRef.addValueEventListener(new ValueEventListener() {
+        senderReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    chatRef.child("id").setValue(receiverID);
+                    senderReference.child("id").setValue(receiverID);
+                    senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
                 }
             }
 
@@ -368,14 +369,16 @@ public class  ChatActivity extends AppCompatActivity {
             }
         });
 
-        final DatabaseReference chatRef1 = FirebaseDatabase.getInstance().getReference("ChatList")
+        final DatabaseReference receiverReference = FirebaseDatabase.getInstance()
+                .getReference("ChatList")
                 .child(receiverID)
                 .child(firebaseUser.getUid());
-        chatRef1.addValueEventListener(new ValueEventListener() {
+        receiverReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    chatRef1.child("id").setValue(firebaseUser.getUid());
+                    receiverReference.child("id").setValue(firebaseUser.getUid());
+                    senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
                 }
             }
 
@@ -392,7 +395,6 @@ public class  ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mChat.clear();
-
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     Chat chat = ds.getValue(Chat.class);
 
@@ -412,4 +414,69 @@ public class  ChatActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.chat_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.videoCall:
+                Toast.makeText(ChatActivity.this, "Video Call", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.voiceCall:
+                Toast.makeText(ChatActivity.this, "Voice Call", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.profileView:
+                userReference.child(receiverID).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            Intent intent = new Intent(ChatActivity.this, ViewProfileActivity.class);
+                            intent.putExtra("uid", receiverID);
+                            startActivity(intent);
+                        }else{
+                            Intent movementIntent = new Intent(ChatActivity.this, MovementDetailsActivity.class);
+                            movementIntent.putExtra("movementID", receiverID);
+                            startActivity(movementIntent);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+                break;
+
+            case R.id.sendAlert:
+                sendMessage("alert");
+                break;
+            case R.id.chatSearch:
+                Toast.makeText(ChatActivity.this, "Search the chat", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.location:
+                Toast.makeText(ChatActivity.this, "Send Location", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.sendFiles:
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_GET_CONTENT);
+                shareIntent.setType("*/*");
+                startActivity(shareIntent);
+                break;
+
+            default:
+                Toast.makeText(this, "Unknown Menu Selection", Toast.LENGTH_SHORT).show();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 }

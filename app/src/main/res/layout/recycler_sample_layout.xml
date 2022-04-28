@@ -1,40 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/background_gradient">
 
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/recyclerToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/popCommentToolbar"
-        android:background="@color/colorPrimaryDark"
-        android:padding="5dp">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:padding="5dp"
-            android:layout_margin="5dp"
-            android:id="@+id/recyclerBackBTN"
-            android:tint="@color/colorWhite"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/recyclerBackBTN"
-            android:layout_centerVertical="true"
-            android:textSize="14sp"
-            android:fontFamily="@font/righteous_regular"
-            android:textStyle="bold"
-            android:textColor="@color/colorWhite"
-            android:id="@+id/recyclerHeading"
-            android:visibility="visible"/>
-
-    </RelativeLayout>
+        android:elevation="5dp"
+        android:background="@null"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

@@ -43,6 +43,20 @@
             android:padding="5dp"
             android:layout_centerInParent="true"
             android:id="@+id/videoPlayBTN"
+            android:visibility="gone"
+            app:tint="@color/white" />
+
+        <ImageView
+            android:id="@+id/videoVolumeBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_baseline_volume_up_24"
             app:tint="@color/white" />
 
         <RelativeLayout
@@ -81,15 +95,15 @@
                                 android:id="@+id/postHeader">
 
                                 <TextView
+                                    android:id="@+id/moment_username"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textSize="14sp"
-                                    android:layout_toStartOf="@+id/followBTN"
-                                    android:textStyle="bold"
-                                    android:textColor="#D3D1D1"
-                                    android:singleLine="true"
                                     android:layout_centerVertical="true"
-                                    android:id="@+id/moment_username" />
+                                    android:layout_toStartOf="@+id/followBTN"
+                                    android:singleLine="true"
+                                    android:textColor="#D3D1D1"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
@@ -127,20 +141,32 @@
 
                             </RelativeLayout>
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:singleLine="true"
-                                android:id="@+id/postVideoCheckIn"
-                                android:layout_gravity="center_vertical"
-                                android:textStyle="normal"
-                                android:visibility="gone"
-                                android:drawableStart="@drawable/ic_baseline_location_on_24"
-                                android:drawableTint="#D3D1D1"
-                                android:drawablePadding="5dp"
-                                android:layout_marginStart="2dp"
-                                android:textColor="#D3D1D1"
-                                android:textSize="12sp"/>
+                                android:orientation="horizontal"
+                                android:id="@+id/videoLocationArea"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_my_location_black_24dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:singleLine="true"
+                                    android:id="@+id/postVideoCheckIn"
+                                    android:layout_gravity="center_vertical"
+                                    android:textStyle="normal"
+                                    android:visibility="gone"
+                                    android:drawablePadding="5dp"
+                                    android:layout_marginStart="2dp"
+                                    android:textColor="#D3D1D1"
+                                    android:textSize="12sp"/>
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
@@ -196,47 +222,6 @@
                         android:layout_margin="5dp"
                         android:textColor="#D3D1D1"
                         android:textSize="16sp"/>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_toStartOf="@+id/videoVolumeBTN"
-                            android:layout_centerVertical="true">
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/ic_baseline_music_note_24"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:layout_margin="5dp"
-                                android:textColor="#D3D1D1"
-                                android:textStyle="bold"
-                                android:layout_gravity="center_vertical"
-                                android:text="Lil Wayne - Got Money"/>
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_volume_up_24"
-                            android:layout_alignParentEnd="true"
-                            android:layout_margin="5dp"
-                            android:padding="5dp"
-                            android:id="@+id/videoVolumeBTN"
-                            app:tint="@color/white" />
-
-                    </RelativeLayout>
 
                 </LinearLayout>
 
@@ -468,6 +453,69 @@
                     </RelativeLayout>
 
                 </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorTrans"
+                    android:visibility="gone"
+                    android:padding="5dp">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/shared_moment_image_user"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/default_profile_display_pic"
+                        app:civ_border_color="@color/white"
+                        app:civ_border_width="2dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/shared_moment_image_user"
+                        android:layout_marginStart="5dp"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Bokang Makepe"
+                                android:textSize="14sp"
+                                android:singleLine="true"
+                                android:textStyle="bold"
+                                android:layout_toStartOf="@+id/shared_video_timestamp"
+                                android:id="@+id/shared_video_username"
+                                android:textColor="#D3D1D1"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="2 days ago"
+                                android:textSize="14sp"
+                                android:singleLine="true"
+                                android:textStyle="bold"
+                                android:layout_alignParentEnd="true"
+                                android:id="@+id/shared_video_timestamp"
+                                android:textColor="#D3D1D1"/>
+
+
+                        </RelativeLayout>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="This is the caption area for the shared video"
+                            android:id="@+id/shared_video_caption"
+                            android:textSize="12sp"
+                            android:textColor="#D3D1D1"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
 
             </RelativeLayout>
 

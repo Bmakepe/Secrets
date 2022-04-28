@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    tools:context=".GettingStarted.InAppActivities.ReportActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/report_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:elevation="5dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:title="Report Malpractice" />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@null"
+        android:layout_below="@id/report_toolbar">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/profileAppBAr"
+            android:background="@null"
+            android:fitsSystemWindows="true">
+
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
+                android:id="@+id/profileCollapsingToolbar">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/viewPicArea"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/default_profile_display_pic"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/reportPic"
+                        app:civ_circle_background_color="@color/white"
+                        app:civ_border_width="2dp"
+                        app:civ_border_color="@color/white"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Report Malpractice"
+                        android:textSize="16sp"
+                        android:textColor="@color/colorBlack"
+                        android:textAlignment="center"
+                        android:padding="10dp"
+                        android:textStyle="bold"
+                        android:singleLine="true" />
+
+                </LinearLayout>
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="2"
+                    android:text="Do you wish to report any malpractice you have noticed? Please inform us of what you have realised"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    android:textColor="@color/colorBlack"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/username"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:drawablePadding="8dp"
+                            android:id="@+id/reportName"
+                            android:layout_gravity="center"
+                            android:drawableTint="@color/colorBlack"
+                            android:inputType="text"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        android:layout_marginTop="5dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Reported User"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:editable="false"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:drawablePadding="8dp"
+                            android:id="@+id/reportedPerson"
+                            android:layout_gravity="center"
+                            android:drawableTint="@color/colorBlack"
+                            android:inputType="text"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        android:layout_marginTop="5dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:editable="false"
+                            android:drawableStart="@drawable/ic_info"
+                            android:drawablePadding="8dp"
+                            android:hint="Message"
+                            android:id="@+id/reportMessage"
+                            android:inputType="textMultiLine"
+                            android:maxLines="8"
+                            android:lines="8"
+                            android:layout_gravity="center"
+                            android:drawableTint="@color/colorBlack"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/submitReportBTN"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_selector"
+                    android:layout_gravity="end"
+                    android:padding="3dp"
+                    android:text="Submit Report"
+                    android:layout_margin="15dp"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</RelativeLayout>

@@ -1,16 +1,73 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class CommentModel {
-    String commentID, comment, timeStamp, userID;
+    private String commentID, comment, timeStamp, userID, commentImage, commentType, postID, audioUrl;
+    private double longitude, latitude;
 
     public CommentModel() {
     }
 
-    public CommentModel(String commentID, String comment, String timeStamp, String userID) {
+    public CommentModel(String commentID, String comment, String timeStamp, String userID,
+                        String commentImage, String commentType, String postID,
+                        String audioUrl, double longitude, double latitude) {
         this.commentID = commentID;
         this.comment = comment;
         this.timeStamp = timeStamp;
         this.userID = userID;
+        this.commentImage = commentImage;
+        this.commentType = commentType;
+        this.postID = postID;
+        this.audioUrl = audioUrl;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getPostID() {
+        return postID;
+    }
+
+    public void setPostID(String postID) {
+        this.postID = postID;
+    }
+
+    public String getCommentImage() {
+        return commentImage;
+    }
+
+    public void setCommentImage(String commentImage) {
+        this.commentImage = commentImage;
+    }
+
+    public String getCommentType() {
+        return commentType;
+    }
+
+    public void setCommentType(String commentType) {
+        this.commentType = commentType;
     }
 
     public String getCommentID() {

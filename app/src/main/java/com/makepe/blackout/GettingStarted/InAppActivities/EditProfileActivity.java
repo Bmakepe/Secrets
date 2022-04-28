@@ -3,10 +3,12 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -25,6 +27,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -33,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -48,23 +53,27 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class EditProfileActivity extends AppCompatActivity implements LocationListener {
+public class EditProfileActivity extends AppCompatActivity {
 
-    private ImageView coverPic, backBTN, changeCoverPic;
+    private ImageView coverPic, changeCoverPic;
     private CircleImageView profilePic;
-    private TextView updateTV;
-    private EditText nameET, biographyET, locationET;
+    private Button updateTV;
+    private EditText nameET, biographyET, locationET, dateOfBirthET;
     private RelativeLayout changePicArea;
+    private Toolbar toolbar;
 
     private FirebaseUser firebaseUser;
     private DatabaseReference userRef;
@@ -72,26 +81,24 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
 
     private Uri proPicUri, coverPicUri;
     private StorageTask uploadTask, coverUploadTask;
-    private String myUri = "", coverUri = "", name, bio;
+    private String myUri = "", coverUri = "", name, bio, dateOfBirth, coverURL, profileURL;
 
     private String choice;
 
     private ProgressDialog progressDialog;
-
-    private String[] locationPermission;
-    private LocationManager locationManager;
+    private LocationServices locationServices;
     private double latitude, longitude;
-    public static final int LOCATION_REQUEST_CODE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        locationPermission = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        toolbar = findViewById(R.id.edit_profile_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         coverPic = findViewById(R.id.editProCoverPic);
-        backBTN = findViewById(R.id.editBackBTN);
         profilePic = findViewById(R.id.editProUserImage);
         updateTV = findViewById(R.id.updateEditProBTN);
         nameET = findViewById(R.id.editProFullName);
@@ -99,10 +106,25 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
         changeCoverPic = findViewById(R.id.editCoverPic);
         changePicArea = findViewById(R.id.changePicArea);
         locationET = findViewById(R.id.editLocationET);
+        dateOfBirthET = findViewById(R.id.dateOfBirthET);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         storageReference = FirebaseStorage.getInstance().getReference("pro_pics");
+
+        locationServices = new LocationServices(locationET, EditProfileActivity.this);
+
+        final Calendar myCalendar = Calendar.getInstance();
+        final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, month);
+                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                updateDOB(myCalendar, dateOfBirthET);
+            }
+        };
 
         progressDialog = new ProgressDialog(this);
 
@@ -111,11 +133,7 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
         locationET.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (checkLocationPermission()){
-                    detectLocation();
-                }else{
-                    ActivityCompat.requestPermissions(EditProfileActivity.this, locationPermission, LOCATION_REQUEST_CODE);
-                }
+                locationServices.getMyLocation();
             }
         });
 
@@ -136,7 +154,7 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
             public void onClick(View view) {
                 Toast.makeText(EditProfileActivity.this, "You will be able to change cover pic", Toast.LENGTH_SHORT).show();
                 CropImage.activity()
-                        .setAspectRatio(21,9)
+                        .setAspectRatio(16,9)
                         .start(EditProfileActivity.this);
 
                 choice = "coverPic";
@@ -150,87 +168,20 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
             }
         });
 
-        backBTN.setOnClickListener(new View.OnClickListener() {
+        dateOfBirthET.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                new DatePickerDialog(EditProfileActivity.this, date, myCalendar.get(Calendar.YEAR)
+                        ,myCalendar.get(Calendar.MONTH), myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
     }
 
-    private void detectLocation() {
-        Toast.makeText(this, "Please wait... Detecting your location", Toast.LENGTH_LONG).show();
+    private void updateDOB(Calendar myCalendar, EditText dateOfBirthET) {
+        String myFormat = "dd/MM/yyyy";
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-
-    }
-
-    @Override
-    public void onLocationChanged(@NonNull Location location) {
-        //location detected
-
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-
-        findAddress();
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(@NonNull String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(@NonNull String provider) {
-
-    }
-
-    private boolean checkLocationPermission() {
-        boolean result = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) ==
-                (PackageManager.PERMISSION_GRANTED);
-        return result;
-    }
-
-    private void findAddress() {
-        //find address, country, state, city
-
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(this, Locale.getDefault());
-
-        try{
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-
-            String address = addresses.get(0).getAddressLine(0);//complete address
-            String city = addresses.get(0).getLocality();
-            String state = addresses.get(0).getAdminArea();
-            String country = addresses.get(0).getCountryName();
-
-            String myLocation = address + ", " + city + ", " + state + ", " + country;
-
-            locationET.setText(myLocation);
-
-        }catch (Exception e){
-            Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
+        dateOfBirthET.setText(sdf.format(myCalendar.getTime()) + "");
     }
 
     private String getFileExtension(Uri uri){
@@ -243,6 +194,7 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
 
         name = nameET.getText().toString().trim();
         bio = biographyET.getText().toString().trim();
+        dateOfBirth = dateOfBirthET.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)){
             nameET.setError("Enter Your Name here");
@@ -250,10 +202,11 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
         }else if (TextUtils.isEmpty(bio)){
             biographyET.setError("Tell us more about yourself");
             biographyET.requestFocus();
+        }else if (TextUtils.isEmpty(dateOfBirth)){
+            biographyET.setError("Tell us more about yourself");
+            biographyET.requestFocus();
         }else{
             Toast.makeText(this, "You will be able to update profile details", Toast.LENGTH_SHORT).show();
-            uploadCoverPicOnly();
-            uploadProfilePicOnly();
             updateUserCredentials();
         }
     }
@@ -278,25 +231,35 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
                         Uri picDownloadUri = task.getResult();
                         myUri = picDownloadUri.toString();
 
-                        HashMap<String, Object> picMap = new HashMap<>();
-                        picMap.put("ImageURL", myUri);
-
-                        userRef.child(firebaseUser.getUid()).updateChildren(picMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Toast.makeText(EditProfileActivity.this, "Successfully Uploaded profile Picture", Toast.LENGTH_SHORT).show();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
+                        StorageReference picRef = FirebaseStorage.getInstance().getReference(profileURL);
+                        picRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(EditProfileActivity.this, "Could not upload profile picture", Toast.LENGTH_SHORT).show();
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                                HashMap<String, Object> picMap = new HashMap<>();
+                                picMap.put("ImageURL", myUri);
+
+                                userRef.child(firebaseUser.getUid()).updateChildren(picMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                finish();
+                                                Toast.makeText(EditProfileActivity.this, "Successfully Uploaded profile Picture", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(EditProfileActivity.this, "Could not upload profile picture", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
                             }
                         });
                     }
                 }
             });
         }else{
+            finish();
             Toast.makeText(this, "something went wrong with uploading profile pic", Toast.LENGTH_SHORT).show();
         }
     }
@@ -321,26 +284,35 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
                         Uri coverDownloadUri = task.getResult();
                         coverUri = coverDownloadUri.toString();
 
-                        HashMap<String, Object> coverMap = new HashMap<>();
-                        coverMap.put("CoverURL", coverUri);
-
-                        userRef.child(firebaseUser.getUid()).updateChildren(coverMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Toast.makeText(EditProfileActivity.this, "Successfully updated cover pic", Toast.LENGTH_SHORT).show();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
+                        StorageReference coverRef = FirebaseStorage.getInstance().getReference(coverURL);
+                        coverRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(EditProfileActivity.this, "Could not upload cover picture", Toast.LENGTH_SHORT).show();
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                                HashMap<String, Object> coverMap = new HashMap<>();
+                                coverMap.put("CoverURL", coverUri);
+
+                                userRef.child(firebaseUser.getUid()).updateChildren(coverMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                Toast.makeText(EditProfileActivity.this, "Successfully updated cover pic", Toast.LENGTH_SHORT).show();
+                                                uploadProfilePicOnly();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(EditProfileActivity.this, "Could not upload cover picture", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
                             }
                         });
                     }
                 }
             });
         }else{
-            Toast.makeText(this, "Something went wrong with updating cover picture", Toast.LENGTH_SHORT).show();
+            uploadProfilePicOnly();
         }
 
     }
@@ -349,18 +321,19 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
         HashMap<String, Object> credentialsMap = new HashMap<>();
         credentialsMap.put("Username", name);
         credentialsMap.put("Bio", bio);
+        credentialsMap.put("DOB", dateOfBirth);
 
         if (!TextUtils.isEmpty(locationET.getText().toString())) {
-            credentialsMap.put("latitude", latitude);
-            credentialsMap.put("longitude", longitude);
+            credentialsMap.put("latitude", locationServices.getLatitude());
+            credentialsMap.put("longitude", locationServices.getLongitude());
         }
 
         userRef.child(firebaseUser.getUid()).updateChildren(credentialsMap)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
+                        uploadCoverPicOnly();
                         Toast.makeText(EditProfileActivity.this, "User details have been updated", Toast.LENGTH_SHORT).show();
-                        finish();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -377,9 +350,13 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
+                    assert user != null;
                     if (user.getUSER_ID().equals(firebaseUser.getUid())){
                         nameET.setText(user.getUsername());
                         biographyET.setText(user.getBio());
+                        dateOfBirthET.setText(user.getDOB());
+                        coverURL = user.getCoverURL();
+                        profileURL = user.getImageURL();
 
                         try{
                             Picasso.get().load(user.getImageURL()).into(profilePic);
@@ -440,5 +417,11 @@ public class EditProfileActivity extends AppCompatActivity implements LocationLi
             }
 
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

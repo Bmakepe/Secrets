@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    tools:context=".GettingStarted.InAppActivities.EditMovementActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/editMovementToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:elevation="5dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:title="Edit Movement" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/editMovementToolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/personalArea" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:id="@+id/coverArea">
+
+                    <ImageView
+                        android:id="@+id/editMovementCoverPic"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/default_profile_display_pic" />
+
+                    <ImageView
+                        android:id="@+id/editMovementCoverPicBTN"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/rounded_edittext"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_edit_black_24dp" />
+
+                </RelativeLayout>
+
+                <FrameLayout
+                    android:id="@+id/regProPicArea"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:layout_below="@+id/coverArea"
+                    android:layout_marginTop="-60dp">
+
+                    <RelativeLayout
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:id="@+id/changeGroupPicArea">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/editMovementIcon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="top|center"
+                            android:src="@drawable/default_profile_display_pic"
+                            app:civ_border_color="@color/colorBlack"
+                            app:civ_border_width="3dp" />
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:src="@drawable/ic_add_circle_outline_black_24dp"
+                            app:civ_border_width="1dp"
+                            app:civ_border_color="@color/colorBlack"
+                            app:civ_circle_background_color="@color/white"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_margin="4dp"/>
+
+                    </RelativeLayout>
+
+                </FrameLayout>
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="5dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:id="@+id/usernameTIL"
+                    android:background="@drawable/rounded_edittext"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="15"
+                    android:padding="5dp"
+                    app:counterOverflowTextAppearance="@color/colorRed">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Movement/Campaign Name"
+                        android:textColorHint="#fff"
+                        android:textColor="#000"
+                        android:drawableStart="@drawable/ic_baseline_campaign_24"
+                        android:drawablePadding="8dp"
+                        android:id="@+id/editMovementName"
+                        android:layout_gravity="center"
+                        android:drawableTint="@color/colorBlack"
+                        android:inputType="text"
+                        android:textSize="14sp"
+                        android:textStyle="normal"
+                        android:singleLine="true"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="20dp"
+                        android:background="@null"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:background="@drawable/rounded_edittext"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="100"
+                    android:padding="5dp"
+                    app:counterOverflowTextAppearance="@color/colorRed"
+                    android:layout_marginTop="5dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Movement Description"
+                        android:textColorHint="#fff"
+                        android:textColor="#000"
+                        android:drawableStart="@drawable/ic_info"
+                        android:drawablePadding="8dp"
+                        android:id="@+id/editMovementPurpose"
+                        android:drawableTint="@color/colorBlack"
+                        android:layout_gravity="center"
+                        android:inputType="textMultiLine"
+                        android:maxLines="5"
+                        android:lines="5"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="20dp"
+                        android:background="@null"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/updateMovementBTN"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_selector"
+                android:layout_gravity="end"
+                android:padding="3dp"
+                android:text="Update Movement"
+                android:layout_margin="15dp"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</RelativeLayout>

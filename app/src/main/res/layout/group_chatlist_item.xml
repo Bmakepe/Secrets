@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="2dp"
+        tools:ignore="RtlSymmetry"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:id="@+id/nameLayout">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/groupChatListPropic"
+            android:src="@drawable/default_profile_display_pic"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            app:civ_border_color="@color/colorBlack"
+            app:civ_border_width="1dp"
+            app:civ_border_overlay="true"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/groupChatListPropic"
+            android:layout_centerVertical="true"
+            android:padding="2dp" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/groupChatlistName"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/groupLastSender"
+                android:textStyle="italic"
+                android:layout_below="@+id/groupChatlistName"
+                android:textSize="10sp"
+                android:text="Bokang Makepe :"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:layout_alignParentStart="true"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/groupchatlistMessage"
+                android:textStyle="italic"
+                android:layout_below="@+id/groupChatlistName"
+                android:layout_toEndOf="@+id/groupLastSender"
+                android:text=" how are you"
+                android:textSize="10sp"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:layout_toStartOf="@+id/groupLastTimastamp"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/groupLastTimastamp"
+                android:text="5 mins ago"
+                android:textStyle="italic"
+                android:layout_below="@+id/groupChatlistName"
+                android:layout_alignParentEnd="true"
+                android:textSize="10sp"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="typing..."
+                android:textSize="12sp"
+                android:id="@+id/typingTV"
+                tools:ignore="RtlHardcoded"
+                android:layout_alignParentEnd="true"
+                android:textStyle="bold|italic"
+                android:padding="5dp"
+                android:visibility="gone"
+                android:layout_margin="2dp"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

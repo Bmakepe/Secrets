@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".GettingStarted.InAppActivities.FullScreenVideoActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/fullScreenVideosToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="5dp"
+        android:background="@null"
+        app:title="Secret Videos"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
+
     <androidx.viewpager2.widget.ViewPager2
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -17,30 +27,5 @@
         android:layout_height="wrap_content"
         android:id="@+id/fullScreenVideoLoader"
         android:layout_centerInParent="true"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:id="@+id/fullScreenVideoBackBTN"
-            android:padding="5dp"
-            android:layout_margin="5dp"
-            app:tint="@color/white" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Videos"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@color/white"
-            android:layout_gravity="center_vertical"/>
-
-    </LinearLayout>
 
 </RelativeLayout>

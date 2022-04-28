@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    tools:context=".GettingStarted.InAppActivities.AddGroupMembersActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/addGroupMembersToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:elevation="5dp"
+        app:contentInsetLeft="0dp"
+        app:title="Manage Group Members"
+        app:contentInsetStartWithNavigation="0dp"/>
+
+   <androidx.recyclerview.widget.RecyclerView
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_below="@+id/addGroupMembersToolbar"
+       android:id="@+id/addMembersRecycler"/>
+
+</RelativeLayout>

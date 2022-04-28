@@ -3,7 +3,6 @@ package com.makepe.blackout.GettingStarted.Adapters;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.format.DateFormat;
@@ -11,7 +10,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,7 +17,6 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,12 +27,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Fragments.ProfileFragment;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
@@ -60,6 +59,8 @@ public class FirebaseContactsAdapter extends RecyclerView.Adapter<FirebaseContac
     private ContactsList contacts; //for contacts list class
     private Context context;
 
+    private UniversalFunctions universalFunctions;
+
     public FirebaseContactsAdapter(List<ContactsModel> firebaseContacts, Context context) {
         this.firebaseContacts = firebaseContacts;
         this.context = context;
@@ -77,6 +78,7 @@ public class FirebaseContactsAdapter extends RecyclerView.Adapter<FirebaseContac
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        universalFunctions = new UniversalFunctions(context);
         final ContactsModel user = firebaseContacts.get(position);
         //for retrieving phone contacts
         List<ContactsModel> phoneContacts = new ArrayList<>();
@@ -85,31 +87,25 @@ public class FirebaseContactsAdapter extends RecyclerView.Adapter<FirebaseContac
         final String userid = firebaseContacts.get(position).getUSER_ID();
 
         matchContacts(firebaseContacts, holder, position);
-        initiateProPicPopUp(holder, context, userid);
-        iniFullScreenProPic(context, holder, userid);
         isFollowing(userid, holder.contactFollowBTN);
+        universalFunctions.checkActiveStories(holder.contactProPic, userid);
 
         checkOnlineStatus(userid, holder);
-
-        /*holder.nameLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(userid.equals(firebaseUser.getUid()))
-                    Toast.makeText(context, "can not chat to yourself", Toast.LENGTH_SHORT).show();
-                else{
-                    Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("userid", userid);
-                    context.startActivity(intent);
-                }
-
-            }
-        });*/
 
         holder.contactProPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.proPicPopUp.show();
+                if (holder.contactProPic.getTag().equals("storyActive")){
+
+                    Intent intent = new Intent(context, StoryActivity.class);
+                    intent.putExtra("userid", userid);
+                    context.startActivity(intent);
+                }else{
+                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
+                    picIntent.putExtra("itemID", user.getUSER_ID());
+                    picIntent.putExtra("reason", "userImage");
+                    context.startActivity(picIntent);
+                }
             }
         });
 
@@ -147,130 +143,6 @@ public class FirebaseContactsAdapter extends RecyclerView.Adapter<FirebaseContac
             }
         });
 
-    }
-
-    private void iniFullScreenProPic(final Context context, final MyHolder holder, String uid) {
-        holder.fullScreenProPic = new Dialog(context);
-        holder.fullScreenProPic.setContentView(R.layout.full_screen_pro_pic);
-        holder.fullScreenProPic.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        holder.fullScreenProPic.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
-        holder.fullScreenProPic.getWindow().getAttributes().gravity = Gravity.CENTER;
-
-        holder.fullScreenPic = holder.fullScreenProPic.findViewById(R.id.fullScreenPic);
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query =  reference.orderByChild("USER_ID").equalTo(uid);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    String image = ""+ds.child("ImageURL").getValue();
-
-                    try{
-                        Picasso.get().load(image).placeholder(R.drawable.default_profile_display_pic).into(holder.fullScreenPic);
-                    }catch (Exception e){
-                        Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.fullScreenPic);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    private void initiateProPicPopUp(final MyHolder holder, final Context context, final String userid) {
-        holder.proPicPopUp = new Dialog(context);
-        holder.proPicPopUp.setContentView(R.layout.profile_pic_pop_up_layout);
-        holder.proPicPopUp.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        holder.proPicPopUp.getWindow().setLayout(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
-        holder.proPicPopUp.getWindow().getAttributes().gravity = Gravity.CENTER;
-
-        holder.viewProfile = holder.proPicPopUp.findViewById(R.id.popUP_ViewProfile);
-        holder.sendMessage = holder.proPicPopUp.findViewById(R.id.popUP_SendMessage);
-        holder.superProPic = holder.proPicPopUp.findViewById(R.id.popUP_ProPic);
-        holder.lastSeen = holder.proPicPopUp.findViewById(R.id.popUpLastSeen);
-        holder.callBTN = holder.proPicPopUp.findViewById(R.id.popUP_callUser);
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(userid);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    String image = "" + ds.child("ImageURL").getValue();
-                    Calendar calendar = Calendar.getInstance(Locale.getDefault());
-
-                    try{
-                        Picasso.get().load(image).placeholder(R.drawable.default_profile_display_pic).into(holder.superProPic);
-                    }catch (Exception e){
-                        Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.superProPic);
-                    }
-
-                    /*String userOnline = "" + ds.child("onlineStatus").getValue();
-
-                    if(userOnline.equals("online")){
-                        holder.popUpOnlineStatus.setVisibility(View.VISIBLE);
-                        holder.lastSeen.setVisibility(View.GONE);
-                    }else{
-                        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                            calendar.setTimeInMillis(Long.parseLong(userOnline));
-                            String pTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
-                            holder.popUpOnlineStatus.setVisibility(View.GONE);
-                            holder.lastSeen.setVisibility(View.VISIBLE);
-                            holder.lastSeen.setText("Last seen at: " + pTime);
-                        }catch (NumberFormatException n){
-                            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                        }
-                    }*/
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        holder.callBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context, "start phone call", Toast.LENGTH_SHORT).show();
-                holder.proPicPopUp.dismiss();
-            }
-        });
-
-        holder.viewProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ViewProfileActivity.class);
-                intent.putExtra("uid", userid);
-                context.startActivity(intent);
-                holder.proPicPopUp.dismiss();
-            }
-        });
-
-        holder.sendMessage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent1 = new Intent(context, ChatActivity.class);
-                intent1.putExtra("userid", userid);
-                context.startActivity(intent1);
-                holder.proPicPopUp.dismiss();
-            }
-        });
-
-        holder.superProPic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                holder.fullScreenProPic.show();
-                holder.proPicPopUp.dismiss();
-            }
-        });
     }
 
     private void matchContacts(List<ContactsModel> contactsList, MyHolder holder, int position) {

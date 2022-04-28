@@ -23,10 +23,10 @@
             android:icon="@drawable/ic_baseline_dialpad_24"
             app:useSimpleSummaryProvider="true">
 
-            <!--<intent
+            <intent
                 android:action="android.intent.action.VIEW"
-                android:targetPackage="com.example.menyaka"
-                android:targetClass="com.example.menyaka.ChangeNumberActivity"/>-->
+                android:targetPackage="com.makepe.blackout"
+                android:targetClass="com.makepe.blackout.GettingStarted.InAppActivities.ChangeNumberActivity"/>
 
         </Preference>
 

@@ -4,19 +4,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.StoryActivity">
 
     <ImageView
+        android:id="@+id/storyImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/storyImage"
         android:scaleType="centerCrop"
-        android:layout_above="@+id/likeLayout"/>
+        android:src="@drawable/default_profile_display_pic" />
+
+    <ImageView
+        android:id="@+id/replyStory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_baseline_pause_circle_outline_24" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
+        android:layout_below="@+id/view_story_toolbar"
         android:layout_above="@+id/likeLayout">
 
         <View
@@ -33,58 +42,87 @@
 
     </LinearLayout>
 
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/view_story_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/userDetails"
-        android:layout_margin="10dp"
-        android:padding="5dp"
-        android:gravity="top"
-        android:background="@drawable/round_white">
+        android:background="@color/white_greyish"
+        android:elevation="5dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp">
 
-        <ImageView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/userDetails"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:layout_alignParentStart="true"
-            android:id="@+id/viewStoryBackBTN"
-            android:padding="5dp"
-            android:layout_centerVertical="true"/>
+            android:gravity="top">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/viewStoryBackBTN"
-            android:id="@+id/storyProPic"
-            android:src="@drawable/default_profile_display_pic"
-            app:civ_border_width="1dp"
-            app:civ_border_color="@color/colorPrimaryDark"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/storyProPic"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/default_profile_display_pic"
+                app:civ_border_color="@color/colorBlack"
+                app:civ_border_width="1dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="username"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="15sp"
-            android:id="@+id/storyUsername"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/storyProPic"
-            android:layout_margin="5dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_toEndOf="@+id/storyProPic"
+                android:layout_centerVertical="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorBlack"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:id="@+id/storyTimeStamp"
-            android:layout_marginEnd="10dp"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/storyOwnerDetails">
 
-    </RelativeLayout>
+                    <TextView
+                        android:id="@+id/storyUsername"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/storyTimeStamp"
+                        android:padding="5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/storyTimeStamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="10dp"
+                        android:singleLine="true"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="10sp"
+                        android:textStyle="normal"
+                        tools:ignore="SmallSp" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/storyLocationDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:singleLine="true"
+                    android:layout_marginStart="5dp"
+                    android:visibility="gone"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="10sp"
+                    android:textStyle="normal"
+                    tools:ignore="SmallSp" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <jp.shts.android.storiesprogressview.StoriesProgressView
         android:layout_width="match_parent"
@@ -92,59 +130,190 @@
         android:id="@+id/stories"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:layout_below="@+id/userDetails"
+        android:layout_below="@+id/view_story_toolbar"
         android:padding="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/likeLayout">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
-            android:padding="5dp"
-            android:id="@+id/replyStory"/>
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:orientation="vertical"
         android:id="@+id/likeLayout"
-        android:padding="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/storyLikeLayout"
-            android:padding="5dp"
-            android:textSize="18sp"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
-            android:id="@+id/storyCap"
-            android:background="@drawable/round_white"
-            android:visibility="visible"
-            android:layout_toStartOf="@+id/storyCommentBTN"/>
-
-        <ImageView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_insert_comment_black_24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/storyCommentBTN"
-            android:tint="@color/colorPrimaryDark"
-            android:padding="5dp"/>
+            android:background="@color/white_greyish"
+            android:layout_gravity="end"
+            android:id="@+id/r_seen"
+            android:visibility="gone"
+            android:layout_margin="2dp"
+            android:padding="2dp">
 
-    </RelativeLayout>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_eye" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="110 views"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/storyViewsCount"
+                android:textSize="12sp"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white_greyish"
+            android:padding="5dp"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/storyAudioArea"
+                android:visibility="gone">
+
+                <include
+                    layout="@layout/audio_media_player"/>
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/storyCap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="5dp"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/story_likesArea"
+                    tools:ignore="Suspicious0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:id="@+id/story_postLikeBTN"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_favorite_border_black_24dp" />
+
+                        <TextView
+                            android:id="@+id/story_likeCounter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:textAlignment="center"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="normal" />
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/story_commentLayout"
+                    tools:ignore="Suspicious0dp"  >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/storyCommentBTN"
+                            android:src="@drawable/ic_insert_comment_black_24dp"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorBlack"
+                            android:textStyle="normal"
+                            android:textAlignment="center"
+                            android:textSize="12sp"
+                            android:id="@+id/story_commentCounter"
+                            android:singleLine="true"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/story_shareArea"
+                    tools:ignore="Suspicious0dp"  >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_baseline_share_24"
+                            app:tint="@color/colorBlack"
+                            android:id="@+id/movement_shareBTN"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorBlack"
+                            android:textStyle="normal"
+                            android:text="Share"
+                            android:textAlignment="center"
+                            android:textSize="12sp"
+                            android:id="@+id/movement_shareCounter"
+                            android:singleLine="true"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </RelativeLayout>

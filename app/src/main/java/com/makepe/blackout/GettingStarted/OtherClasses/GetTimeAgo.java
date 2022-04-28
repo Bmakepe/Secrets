@@ -26,13 +26,13 @@ public class GetTimeAgo extends Application {
         if (diff < MINUTE_MILLIS) {
             return "Just Now";
         } else if (diff < 2 * MINUTE_MILLIS) {
-            return "A Minutes Ago";
+            return "A Min Ago";
         } else if (diff < 50 * MINUTE_MILLIS) {
-            return "about " + diff / MINUTE_MILLIS + " Minutes Ago";
+            return "about " + diff / MINUTE_MILLIS + " Mins Ago";
         } else if (diff < 90 * MINUTE_MILLIS) {
-            return "An Hour Ago";
+            return "An Hr Ago";
         } else if (diff < 24 * HOUR_MILLIS) {
-            return "about " + diff / HOUR_MILLIS + " Hours Ago";
+            return "about " + diff / HOUR_MILLIS + " Hrs Ago";
         } else if (diff < 48 * HOUR_MILLIS) {
             return "Yesterday";
         } else {

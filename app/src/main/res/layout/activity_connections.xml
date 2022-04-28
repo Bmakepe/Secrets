@@ -5,77 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.ConnectionsActivity">
 
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/connectionsToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
-        android:id="@+id/connectionsToolbar"
-        android:padding="5dp">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:padding="8dp"
-            android:id="@+id/connectBackBTN"
-            android:layout_centerVertical="true"
-            android:tint="@color/colorWhite"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/connectionsSearchBTN"
-            android:layout_toEndOf="@+id/connectBackBTN"
-            android:text="Connections"
-            android:textAllCaps="false"
-            android:layout_centerVertical="true"
-            android:textColor="@color/colorWhite"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:id="@+id/connectionsHeader"
-            android:fontFamily="@font/righteous_regular"/>
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_search_black_24dp"
-            android:layout_centerVertical="true"
-            android:padding="5dp"
-            android:layout_marginEnd="5dp"
-            android:id="@+id/connectionsSearchBTN"/>
-
-    </RelativeLayout>
+        android:elevation="5dp"
+        android:background="@null"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/connectionsRecycler"/>
-
-
-
-    <!--<androidx.viewpager.widget.ViewPager
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/connectionsPager"
-        android:layout_below="@+id/connectionsToolbar"
-        android:layout_above="@+id/connectionsTabs"/>
-
-    <com.google.android.material.tabs.TabLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/connectionsTabs"
-        android:layout_gravity="bottom"
-        app:tabPadding="5dp"
-        app:tabIndicatorGravity="top"
-        app:tabGravity="fill"
-        android:overScrollMode="ifContentScrolls"
-        android:layout_alignParentBottom="true"
-        app:tabIndicatorColor="@color/colorPrimaryDark"
-        app:tabMode="scrollable"
-        android:layout_centerHorizontal="true"
-        app:tabTextColor="@color/colorPrimaryDark"/>-->
 
 </LinearLayout>

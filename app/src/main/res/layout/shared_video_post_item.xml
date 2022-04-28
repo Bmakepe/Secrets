@@ -49,17 +49,7 @@
                     android:id="@+id/privacyIcon"
                     android:visibility="gone"
                     android:padding="3dp"
-                    android:tint="@color/colorBlack"/>
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:src="@drawable/online_circle"
-                    android:id="@+id/onlineStatus"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_margin="6dp"
-                    android:visibility="gone"/>
+                    app:tint="@color/colorBlack" />
 
             </RelativeLayout>
 

@@ -5,51 +5,17 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/background_gradient">
 
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/contactListToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/contactsToolbar"
-        android:background="@color/colorPrimaryDark"
-        android:padding="5dp">
-
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:tint="@color/colorWhite"
-            android:layout_margin="8dp"
-            android:layout_alignParentStart="true"
-            android:id="@+id/fBaseBackBTN"/>
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/chatContactsSearch"
-            android:src="@drawable/ic_search_black_24dp"
-            android:padding="10dp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:gravity="end"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/select_contact"
-            android:layout_gravity="center_vertical"
-            android:fontFamily="@font/righteous_regular"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:id="@+id/selectTV"
-            android:textStyle="bold"
-            android:visibility="visible"
-            android:padding="5dp"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/fBaseBackBTN"
-            android:layout_toStartOf="@+id/chatContactsSearch"/>
-
-    </RelativeLayout>
+        android:elevation="5dp"
+        android:background="@null"
+        app:title="Contacts"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"

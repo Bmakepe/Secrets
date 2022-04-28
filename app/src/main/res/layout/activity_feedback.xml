@@ -4,63 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
+    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.FeedbackActivity">
 
     <androidx.appcompat.widget.Toolbar
+        android:id="@+id/feedback_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_collapseMode="pin"
-        android:id="@+id/hisProfileToolbar">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_back_black_24dp"
-                android:padding="5dp"
-                android:layout_alignParentStart="true"
-                android:id="@+id/feedbackBackBTN"
-                android:layout_centerVertical="true"
-                android:tint="@color/white"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:padding="5dp"
-                android:layout_toEndOf="@+id/feedbackBackBTN"
-                android:maxLines="1"
-                android:textStyle="bold"
-                android:text="Feedback"
-                android:layout_centerVertical="true"
-                android:singleLine="true"
-                android:fontFamily="@font/righteous_regular"
-                android:textColor="@color/white"/>
-
-        </RelativeLayout>
-
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="wrap_content"
+        android:elevation="5dp"
+        android:background="@null"
+        app:title="Feedback and Help Center"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/hisProfileToolbar">
+        android:background="@null"
+        android:layout_below="@id/feedback_toolbar">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/profileAppBAr"
+            android:background="@null"
             android:fitsSystemWindows="true">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
-                android:background="@color/colorPrimaryDark"
                 app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
                 android:id="@+id/profileCollapsingToolbar">
 
@@ -87,7 +60,7 @@
                         android:layout_height="wrap_content"
                         android:text="Send Us Your Feedback"
                         android:textSize="16sp"
-                        android:textColor="@color/white"
+                        android:textColor="@color/colorBlack"
                         android:textAlignment="center"
                         android:padding="10dp"
                         android:textStyle="bold"
@@ -103,7 +76,6 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/layout_bg"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
             <LinearLayout
@@ -129,60 +101,100 @@
                     android:orientation="vertical">
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/textInputName"
-                        style="@style/parent"
-                        android:background="@drawable/transparent_circle_with_border"
                         android:padding="5dp"
-                        android:backgroundTint="@color/colorPrimaryDark">
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/username"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:drawablePadding="8dp"
                             android:id="@+id/feedbackName"
-                            style="@style/modifiedEditText"
-                            android:inputType="textPersonName"
-                            android:maxLines="1"
-                            android:hint="Name"
-                            android:background="@null"
-                            android:padding="10dp"/>
+                            android:layout_gravity="center"
+                            android:drawableTint="@color/colorBlack"
+                            android:inputType="text"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/textInputMobile"
-                        style="@style/parent"
-                        android:background="@drawable/transparent_circle_with_border"
-                        android:padding="5dp"
-                        android:backgroundTint="@color/colorPrimaryDark"
-                        android:layout_marginTop="5dp">
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
 
-                        <EditText
-                            android:id="@+id/feedbackNumber"
-                            style="@style/modifiedEditText"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/username"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:drawableStart="@drawable/ic_dialpad_black_24dp"
+                            android:drawablePadding="8dp"
                             android:inputType="phone"
-                            android:maxLines="1"
-                            android:hint="Mobile Number"
-                            android:background="@null"
-                            android:padding="10dp"/>
+                            android:id="@+id/feedbackNumber"
+                            android:layout_gravity="center"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/textMessage"
-                        style="@style/parent"
-                        android:background="@drawable/transparent_circle_with_border"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:padding="5dp"
-                        android:backgroundTint="@color/colorPrimaryDark"
-                        android:layout_marginTop="5dp">
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:id="@+id/textMessage"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="15"
+                        app:counterOverflowTextAppearance="@color/colorRed">
 
-                        <EditText
-                            android:id="@+id/feedbackMessage"
-                            style="@style/modifiedEditText"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/username"
+                            android:textColorHint="#fff"
+                            android:textColor="#000"
+                            android:drawableStart="@drawable/ic_info"
+                            android:drawablePadding="8dp"
                             android:inputType="textMultiLine"
                             android:maxLines="8"
                             android:lines="8"
-                            android:gravity="top|left"
-                            android:background="@null"
-                            android:padding="10dp"
-                            android:hint="Message"/>
+                            android:id="@+id/feedbackMessage"
+                            android:layout_gravity="center"
+                            android:textSize="14sp"
+                            android:singleLine="true"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="20dp"
+                            android:background="@null"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -214,21 +226,18 @@
 
                 </LinearLayout>
 
-                <TextView
+                <Button
                     android:id="@+id/submitFeedback"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_selector"
+                    android:layout_gravity="end"
+                    android:padding="3dp"
                     android:text="Submit"
-                    android:background="@drawable/rounded_edittext"
-                    android:backgroundTint="@color/colorPrimaryDark"
-                    android:layout_marginStart="30dp"
-                    android:layout_marginEnd="30dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"
+                    android:layout_margin="15dp"
                     android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textAllCaps="true" />
+                    android:textSize="17sp"
+                    android:textStyle="bold"/>
 
             </LinearLayout>
 

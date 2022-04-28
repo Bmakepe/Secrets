@@ -2,6 +2,7 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,23 +27,25 @@ import java.util.List;
 
 public class NotificationsActivity extends AppCompatActivity {
 
-    TextView mediaHeader;
-    RecyclerView notiRecycler;
-    List<NotiModel> notificationList;
-    NotificationAdapter notificationAdapter;
+    private RecyclerView notiRecycler;
+    private List<NotiModel> notificationList;
+    private NotificationAdapter notificationAdapter;
 
-    FirebaseUser firebaseUser;
-    DatabaseReference notificationsReference;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference notificationsReference;
+    private Toolbar notificationsToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.recycler_sample_layout);
 
-        mediaHeader = findViewById(R.id.recyclerHeading);
-        notiRecycler = findViewById(R.id.universalRecycler);
+        notificationsToolbar = findViewById(R.id.recyclerToolbar);
+        setSupportActionBar(notificationsToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        notificationsToolbar.setTitle("Notifications");
 
-        mediaHeader.setText("Notifications");
+        notiRecycler = findViewById(R.id.universalRecycler);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
@@ -57,13 +60,6 @@ public class NotificationsActivity extends AppCompatActivity {
         notiRecycler.setAdapter(notificationAdapter);
 
         getNotifications();
-
-        findViewById(R.id.recyclerBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
     }
 
     private void getNotifications() {
@@ -85,5 +81,11 @@ public class NotificationsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

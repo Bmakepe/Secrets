@@ -73,7 +73,8 @@ public class HisVideosFragment extends Fragment {
                     PostModel videos = ds.getValue(PostModel.class);
 
                     if (videos.getUserID().equals(hisUserID)){
-                        if (videos.getPostType().equals("videoPost")){
+                        if (videos.getPostType().equals("videoPost")
+                                || videos.getPostType().equals("sharedVideoPost")){
                             videoList.add(videos);
                         }
                     }

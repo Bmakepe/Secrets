@@ -4,59 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
+    android:background="@drawable/background_gradient"
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
+        android:id="@+id/profileToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_collapseMode="pin"
-        android:id="@+id/viewProfileToolbar">
-
-        <androidx.appcompat.widget.Toolbar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/toolBar">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:padding="5dp"
-                    android:maxLines="1"
-                    android:textStyle="bold"
-                    android:text="Profile"
-                    android:layout_toStartOf="@+id/notificationBTN"
-                    android:singleLine="true"
-                    android:fontFamily="@font/righteous_regular"
-                    android:textColor="@color/colorBlack"/>
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_notifications_black_24dp"
-                    android:layout_centerVertical="true"
-                    android:layout_toStartOf="@+id/options"
-                    android:padding="5dp"
-                    android:id="@+id/notificationBTN"/>
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/options"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_item_menu_icon"
-                    android:layout_alignParentEnd="true"
-                    android:padding="5dp"/>
-
-            </RelativeLayout>
-
-        </androidx.appcompat.widget.Toolbar>
-
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="wrap_content"
+        android:elevation="5dp"
+        app:title="Profile"
+        android:background="@color/colorPrimaryDark"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -66,13 +25,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/profileAppBAr"
+            android:background="@null"
             android:fitsSystemWindows="true">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
-                android:background="@color/white"
+                android:background="@null"
                 app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
                 android:id="@+id/profileCollapsingToolbar">
 
@@ -84,17 +44,17 @@
 
                     <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="250dp"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentStart="true"
                         android:id="@+id/coverArea">
 
                         <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
                             android:id="@+id/coverImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/default_profile_display_pic"  />
+                            android:src="@drawable/default_profile_display_pic" />
 
                         <ProgressBar
                             android:layout_width="wrap_content"
@@ -109,9 +69,9 @@
                         android:id="@+id/flmiddle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
                         android:layout_below="@+id/coverArea"
-                        android:layout_marginTop="-50dp">
+                        android:layout_marginTop="-50dp"
+                        android:padding="10dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -119,10 +79,10 @@
                             android:orientation="vertical">
 
                             <LinearLayout
+                                android:id="@+id/topBar"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:id="@+id/topBar">
+                                android:orientation="horizontal">
 
                                 <RelativeLayout
                                     android:layout_width="wrap_content"
@@ -131,98 +91,94 @@
 
                                     <de.hdodenhof.circleimageview.CircleImageView
                                         android:id="@+id/profilePicture"
-                                        android:layout_width="90dp"
-                                        android:layout_height="90dp"
+                                        android:layout_width="85dp"
+                                        android:layout_height="85dp"
+                                        android:scaleType="centerCrop"
                                         android:src="@drawable/default_profile_display_pic"
                                         app:civ_border_color="@color/colorBlack"
-                                        app:civ_border_width="2dp"
-                                        android:scaleType="centerCrop"
-                                        app:civ_border_overlay="true"/>
-
-                                    <de.hdodenhof.circleimageview.CircleImageView
-                                        android:layout_width="15dp"
-                                        android:layout_height="15dp"
-                                        android:src="@drawable/online_circle"
-                                        android:id="@+id/profileOnlineStatus"
-                                        android:layout_alignParentTop="true"
-                                        android:layout_margin="6dp"
-                                        android:padding="2dp"
-                                        android:layout_alignParentStart="true"
-                                        android:visibility="gone"/>
+                                        app:civ_border_overlay="true"
+                                        app:civ_border_width="2dp" />
 
                                     <ProgressBar
+                                        android:id="@+id/proPicLoader"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_centerInParent="true"
-                                        android:id="@+id/proPicLoader"
-                                        android:visibility="visible"/>
+                                        android:visibility="visible" />
 
                                 </RelativeLayout>
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:orientation="vertical"
+                                    android:layout_gravity="center_vertical"
                                     android:layout_marginStart="5dp"
-                                    android:layout_gravity="center_vertical">
+                                    android:orientation="vertical">
 
                                     <RelativeLayout
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content">
 
-                                        <TextView
+                                        <RelativeLayout
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
-                                            android:textSize="16sp"
-                                            android:padding="5dp"
-                                            android:maxLines="1"
-                                            android:textStyle="normal"
                                             android:background="@drawable/rounded_edittext"
-                                            android:singleLine="true"
-                                            android:fontFamily="@font/righteous_regular"
-                                            android:id="@+id/profileUsername"
                                             android:layout_toStartOf="@+id/editProfBTN"
                                             android:layout_marginEnd="5dp"
-                                            android:layout_centerVertical="true"
-                                            android:textColor="@color/colorBlack"/>
+                                            android:layout_centerVertical="true">
+
+                                            <ImageView
+                                                android:id="@+id/userVerified"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_alignParentStart="true"
+                                                android:layout_centerVertical="true"
+                                                android:padding="5dp"
+                                                android:src="@drawable/ic_verified_user_black_24dp"
+                                                app:tint="@color/colorGold" />
+
+                                            <TextView
+                                                android:id="@+id/profileUsername"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:layout_centerVertical="true"
+                                                android:layout_toEndOf="@+id/userVerified"
+                                                android:maxLines="1"
+                                                android:padding="5dp"
+                                                android:singleLine="true"
+                                                android:textColor="@color/colorBlack"
+                                                android:textSize="14sp"
+                                                android:textStyle="bold" />
+
+
+                                        </RelativeLayout>
 
                                         <ImageView
+                                            android:id="@+id/editProfBTN"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:src="@drawable/ic_edit_black_24dp"
-                                            android:padding="5dp"
-                                            android:background="@drawable/rounded_edittext"
                                             android:layout_alignParentEnd="true"
-                                            android:id="@+id/editProfBTN"/>
+                                            android:background="@drawable/rounded_edittext"
+                                            android:padding="5dp"
+                                            android:src="@drawable/ic_edit_black_24dp" />
 
                                     </RelativeLayout>
 
                                     <RelativeLayout
+                                        android:id="@+id/infoLayout"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:gravity="center_vertical"
-                                        android:layout_marginTop="5dp"
+                                        android:layout_marginTop="3dp"
                                         android:background="@drawable/rounded_edittext"
-                                        android:id="@+id/infoLayout">
-
-                                        <ImageView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:src="@drawable/ic_verified_user_black_24dp"
-                                            android:id="@+id/userVerified"
-                                            android:layout_alignParentStart="true"
-                                            android:layout_centerVertical="true"
-                                            android:padding="2dp"
-                                            android:tint="@color/colorGold" />
+                                        android:gravity="center_vertical">
 
                                         <LinearLayout
+                                            android:id="@+id/followListBTN"
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
-                                            android:orientation="horizontal"
-                                            android:layout_toEndOf="@+id/userVerified"
+                                            android:backgroundTint="@color/colorPrimaryDark"
                                             android:baselineAligned="false"
-                                            android:id="@+id/followListBTN"
-                                            android:backgroundTint="@color/colorPrimaryDark">
+                                            android:orientation="horizontal">
 
                                             <RelativeLayout
                                                 android:layout_width="0dp"
@@ -231,33 +187,33 @@
                                                 tools:ignore="Suspicious0dp">
 
                                                 <LinearLayout
-                                                    android:layout_centerHorizontal="true"
-                                                    android:orientation="vertical"
                                                     android:layout_width="match_parent"
+                                                    android:layout_height="wrap_content"
+                                                    android:layout_centerHorizontal="true"
                                                     android:layout_weight="1"
-                                                    android:padding="5dp"
-                                                    android:layout_height="wrap_content">
+                                                    android:orientation="vertical"
+                                                    android:padding="5dp">
 
                                                     <TextView
                                                         android:layout_width="match_parent"
                                                         android:layout_height="wrap_content"
-                                                        android:text="Posts"
-                                                        android:textColor="@color/colorBlack"
-                                                        android:textStyle="bold"
-                                                        android:textSize="14sp"
-                                                        android:textAlignment="center"
                                                         android:singleLine="true"
-                                                        android:textAllCaps="false" />
+                                                        android:text="Posts"
+                                                        android:textAlignment="center"
+                                                        android:textAllCaps="false"
+                                                        android:textColor="@color/colorBlack"
+                                                        android:textSize="14sp"
+                                                        android:textStyle="bold" />
 
                                                     <TextView
+                                                        android:id="@+id/posts"
                                                         android:layout_width="match_parent"
                                                         android:layout_height="wrap_content"
-                                                        android:textSize="14sp"
+                                                        android:maxLines="1"
                                                         android:textAlignment="center"
                                                         android:textColor="@color/colorBlack"
+                                                        android:textSize="14sp"
                                                         android:textStyle="bold"
-                                                        android:id="@+id/posts"
-                                                        android:maxLines="1"
                                                         tools:ignore="SmallSp" />
 
                                                 </LinearLayout>
@@ -265,80 +221,80 @@
                                             </RelativeLayout>
 
                                             <RelativeLayout
+                                                android:id="@+id/followersListBTN"
                                                 android:layout_width="0dp"
                                                 android:layout_height="wrap_content"
                                                 android:layout_weight="1"
-                                                android:id="@+id/followersListBTN"
                                                 tools:ignore="Suspicious0dp">
 
                                                 <LinearLayout
-                                                    android:layout_centerHorizontal="true"
-                                                    android:orientation="vertical"
                                                     android:layout_width="match_parent"
+                                                    android:layout_height="wrap_content"
+                                                    android:layout_centerHorizontal="true"
                                                     android:layout_weight="1"
-                                                    android:padding="5dp"
-                                                    android:layout_height="wrap_content">
+                                                    android:orientation="vertical"
+                                                    android:padding="5dp">
 
                                                     <TextView
                                                         android:layout_width="match_parent"
                                                         android:layout_height="wrap_content"
-                                                        android:text="Followers"
-                                                        android:textColor="@color/colorBlack"
-                                                        android:textStyle="bold"
-                                                        android:textAlignment="center"
-                                                        android:textSize="14sp"
                                                         android:singleLine="true"
-                                                        android:textAllCaps="false" />
+                                                        android:text="Followers"
+                                                        android:textAlignment="center"
+                                                        android:textAllCaps="false"
+                                                        android:textColor="@color/colorBlack"
+                                                        android:textSize="14sp"
+                                                        android:textStyle="bold" />
 
                                                     <TextView
-                                                        android:layout_width="match_parent"
-                                                        android:textAlignment="center"
-                                                        android:layout_height="wrap_content"
-                                                        android:textStyle="bold"
-                                                        android:layout_gravity="center_horizontal"
-                                                        android:textSize="14sp"
                                                         android:id="@+id/followers"
-                                                        android:textColor="@color/colorBlack"/>
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="wrap_content"
+                                                        android:layout_gravity="center_horizontal"
+                                                        android:textAlignment="center"
+                                                        android:textColor="@color/colorBlack"
+                                                        android:textSize="14sp"
+                                                        android:textStyle="bold" />
 
                                                 </LinearLayout>
 
                                             </RelativeLayout>
 
                                             <RelativeLayout
+                                                android:id="@+id/followingListBTN"
                                                 android:layout_width="0dp"
                                                 android:layout_height="wrap_content"
                                                 android:layout_weight="1"
-                                                android:id="@+id/followingListBTN"
-                                                tools:ignore="Suspicious0dp"  >
+                                                tools:ignore="Suspicious0dp">
 
                                                 <LinearLayout
-                                                    android:layout_centerHorizontal="true"
-                                                    android:orientation="vertical"
                                                     android:layout_width="match_parent"
+                                                    android:layout_height="wrap_content"
+                                                    android:layout_centerHorizontal="true"
                                                     android:layout_weight="1"
-                                                    android:padding="5dp"
-                                                    android:layout_height="wrap_content">
+                                                    android:orientation="vertical"
+                                                    android:padding="5dp">
 
                                                     <TextView
                                                         android:layout_width="match_parent"
-                                                        android:textAlignment="center"
                                                         android:layout_height="wrap_content"
-                                                        android:text="Following"
-                                                        android:textStyle="bold"
                                                         android:singleLine="true"
+                                                        android:text="Following"
+                                                        android:textAlignment="center"
+                                                        android:textAllCaps="false"
                                                         android:textColor="@color/colorBlack"
                                                         android:textSize="14sp"
-                                                        android:textAllCaps="false" />
+                                                        android:textStyle="bold" />
 
                                                     <TextView
+                                                        android:id="@+id/following"
                                                         android:layout_width="match_parent"
                                                         android:layout_height="wrap_content"
-                                                        android:id="@+id/following"
-                                                        android:textAlignment="center"
                                                         android:layout_gravity="center_horizontal"
-                                                        android:textStyle="bold"
+                                                        android:textAlignment="center"
+                                                        android:textColor="@color/colorBlack"
                                                         android:textSize="14sp"
-                                                        android:textColor="@color/colorBlack"/>
+                                                        android:textStyle="bold" />
 
                                                 </LinearLayout>
 
@@ -352,39 +308,62 @@
 
                             </LinearLayout>
 
-                            <LinearLayout
+                            <RelativeLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:background="@drawable/rounded_edittext"
-                                android:layout_marginTop="5dp"
-                                android:orientation="vertical">
+                                android:layout_marginTop="5dp">
 
                                 <TextView
-                                    android:id="@+id/locationDetails"
+                                    android:id="@+id/profileAboutTV"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="sans-serif"
-                                    android:drawableStart="@drawable/ic_baseline_location_on_24"
-                                    android:maxLines="2"
-                                    android:visibility="gone"
-                                    android:padding="5dp"
+                                    android:fontFamily="@font/roboto_regular"
                                     android:textColor="@color/colorBlack"
-                                    android:textSize="12sp"
+                                    android:textSize="16sp"
                                     android:textStyle="bold" />
 
-                                <TextView
-                                    android:id="@+id/profileBio"
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="sans-serif"
-                                    android:maxLines="3"
-                                    android:drawableStart="@drawable/ic_info"
-                                    android:padding="5dp"
-                                    android:textColor="@color/colorBlack"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold" />
+                                    android:layout_below="@+id/profileAboutTV"
+                                    android:orientation="vertical">
 
-                            </LinearLayout>
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:id="@+id/profileLocationArea"
+                                        android:visibility="gone">
+
+                                        <TextView
+                                            android:id="@+id/locationDetails"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="sans-serif"
+                                            android:maxLines="3"
+                                            android:padding="2dp"
+                                            android:layout_marginTop="2dp"
+                                            android:textColor="@color/colorBlack"
+                                            android:textSize="12sp"
+                                            android:textStyle="bold"  />
+
+                                    </LinearLayout>
+
+                                    <TextView
+                                        android:id="@+id/profileBio"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="sans-serif"
+                                        android:maxLines="3"
+                                        android:padding="2dp"
+                                        android:layout_marginTop="2dp"
+                                        android:textColor="@color/colorBlack"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold"  />
+
+                                </LinearLayout>
+
+                            </RelativeLayout>
 
                         </LinearLayout>
 
@@ -398,12 +377,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/profileTabs"
-                app:tabSelectedTextColor="@color/colorPrimaryDark"
-                app:tabIndicatorColor="@color/colorPrimaryDark"
+                app:tabSelectedTextColor="@color/colorBlack"
+                app:tabIndicatorColor="@color/colorBlack"
                 app:tabIndicatorHeight="2dp"
                 android:overScrollMode="ifContentScrolls"
                 app:tabMode="fixed"
-                android:background="@color/white"
+                android:background="@null"
                 app:tabTextColor="@color/colorBlack" />
 
         </com.google.android.material.appbar.AppBarLayout>

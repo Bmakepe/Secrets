@@ -54,7 +54,6 @@
                 android:id="@+id/myMediaRecycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:scrollbars="horizontal"
@@ -85,7 +84,6 @@
                 android:id="@+id/myPostsRecycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
                 tools:ignore="UnusedAttribute" />

@@ -1,61 +1,25 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
-import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Fragments.ProfileFragment;
-import com.makepe.blackout.GettingStarted.InAppActivities.PostDetailActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
-import com.makepe.blackout.GettingStarted.Models.CommentModel;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> {
 
@@ -99,7 +63,8 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(context, PostDetailActivity.class);
+                //Intent intent = new Intent(context, PostDetailActivity.class);
+                Intent intent = new Intent(context, CommentsActivity.class);
                 intent.putExtra("postID", modelPost.getPostID());
                 context.startActivity(intent);
 

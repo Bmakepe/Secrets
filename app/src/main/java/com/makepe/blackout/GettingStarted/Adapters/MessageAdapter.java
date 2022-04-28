@@ -34,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.Chat;
+import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
@@ -60,6 +61,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     private MediaPlayer myMediaPlayer;
 
     private FirebaseUser firebaseUser;
+
+    private GetTimeAgo getTimeAgo;
 
     public MessageAdapter(Context context, List<Chat> mChats, String imageurl) {
         this.context = context;
@@ -92,6 +95,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
         Chat chat = mChats.get(position);
         final String uid = chat.getSender();
+        getTimeAgo = new GetTimeAgo();
 
         getChatDetails(chat, holder);
 
@@ -111,37 +115,24 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     private void getChatDetails(Chat chat, MyHolder holder) {
 
         String textMessage = chat.getMessage();
-        String timeStamp = chat.getTimeStamp();
         String voiceNote = chat.getAudio();
 
-        Calendar calendar = Calendar.getInstance(Locale.getDefault());
-
         try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            calendar.setTimeInMillis(Long.parseLong(timeStamp));
-            String pTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
-            holder.timeStamp.setText(pTime);
+            holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(chat.getTimeStamp()), context));
         }catch (NumberFormatException n){
             Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
         }
 
-        Picasso.get().load(imageurl).networkPolicy(NetworkPolicy.OFFLINE).into(holder.chatPic, new Callback() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onError(Exception e) {
-
-                Picasso.get().load(imageurl).into(holder.chatPic);
-            }
-        });
+        try{
+            Picasso.get().load(imageurl).into(holder.chatPic);
+        }catch (NullPointerException e){
+            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatPic);
+        }
 
         try{
             if(textMessage.equals("noMessage")){
                 //used for audio messages
 
-                holder.mediaPlayer.setVisibility(View.VISIBLE);
                 holder.showMessages.setVisibility(View.GONE);
                 holder.playBTN.setTag("Play");
 
@@ -156,15 +147,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                         pause();
                     }
                 });
-
             }else{
                 //used for text messages
-
-                holder.mediaPlayer.setVisibility(View.GONE);
                 holder.showMessages.setVisibility(View.VISIBLE);
-
                 holder.showMessages.setText(textMessage);
-
             }
         }catch (NullPointerException ignored){}
     }
@@ -273,7 +259,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             popupMenu.getMenu().add(Menu.NONE, 3,0,"Delete");
         }
 
-
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -351,7 +336,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     class MyHolder extends RecyclerView.ViewHolder {
 
         //for text chat views
-
         CircleImageView chatPic;
         TextView showMessages, timeStamp;
         ImageView ticks;
@@ -360,7 +344,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         ImageButton playBTN;
         TextView voiceTimeText, voiceTimeDuration;
         SeekBar voiceNoteSeekbar;
-        CardView mediaPlayer;
 
         MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -374,7 +357,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             voiceTimeText = itemView.findViewById(R.id.postTimeText);
             voiceTimeDuration = itemView.findViewById(R.id.postTimeDuration);
             voiceNoteSeekbar = itemView.findViewById(R.id.voiceNoteSeekbar);
-            mediaPlayer = itemView.findViewById(R.id.voiceCard);
         }
     }
 

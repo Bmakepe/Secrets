@@ -2,12 +2,15 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.FirebaseContactsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserListAdapter;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
@@ -35,46 +39,32 @@ import java.util.List;
 
 public class ConnectionsActivity extends AppCompatActivity {
 
-    private ImageView backBTN, searchBTN;
     private RecyclerView connectionsRecycler;
-    private TextView connectionsHeader;
+    private Toolbar connectionsToolbar;
 
     private String userID, interaction;
 
-    private DatabaseReference userReference;
-    private FirebaseUser firebaseUser;
-
-    private ArrayList<ContactsModel> userList;
     private ArrayList<String> idList;
-
-    UserAdapter userAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connections);
 
-        backBTN = findViewById(R.id.connectBackBTN);
-        searchBTN = findViewById(R.id.connectionsSearchBTN);
         connectionsRecycler = findViewById(R.id.connectionsRecycler);
-        connectionsHeader = findViewById(R.id.connectionsHeader);
+        connectionsToolbar = findViewById(R.id.connectionsToolbar);
 
         Intent intent = getIntent();
         userID = intent.getStringExtra("UserID");
         interaction = intent.getStringExtra("Interaction");
 
-        connectionsHeader.setText(interaction);
-
-        userReference = FirebaseDatabase.getInstance().getReference("Users");
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        setSupportActionBar(connectionsToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         idList = new ArrayList<>();
-        userList = new ArrayList<>();
 
         connectionsRecycler.hasFixedSize();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        connectionsRecycler.setLayoutManager(layoutManager);
+        connectionsRecycler.setLayoutManager(new LinearLayoutManager(this));
 
         switch (interaction){
             case "Followers":
@@ -96,17 +86,26 @@ public class ConnectionsActivity extends AppCompatActivity {
             default:
                 Toast.makeText(this, "Unable to solve request", Toast.LENGTH_SHORT).show();
         }
-
-        backBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
     }
 
     private void getViewers() {
-        Toast.makeText(this, "You will be able to " + interaction + " for post " + userID, Toast.LENGTH_SHORT).show();
+        final DatabaseReference viewsReference = FirebaseDatabase.getInstance().getReference("Views").child(userID);
+        viewsReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                idList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    idList.add(ds.getKey());
+                    connectionsToolbar.setTitle("Views");
+                }
+                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getLikes() {
@@ -117,30 +116,10 @@ public class ConnectionsActivity extends AppCompatActivity {
                 idList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     idList.add(ds.getKey());
-
-                    userReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            userList.clear();
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                ContactsModel user = ds.getValue(ContactsModel.class);
-
-                                for (String ID : idList){
-                                    if (user.getUSER_ID().equals(ID)){
-                                        userList.add(user);
-                                    }
-                                }
-                            }
-                            userAdapter = new UserAdapter( ConnectionsActivity.this, userList);
-                            connectionsRecycler.setAdapter(userAdapter);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
+                    connectionsToolbar.setTitle("Likes");
                 }
+                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                //getUserDetails();
             }
 
             @Override
@@ -160,32 +139,9 @@ public class ConnectionsActivity extends AppCompatActivity {
                 idList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     idList.add(ds.getKey());
-
-                    userReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            userList.clear();
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                ContactsModel user = ds.getValue(ContactsModel.class);
-
-                                for (String ID : idList){
-                                    assert user != null;
-                                    if (user.getUSER_ID().equals(ID)){
-                                        userList.add(user);
-                                    }
-                                }
-                            }
-
-                            userAdapter = new UserAdapter( ConnectionsActivity.this, userList);
-                            connectionsRecycler.setAdapter(userAdapter);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
+                    connectionsToolbar.setTitle("Following");
                 }
+                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
             }
 
             @Override
@@ -204,31 +160,11 @@ public class ConnectionsActivity extends AppCompatActivity {
                 idList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     idList.add(ds.getKey());
+                    connectionsToolbar.setTitle("Followers");
 
-                    userReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            userList.clear();
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                ContactsModel user = ds.getValue(ContactsModel.class);
-
-                                for (String ID : idList){
-                                    if (user.getUSER_ID().equals(ID)){
-                                        userList.add(user);
-                                    }
-                                }
-                            }
-
-                            userAdapter = new UserAdapter( ConnectionsActivity.this, userList);
-                            connectionsRecycler.setAdapter(userAdapter);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
+                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                //getUserDetails();
             }
 
             @Override
@@ -236,5 +172,29 @@ public class ConnectionsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.contacts_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.contactSearch:
+                Toast.makeText(this, "Search Contacts", Toast.LENGTH_SHORT).show();
+
+            default:
+                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

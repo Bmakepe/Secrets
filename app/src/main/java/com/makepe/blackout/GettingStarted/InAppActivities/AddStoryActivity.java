@@ -3,42 +3,55 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
+import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.Movement;
+import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,51 +61,65 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class AddStoryActivity extends AppCompatActivity {
 
     private Uri mImageUri;
-    String myUri = "";
+    private String myUri = "", userID, storyID;
     private StorageTask storageTask;
-    StorageReference storageReference;
-    DatabaseReference databaseReference;
-    FirebaseUser user;
+    private StorageReference storageReference, audioReference;
+    private DatabaseReference userReference, storyReference, movementReference;
 
-    String myName, userProPic;
+    private CircleImageView storyProPic;
+    private ImageView storyPic;
+    private TextView storyUser, storyFAB, locationTV;
+    private EditText storyCaption;
+    private RelativeLayout locationArea;
+    private TextInputLayout storyCaptionSection;
+    private LocationServices locationServices;
+    private ProgressDialog pd;
 
-    CircleImageView storyProPic;
-    ImageView storyPic;
-    TextView storyUser;
-    EditText storyCaption;
-    FloatingActionButton storyFAB;
-
+    //for recording audio status
+    private AudioRecorder audioRecorder;
+    private LottieAnimationView lavPlaying;
+    private ImageView voicePlayBTN, deleteAudioBTN;
+    private TextView seekTimer;
+    private RelativeLayout playAudioArea;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_story);
 
+        Toolbar movementToolbar = findViewById(R.id.add_story_toolbar);
+        setSupportActionBar(movementToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         storyProPic = findViewById(R.id.addStoryProPic);
         storyPic = findViewById(R.id.storyPic);
-        storyCaption = findViewById(R.id.storyCaption);
+        storyCaption = findViewById(R.id.storyCaptionET);
         storyUser = findViewById(R.id.addStoryUsername);
-        storyFAB = findViewById(R.id.postStoryFAB);
+        storyFAB = findViewById(R.id.postFAB);
+        locationTV = findViewById(R.id.locationCheckIn);
+        locationArea = findViewById(R.id.postLocationBTN);
+        storyCaptionSection = findViewById(R.id.storyCaptionSection);
+
+        playAudioArea = findViewById(R.id.playAudioArea);
+        voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
+        seekTimer = findViewById(R.id.seekTimer);
+        lavPlaying = findViewById(R.id.lav_playing);
+        deleteAudioBTN = findViewById(R.id.recordingDeleteBTN);
+
+        userID = getIntent().getStringExtra("userid");
 
         storageReference = FirebaseStorage.getInstance().getReference("Story");
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
-        databaseReference.keepSynced(true);
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        storyReference = FirebaseDatabase.getInstance().getReference("Story");
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
+        audioReference = FirebaseStorage.getInstance().getReference();
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    myName = "" + snapshot.child("Username").getValue();
-                    userProPic = "" + snapshot.child("ImageURL").getValue();
-                }
-            }
+        locationServices = new LocationServices(locationTV, AddStoryActivity.this);
+        audioRecorder = new AudioRecorder(lavPlaying, AddStoryActivity.this,
+                AddStoryActivity.this, playAudioArea, voicePlayBTN, seekTimer);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+        storyID = storyReference.push().getKey();
 
         getUserDetails();
 
@@ -100,18 +127,165 @@ public class AddStoryActivity extends AppCompatActivity {
                 .setAspectRatio(9,16)
                 .start(AddStoryActivity.this);
 
+        storyCaption.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() != 0)
+                    storyFAB.setText("Post");
+                else
+                    storyFAB.setText("Record");
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         storyFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                publishStory();
+                if (storyFAB.getText().toString().trim().equals("Record")) {
+                    if (audioRecorder.checkRecordingPermission()){
+                        storyCaptionSection.setVisibility(View.GONE);
+                        if (!audioRecorder.isRecording()){
+                            storyFAB.setText("Stop");
+                            audioRecorder.startRecording();
+                        }
+                    }else {
+                        audioRecorder.requestRecordingPermission();
+                    }
+                }else if (storyFAB.getText().toString().trim().equals("Stop")){
+
+                    storyFAB.setText("Post");
+                    audioRecorder.stopRecording();
+
+                }else if (storyFAB.getText().toString().trim().equals("Post")){
+
+                    pd = new ProgressDialog(AddStoryActivity.this);
+                    pd.setMessage("Updating Story");
+
+                    if (!TextUtils.isEmpty(storyCaption.getText().toString()))
+                        publishStory();
+                    else if (audioRecorder.getRecordingFilePath() != null)
+                        publishAudioStory();
+                }
             }
         });
-        findViewById(R.id.storyBackBTN).setOnClickListener(new View.OnClickListener() {
+
+        voicePlayBTN.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                finish();
+            public void onClick(View view) {
+
+                if (!audioRecorder.isPlaying()){
+                    audioRecorder.startPlayingRecording();
+                }else{
+                    audioRecorder.stopPlayingAudio();
+                }
             }
         });
+
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //audioRecorder.deleteRecording();
+                Toast.makeText(AddStoryActivity.this, "Recording will be deleted", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        locationArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                locationServices.getMyLocation();
+            }
+        });
+
+    }
+
+    private void publishAudioStory() {
+        pd.show();
+
+        StorageReference audioPath = audioReference.child("StatusAudios").child(storyID + ".3gp");
+        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+                    String audioLink = audioDownloadLink.toString();
+
+                    if (mImageUri != null){
+                        final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
+                                + "." + getFileExtension(mImageUri));
+
+                        storageTask = imageReference.putFile(mImageUri);
+                        storageTask.continueWithTask(new Continuation() {
+                            @Override
+                            public Object then(@NonNull Task task) throws Exception {
+                                if (!task.isSuccessful())
+                                    throw task.getException();
+                                return imageReference.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if (task.isSuccessful()){
+                                    Uri downloadUri = task.getResult();
+                                    myUri  = downloadUri.toString();
+
+                                    long timeEnd = System.currentTimeMillis() + 86400000; //1 day
+
+                                    HashMap<String, Object> hashMap = new HashMap<>();
+
+                                    hashMap.put("storyImage", myUri);
+                                    hashMap.put("timeStart", ServerValue.TIMESTAMP);
+                                    hashMap.put("timeEnd", timeEnd);
+                                    hashMap.put("storyID", storyID);
+                                    hashMap.put("userID", userID);
+                                    hashMap.put("storyTimeStamp", String.valueOf(System.currentTimeMillis()));
+                                    hashMap.put("storyCaption", storyCaption.getText().toString());
+                                    hashMap.put("storyType", "audioStory");
+                                    hashMap.put("storyAudioUrl", audioLink);
+
+                                    if (!locationTV.getText().toString().equals("No Location")) {
+                                        hashMap.put("latitude", locationServices.getLatitude());
+                                        hashMap.put("longitude", locationServices.getLongitude());
+                                    }
+
+                                    storyReference.child(userID).child(storyID).setValue(hashMap)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    storyFAB.setVisibility(View.VISIBLE);
+                                                    pd.dismiss();
+
+                                                    finish();
+                                                }
+                                            });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
     }
 
     private void getUserDetails() {
@@ -120,26 +294,46 @@ public class AddStoryActivity extends AppCompatActivity {
         contactsList.readContacts();
         final List<ContactsModel> myContacts = contactsList.getContactsList();
 
-        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(user.getUid());
-        query.addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    User user = ds.getValue(User.class);
 
-                        String number = "" + snapshot.child("Number").getValue();
-                        String proPic = "" + snapshot.child("ImageURL").getValue();
+                    assert user != null;
+                    if (user.getUSER_ID().equals(userID)){
 
-                        for(ContactsModel contactsModel : myContacts){
-                            if(contactsModel.getNumber().equals(number)){
-                                storyUser.setText(contactsModel.getUsername());
-                            }
-                        }
+                        storyUser.setText(user.getUsername());
 
                         try{
-                            Picasso.get().load(proPic).into(storyProPic);
-                        }catch (NullPointerException ignored){}
+                            Picasso.get().load(user.getImageURL()).into(storyProPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
+                        }
+                    }else{
+                        movementReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot data : snapshot.getChildren()){
+                                    Movement movement = data.getValue(Movement.class);
+
+                                    if (movement.getMovementID().equals(userID)){
+                                        storyUser.setText(movement.getMovementName());
+
+                                        try{
+                                            Picasso.get().load(movement.getMovementProPic()).into(storyProPic);
+                                        }catch (NullPointerException e){
+                                            Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                     }
                 }
             }
@@ -159,14 +353,11 @@ public class AddStoryActivity extends AppCompatActivity {
     }
 
     private void publishStory(){
-        final ProgressDialog pd = new ProgressDialog(this);
-        pd.setMessage("Updating Story");
         pd.show();
 
         if(mImageUri != null){
             final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
             + "." + getFileExtension(mImageUri) );
-            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
             storageTask = imageReference.putFile(mImageUri);
             storageTask.continueWithTask(new Continuation(){
@@ -184,31 +375,36 @@ public class AddStoryActivity extends AppCompatActivity {
                         Uri downloadUri = task.getResult();
                         myUri = downloadUri.toString();
 
-                        String myid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Story")
-                                .child(myid);
-
-                        String storyid = reference.push().getKey();
-                        long timeend = System.currentTimeMillis() + 86400000; //1 day
-                        String timeStamp = String.valueOf(System.currentTimeMillis());
+                        long timeEnd = System.currentTimeMillis() + 86400000; //1 day
 
                         HashMap<String, Object> hashMap = new HashMap<>();
 
-                        hashMap.put("PostImage", myUri);
-                        hashMap.put("timestart", ServerValue.TIMESTAMP);
-                        hashMap.put("timeend", timeend);
-                        hashMap.put("storyid", storyid);
-                        hashMap.put("userid", myid);
-                        assert user != null;
-                        hashMap.put("userNum", user.getPhoneNumber());
-                        hashMap.put("storyTimeStamp", timeStamp);
+                        hashMap.put("storyImage", myUri);
+                        hashMap.put("timeStart", ServerValue.TIMESTAMP);
+                        hashMap.put("timeEnd", timeEnd);
+                        hashMap.put("storyID", storyID);
+                        hashMap.put("userID", userID);
+                        hashMap.put("storyTimeStamp", String.valueOf(System.currentTimeMillis()));
                         hashMap.put("storyCaption", storyCaption.getText().toString());
+                        hashMap.put("storyType", "textStory");
+                        hashMap.put("storyAudioUrl", "");
 
-                        reference.child(storyid).setValue(hashMap);
-                        pd.dismiss();
+                        if (!locationTV.getText().toString().equals("No Location")) {
+                            hashMap.put("latitude", locationServices.getLatitude());
+                            hashMap.put("longitude", locationServices.getLongitude());
+                        }
 
-                        finish();
+                        storyReference.child(userID).child(storyID).setValue(hashMap)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                        storyFAB.setVisibility(View.VISIBLE);
+                                        pd.dismiss();
+
+                                        finish();
+                                    }
+                                });
                     }else{
                         Toast.makeText(AddStoryActivity.this, "failed", Toast.LENGTH_SHORT).show();
                     }
@@ -233,8 +429,54 @@ public class AddStoryActivity extends AppCompatActivity {
             storyPic.setImageURI(mImageUri);
         }else {
             Toast.makeText(this, "Something gone wrong", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(AddStoryActivity.this, HomeConsoleActivity.class));
+            startActivity(new Intent(AddStoryActivity.this, MainActivity.class));
             finish();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == audioRecorder.REQUEST_AUDIO_PERMISSION){
+            if (grantResults.length > 0){
+                boolean permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+                if (permissionToRecord){
+                    Toast.makeText(this, "Recording permission granted", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(this, "Recording permission denied", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.share_post_menu, menu);
+
+        menu.findItem(R.id.uploadImageItems).setVisible(false);
+        menu.findItem(R.id.uploadVideosItem).setVisible(false);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.tagFriendsItem:
+                Toast.makeText(this, "You will be able to tag friends", Toast.LENGTH_SHORT).show();
+                break;
+
+            default:
+                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

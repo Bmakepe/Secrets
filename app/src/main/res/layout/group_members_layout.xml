@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:ignore="RtlSymmetry"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:id="@+id/nameLayout">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/contactProPic"
+            android:src="@drawable/default_profile_display_pic"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            app:civ_border_color="@color/colorBlack"
+            app:civ_border_width="1dp"
+            app:civ_border_overlay="true"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/contactProPic"
+            android:layout_centerVertical="true"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/contactName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/statusTV"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/statusTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/rounded_edittext"
+                android:backgroundTint="@color/white_greyish"
+                android:padding="8dp"
+                android:textAllCaps="true"
+                android:textColor="@color/colorBlack"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

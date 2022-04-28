@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
+    android:background="@drawable/background_gradient"
     android:layout_gravity="center" >
 
     <androidx.appcompat.widget.Toolbar
@@ -13,51 +13,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="5dp"
-        android:background="@color/colorPrimaryDark">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_back_black_24dp"
-                android:padding="10dp"
-                android:layout_centerVertical="true"
-                android:id="@+id/editBackBTN"
-                app:tint="@color/white" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Edit Profile"
-                android:layout_toEndOf="@+id/editBackBTN"
-                android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
-                android:textColor="@color/white"
-                android:layout_centerVertical="true"
-                android:padding="5dp"
-                android:textStyle="bold"/>
-
-        </RelativeLayout>
-
-    </androidx.appcompat.widget.Toolbar>
+        android:background="@null"
+        app:title="Edit Profile"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@null">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@null"
             android:fitsSystemWindows="true">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
-                android:background="@color/colorPrimaryDark"
                 app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
                 android:id="@+id/profileCollapsingToolbar">
 
@@ -75,11 +50,11 @@
                         android:id="@+id/coverArea">
 
                         <ImageView
+                            android:id="@+id/editProCoverPic"
                             android:layout_width="match_parent"
                             android:layout_height="250dp"
-                            android:id="@+id/editProCoverPic"
-                            android:src="@drawable/default_profile_display_pic"
-                            android:scaleType="centerCrop"/>
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/default_profile_display_pic" />
 
                         <ImageView
                             android:layout_width="wrap_content"
@@ -158,7 +133,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Kindly check, edit and confirm details of your name and description below"
-                        android:textColor="@color/colorWhite"
+                        android:textColor="@color/colorBlack"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:gravity="center"
@@ -167,11 +142,13 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/usernameTIL"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="15"
-                        android:padding="5dp"
                         app:counterOverflowTextAppearance="@color/colorRed">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -197,14 +174,16 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="100"
-                        android:padding="5dp"
                         app:counterOverflowTextAppearance="@color/colorRed"
                         android:layout_marginTop="5dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/setup_biography"
@@ -230,16 +209,18 @@
                         android:id="@+id/textMessage"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="false"
                         android:padding="5dp"
                         app:counterOverflowTextAppearance="@color/colorRed"
                         android:layout_marginTop="5dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/dateOfBirthPicker"
+                            android:id="@+id/dateOfBirthET"
                             android:clickable="true"
                             android:hint="@string/dob_text"
                             android:textSize="14sp"
@@ -257,45 +238,34 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        style="@style/parent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
+                        app:counterEnabled="false"
                         android:padding="5dp"
+                        app:counterOverflowTextAppearance="@color/colorRed"
                         android:layout_marginTop="5dp">
 
-                        <RelativeLayout
+                        <EditText
+                            android:id="@+id/editLocationET"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/editLocationET"
-                                android:clickable="true"
-                                android:hint="Click here to retrieve your address"
-                                android:textSize="14sp"
-                                android:drawableStart="@drawable/ic_baseline_location_on_24"
-                                android:drawablePadding="8dp"
-                                android:editable="false"
-                                android:drawableTint="@color/colorBlack"
-                                android:background="@null"
-                                android:focusable="false"
-                                android:layout_toStartOf="@+id/myLocationBTN"
-                                android:padding="5dp"
-                                android:textColor="@color/colorBlack"
-                                android:textColorHint="@color/colorBlack"
-                                tools:ignore="KeyboardInaccessibleWidget"/>
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/ic_my_location_black_24dp"
-                                android:layout_alignParentEnd="true"
-                                android:tint="@color/colorBlack"
-                                android:layout_centerVertical="true"
-                                android:id="@+id/myLocationBTN"
-                                android:padding="5dp"/>
-
-                        </RelativeLayout>
+                            android:layout_height="wrap_content"
+                            android:layout_toStartOf="@+id/myLocationBTN"
+                            android:background="@null"
+                            android:clickable="true"
+                            android:drawableStart="@drawable/ic_baseline_location_on_24"
+                            android:drawablePadding="8dp"
+                            android:drawableTint="@color/colorBlack"
+                            android:editable="false"
+                            android:focusable="false"
+                            android:hint="Click here to update your address"
+                            android:padding="5dp"
+                            android:textColor="@color/colorBlack"
+                            android:textColorHint="@color/colorBlack"
+                            android:textSize="14sp"
+                            tools:ignore="KeyboardInaccessibleWidget" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -315,16 +285,18 @@
                             android:gravity="center"
                             android:layout_gravity="center"
                             android:padding="5dp"
+                            android:singleLine="true"
                             android:textStyle="bold"
-                            android:textColor="@color/colorWhite"/>
+                            android:textColor="@color/colorBlack"/>
 
                         <CheckBox
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/male"
                             android:id="@+id/checkMale"
-                            android:textColor="@color/colorWhite"
+                            android:textColor="@color/colorBlack"
                             android:paddingEnd="8dp"
+                            android:singleLine="true"
                             android:textIsSelectable="true"/>
 
                         <CheckBox
@@ -332,26 +304,25 @@
                             android:layout_height="wrap_content"
                             android:text="@string/female"
                             android:id="@+id/checkFemale"
-                            android:textColor="@color/colorWhite"
+                            android:textColor="@color/colorBlack"
                             android:paddingEnd="8dp"
+                            android:singleLine="true"
                             android:textIsSelectable="true"/>
 
                     </LinearLayout>
 
-                    <TextView
+                    <Button
                         android:id="@+id/updateEditProBTN"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button_selector"
+                        android:layout_gravity="end"
+                        android:padding="3dp"
                         android:text="Update"
-                        android:background="@drawable/loginbutton_selector"
-                        android:layout_marginStart="30dp"
-                        android:layout_marginEnd="30dp"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:textColor="@color/colorPrimaryDark"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true" />
+                        android:layout_margin="15dp"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
+                        android:textStyle="bold"/>
 
                 </LinearLayout>
 

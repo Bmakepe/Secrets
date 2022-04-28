@@ -1,15 +1,17 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class PostModel {
-    private String userID, postID, postCaption, postImage, postTime, postPrivacy, postType, videoURL, sharedPost;
+    private String userID, postID, postCaption, postImage, postTime, postPrivacy, postType,
+            videoURL, audioURL, sharedPost, movementID;
     private double longitude, latitude;
+    private boolean commentsAllowed;
 
     public PostModel() {
     }
 
     public PostModel(String userID, String postID, String postCaption, String postImage, String postTime,
-                     String postPrivacy, String postType, String videoURL, String sharedPost,
-                     double longitude, double latitude) {
+                     String postPrivacy, String postType, String videoURL, String audioURL, String sharedPost,
+                     String movementID, double longitude, double latitude, boolean commentsAllowed) {
         this.userID = userID;
         this.postID = postID;
         this.postCaption = postCaption;
@@ -18,9 +20,36 @@ public class PostModel {
         this.postPrivacy = postPrivacy;
         this.postType = postType;
         this.videoURL = videoURL;
+        this.audioURL = audioURL;
         this.sharedPost = sharedPost;
+        this.movementID = movementID;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.commentsAllowed = commentsAllowed;
+    }
+
+    public boolean isCommentsAllowed() {
+        return commentsAllowed;
+    }
+
+    public void setCommentsAllowed(boolean commentsAllowed) {
+        this.commentsAllowed = commentsAllowed;
+    }
+
+    public String getAudioURL() {
+        return audioURL;
+    }
+
+    public void setAudioURL(String audioURL) {
+        this.audioURL = audioURL;
+    }
+
+    public String getMovementID() {
+        return movementID;
+    }
+
+    public void setMovementID(String movementID) {
+        this.movementID = movementID;
     }
 
     public double getLongitude() {

@@ -5,115 +5,70 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/root_view"
+    android:background="@drawable/chatbg"
     tools:context=".GettingStarted.InAppActivities.ChatActivity">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/chatbg"
-        android:scaleType="centerInside"
-        android:layout_below="@+id/chatToolbar"/>
-
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/chatToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/colorPrimaryDark"
-        android:padding="5dp"
-        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:layout_centerVertical="true"
-            android:padding="5dp"
-            android:id="@+id/chatBackBTN"
-            android:tint="@color/white"/>
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profileCIV"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            android:layout_toEndOf="@id/chatBackBTN"
-            android:layout_centerVertical="true"
-            android:src="@drawable/default_profile_display_pic"
-            app:civ_border_color="@color/colorPrimaryDark"
-            app:civ_border_width="1dp"
-            app:civ_border_overlay="true"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="5dp"
-            android:layout_centerVertical="true"
-            android:gravity="center"
-            android:layout_toEndOf="@+id/profileCIV"
-            android:layout_toStartOf="@+id/chatIcons"
-            android:id="@+id/chatNameLayout">
-
-            <TextView
-                android:id="@+id/hisNameTV"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#fff"
-                android:singleLine="true"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/statusTV"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#fff"
-                android:textSize="12sp"
-                android:singleLine="true"
-                android:textStyle="bold|italic"
-                android:visibility="gone" />
-
-        </LinearLayout>
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:elevation="5dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/chatIcons"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true">
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:padding="5dp"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/ic_video_call_black_24dp"
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profileCIV"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_centerVertical="true"
-                android:tint="@color/white"
-                android:layout_margin="5dp"
-                android:id="@+id/videoBTN"/>
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_profile_display_pic"
+                app:civ_border_color="@color/colorBlack"
+                app:civ_border_overlay="true"
+                app:civ_border_width="1dp" />
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/ic_local_phone_black_24dp"
+            <LinearLayout
+                android:id="@+id/chatNameLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:tint="@color/white"
-                android:layout_margin="5dp"
-                android:id="@+id/callBTN"
-                android:layout_toEndOf="@+id/videoBTN"/>
+                android:layout_marginStart="5dp"
+                android:layout_toEndOf="@+id/profileCIV"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/ic_item_menu_icon"
-                android:layout_centerVertical="true"
-                android:tint="@color/white"
-                android:layout_margin="5dp"
-                android:id="@+id/chatMenu"
-                android:layout_toEndOf="@+id/callBTN"/>
+                <TextView
+                    android:id="@+id/hisNameTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/statusTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="10sp"
+                    android:textStyle="normal"
+                    android:visibility="gone"
+                    tools:ignore="SmallSp" />
+
+            </LinearLayout>
 
         </RelativeLayout>
 
-    </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -133,223 +88,85 @@
                 android:padding="5dp"
                 android:text="@string/encryption"
                 android:textColor="@color/colorBlack"
-                android:textSize="12sp"
-                android:textStyle="italic|bold"
+                android:textSize="10sp"
+                android:textStyle="bold"
                 tools:ignore="SmallSp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/chatRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="5dp"
-                android:padding="5dp"
                 android:scrollbars="vertical" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-    <!--<RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        android:background="@drawable/loginbutton_selector"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:padding="5dp"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/bottomBar"
-        android:id="@+id/quotedLayout">
-
-        <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:src="@drawable/ic_close_black_24dp"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/closeQuote"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/bokang_makepe"
-            android:id="@+id/chatOwner"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorBlack"
-            android:layout_toStartOf="@+id/closeQuote"
-            android:singleLine="true"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/messageQuote"
-            android:text="this is quoted from the reply btn"
-            android:textColor="@color/colorBlack"
-            android:textStyle="italic"
-            android:textSize="12sp"
-            android:layout_below="@+id/chatOwner"
-            android:singleLine="true"/>
-
-    </RelativeLayout>-->
-
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="2dp"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_alignParentBottom="true"
         android:id="@+id/bottomBar"
-        android:background="@color/colorPrimaryDark"
-        android:layout_alignParentBottom="true">
+        android:visibility="visible">
+
+        <ImageButton
+            android:id="@+id/attachFiles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@drawable/attach_msg"
+            android:src="@drawable/ic_add_black_24dp"
+            android:visibility="visible"
+            app:tint="@color/colorPrimary" />
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:id="@+id/messageArea"
-            android:visibility="visible"
-            android:layout_centerVertical="true">
+            android:layout_toEndOf="@id/attachFiles"
+            android:background="@drawable/rounded_edittext"
+            android:layout_toStartOf="@+id/confirmationArea"
+            android:layout_margin="2dp">
 
             <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:id="@+id/messageEt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="@null"
                 android:hint="@string/message_hint"
-                android:layout_marginEnd="3dp"
-                android:textStyle="normal"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/voiceBTN"
-                android:drawableStart="@drawable/smiley"
-                android:drawablePadding="5dp"
-                android:textColor="@color/colorBlack"
-                android:layout_centerVertical="true"
-                android:inputType="textCapSentences|textMultiLine"
-                android:background="@color/colorWhite"
-                tools:ignore="Autofill,UnusedAttribute"
-                android:padding="8dp"/>
-
-            <com.makepe.blackout.GettingStarted.RecordingClasses.FrameLayoutFixed
-                android:id="@+id/record_panel"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:background="#ffffff"
-                android:visibility="gone"
-                android:layout_toStartOf="@+id/voiceBTN" >
-
-                <LinearLayout
-                    android:id="@+id/slideText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="10dp"
-                    android:orientation="horizontal" >
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_arrow_left"
-                        android:tint="@color/colorPrimaryDark"/>
-
-                    <TextView
-                        android:id="@+id/slideToCancelTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="slide to the right to cancel"
-                        android:layout_gravity="center_vertical"
-                        android:textStyle="bold"
-                        android:layout_marginLeft="2dp"
-                        android:textColor="#999999"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:background="#ffffffff"
-                    android:orientation="horizontal" >
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="5dp"
-                        android:src="@drawable/online_circle"
-                        android:tint="@color/colorRed"
-                        android:padding="13dp"/>
-
-                    <TextView
-                        android:id="@+id/recording_time_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="00:00"
-                        android:textColor="#4d4c4b"
-                        android:textSize="14sp"/>
-
-                </LinearLayout>
-
-            </com.makepe.blackout.GettingStarted.RecordingClasses.FrameLayoutFixed>
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_mic_black_24dp"
-                android:tint="@color/colorWhite"
-                android:id="@+id/voiceBTN"
-                android:padding="5dp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                android:background="@null"/>
+                android:inputType="textMultiLine"
+                android:maxLines="4"
+                android:minHeight="40dp"
+                android:padding="2dp"
+                android:visibility="visible" />
 
         </RelativeLayout>
 
-       <!-- <RelativeLayout
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
+            android:id="@+id/confirmationArea"
             android:layout_centerVertical="true"
-            android:id="@+id/fabButtons"
-            android:gravity="bottom">
+            android:layout_alignParentEnd="true">
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_mic_black_24dp"
-                android:tint="@color/white"
-                android:gravity="center"
+            <ImageButton
                 android:id="@+id/voiceBTN"
-                app:fabSize="auto"
-                android:layout_marginEnd="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_margin="5dp"
-                tools:ignore="ContentDescription,HardcodedText,UnusedAttribute"
-                android:visibility="visible"/>
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_send_black_24dp"
-                android:tint="@color/white"
-                android:gravity="center"
-                android:id="@+id/sendBTN"
-                app:fabSize="auto"
-                android:layout_marginEnd="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_margin="5dp"
-                android:visibility="gone"
-                tools:ignore="ContentDescription,HardcodedText,UnusedAttribute" />
+                android:background="@drawable/attach_msg"
+                android:padding="5dp"
+                android:src="@drawable/ic_mic_black_24dp"
+                android:visibility="visible"
+                app:tint="@color/colorPrimary" />
 
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/commentLoader"
-                android:visibility="gone" />
-
-        </RelativeLayout>-->
+        </RelativeLayout>
 
     </RelativeLayout>
 

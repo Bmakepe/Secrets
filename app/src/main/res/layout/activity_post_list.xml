@@ -6,33 +6,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.PostListActivity">
 
-    <LinearLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/postListToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/colorPrimaryDark">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_black_24dp"
-            android:id="@+id/postListBackBTN"
-            android:padding="5dp"
-            android:layout_margin="5dp"
-            app:tint="@color/white" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Posts"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@color/white"
-            android:layout_gravity="center_vertical"/>
-
-    </LinearLayout>
+        android:elevation="5dp"
+        android:background="@null"
+        app:title="Posts"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

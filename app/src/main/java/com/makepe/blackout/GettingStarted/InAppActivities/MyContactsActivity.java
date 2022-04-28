@@ -2,10 +2,14 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -16,24 +20,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.FirebaseContactsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserListAdapter;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class MyContactsActivity extends AppCompatActivity {
 
-    ArrayList<ContactsModel> userList;
-    UserAdapter userAdapter;
-    RecyclerView contactsRecycler;
+    private RecyclerView contactsRecycler;
 
-    FirebaseUser firebaseUser;
-    DatabaseReference userReference, followingReference;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference userReference, followingReference, followersReference;
     private ArrayList<String> idList;
 
     @Override
@@ -42,9 +41,9 @@ public class MyContactsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_firebase_contacts);
 
         contactsRecycler = findViewById(R.id.myContactsRecycler);
-
-        userList = new ArrayList<>();
-        userAdapter = new UserAdapter( MyContactsActivity.this, userList);
+        Toolbar contactListToolbar = findViewById(R.id.contactListToolbar);
+        setSupportActionBar(contactListToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
@@ -55,65 +54,29 @@ public class MyContactsActivity extends AppCompatActivity {
         contactsRecycler.setNestedScrollingEnabled(false);
         contactsRecycler.hasFixedSize();
         contactsRecycler.setLayoutManager(new LinearLayoutManager(this));
-        contactsRecycler.setAdapter(userAdapter);
 
         idList = new ArrayList<>();
 
         getMyContacts();
 
-        findViewById(R.id.fBaseBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-
         findViewById(R.id.createGroupBTN).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MyContactsActivity.this, "You will be able to create a new group", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MyContactsActivity.this, CreateGroupActivity.class));
             }
         });
 
-        findViewById(R.id.chatContactsSearch).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(MyContactsActivity.this, "You will be able to search this list", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void getMyContacts() {
-
         followingReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 idList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     idList.add(ds.getKey());
-
-                    userReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            userList.clear();
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                ContactsModel user = ds.getValue(ContactsModel.class);
-
-                                for (String id : idList){
-                                    assert user != null;
-                                    if (user.getUSER_ID().equals(id))
-                                        userList.add(user);
-                                }
-                            }
-                            contactsRecycler.setAdapter(new UserAdapter(MyContactsActivity.this, userList));
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
+                contactsRecycler.setAdapter(new UserListAdapter( MyContactsActivity.this, idList, "goToChats"));
             }
 
             @Override
@@ -121,5 +84,29 @@ public class MyContactsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.contacts_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.contactSearch:
+                Toast.makeText(this, "Search Contacts", Toast.LENGTH_SHORT).show();
+
+            default:
+                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

@@ -3,14 +3,12 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -19,6 +17,8 @@ import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,7 +26,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,27 +33,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.HisTabAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
 import com.makepe.blackout.GettingStarted.Fragments.HisPostsFragment;
 import com.makepe.blackout.GettingStarted.Fragments.HisVideosFragment;
-import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -64,27 +56,26 @@ import static com.google.firebase.storage.FirebaseStorage.getInstance;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
-    FirebaseAuth firebaseAuth;
-    String hisid, myID, hisPhoneName;
+    private String hisid, hisPhoneName;
 
-    CircleImageView hisProfilePic;
-    ImageView hisCoverPic, postNotificationBTN, profileBack, onlineStatus;
-    TextView hisUsername, hisBiography, followersNo, followingNo, postsNo, sendDM, followBTN, hisLocationDetails;
+    private CircleImageView hisProfilePic;
+    private ImageView hisCoverPic;
+    private TextView hisUsername, hisBiography, followersNo, followingNo, postsNo,
+            sendDM, followBTN, hisLocationDetails, aboutTV;
+    private LinearLayout otherUserButtons, hisProfileLocationArea;
 
     private ProgressBar coverLoader, picLoader;
 
     //for his media
-    Dialog picDialog, searchFollowersDialog;
+    private Dialog picDialog;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, postReference;
+    private DatabaseReference userReference, postReference, followersReference, followingReference;
 
-    private int videoCount = 0, postCount = 0;
+    private int videoCount = 0, postCount = 0, totalCount = 0; 
 
-    TabLayout hisTabLayout;
-    ViewPager hisViewPager;
-
-    UniversalFunctions universalFunctions;
+    private UniversalFunctions universalFunctions;
+    private UniversalNotifications notifications;
 
     private double latitude, longitude;
 
@@ -94,23 +85,27 @@ public class ViewProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_profile);
 
+        Toolbar hisProfileToolbar = findViewById(R.id.hisProfileToolbar);
+        setSupportActionBar(hisProfileToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         hisProfilePic = findViewById(R.id.hisProfilePicture);
         hisCoverPic = findViewById(R.id.hisCoverImage);
         hisUsername = findViewById(R.id.hisProfileUsername);
         hisBiography = findViewById(R.id.hisProfileBio);
-        postNotificationBTN = findViewById(R.id.postNotificationBTN);
         sendDM = findViewById(R.id.sendMessageBTN);
-        profileBack = findViewById(R.id.profileBackBTN);
         followBTN = findViewById(R.id.followHimBTN);
-        onlineStatus = findViewById(R.id.hisOnlineStatus);
         postsNo = findViewById(R.id.hisPosts);
         followersNo = findViewById(R.id.hisfollowersNo);
         followingNo = findViewById(R.id.hisFollowingNo);
         coverLoader = findViewById(R.id.hisCoverPicLoader);
         picLoader = findViewById(R.id.hisProPicLoader);
-        hisTabLayout = findViewById(R.id.hisProfileTabs);
-        hisViewPager = findViewById(R.id.hisProfileViewPager);
         hisLocationDetails = findViewById(R.id.hisLocationDetails);
+        otherUserButtons = findViewById(R.id.otherUserButtons);
+        aboutTV = findViewById(R.id.hisProfileAboutTV);
+        hisProfileLocationArea = findViewById(R.id.hisProfileLocationArea);
+        TabLayout hisTabLayout = findViewById(R.id.hisProfileTabs);
+        ViewPager hisViewPager = findViewById(R.id.hisProfileViewPager);
 
         final Intent intent = getIntent();
         hisid = intent.getStringExtra("uid");
@@ -118,10 +113,11 @@ public class ViewProfileActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putString("hisUserID", hisid);
 
-        firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        followersReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid).child("followers");
+        followingReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid).child("following");
 
         HisPostsFragment postsFragment = new HisPostsFragment();
         postsFragment.setArguments(bundle);
@@ -130,15 +126,14 @@ public class ViewProfileActivity extends AppCompatActivity {
         videoFragment.setArguments(bundle);
 
         universalFunctions = new UniversalFunctions(this);
+        notifications = new UniversalNotifications(this); 
 
-        checkUserStatus();
         iniPicPopUp(hisid);
-        getNrPosts();
         getFollowers();
-        isFollowing(hisid, followBTN);
-        checkFollow();
-        getUserInfo(hisid);
-        iniSearchFollowers();
+        checkFollowing();
+        getUserInfo();
+        getNrPosts();
+        universalFunctions.checkActiveStories(hisProfilePic, hisid);
 
         HisTabAdapter viewPagerAdapter = new HisTabAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new HisPostsFragment(), "Posts [" + postCount + "]", hisid);
@@ -146,26 +141,15 @@ public class ViewProfileActivity extends AppCompatActivity {
         hisViewPager.setAdapter(viewPagerAdapter);
         hisTabLayout.setupWithViewPager(hisViewPager);
 
-        if(hisid.equals(myID)){
-            sendDM.setVisibility(View.GONE);
-            postNotificationBTN.setVisibility(View.GONE);
-            followBTN.setVisibility(View.GONE);
+        if(hisid.equals(firebaseUser.getUid())){
+            otherUserButtons.setVisibility(View.GONE);
         }
-
-        postNotificationBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(ViewProfileActivity.this, "post notifications will be switched on", Toast.LENGTH_SHORT).show();
-            }
-        });
 
         sendDM.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if(hisid.equals(firebaseUser.getUid())){
-
-                }else{
+                if(!hisid.equals(firebaseUser.getUid())){
                     Intent intent1 = new Intent(ViewProfileActivity.this, ChatActivity.class);
                     intent1.putExtra("userid", hisid);
                     startActivity(intent1);
@@ -173,17 +157,17 @@ public class ViewProfileActivity extends AppCompatActivity {
             }
         });
 
-        profileBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
         hisProfilePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                picDialog.show();
+                if (!hisid.equals(firebaseUser.getUid()))
+                    picDialog.show();
+                else {
+                    Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
+                    intent1.putExtra("itemID", hisid);
+                    intent1.putExtra("reason", "userImage");
+                    startActivity(intent1);
+                }
             }
         });
 
@@ -200,13 +184,13 @@ public class ViewProfileActivity extends AppCompatActivity {
         followBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(followBTN.getTag().equals("Follow")){
+                if(followBTN.getText().toString().equals("Follow")){
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                             .child("following").child(hisid).setValue(true);
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid)
                             .child("followers").child(firebaseUser.getUid()).setValue(true);
 
-                    universalFunctions.addFollowNotifications(hisid);
+                    notifications.addFollowNotifications(hisid);
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                             .child("following").child(hisid).removeValue();
@@ -250,28 +234,13 @@ public class ViewProfileActivity extends AppCompatActivity {
 
     }
 
-    private void iniSearchFollowers() {
-        searchFollowersDialog = new Dialog(this);
-        searchFollowersDialog.setContentView(R.layout.search_pop_up);
-        searchFollowersDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        searchFollowersDialog.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
-        searchFollowersDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
-
-        searchFollowersDialog.findViewById(R.id.searchBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                searchFollowersDialog.dismiss();
-            }
-        });
-    }
-
-    private void isFollowing(final String userid, final TextView followBTN){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
+    private void checkFollowing(){
+        DatabaseReference referenceFollowing = FirebaseDatabase.getInstance().getReference()
                 .child("Follow").child(firebaseUser.getUid()).child("following");
-        reference.addValueEventListener(new ValueEventListener() {
+        referenceFollowing.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(userid).exists()){
+                if(dataSnapshot.child(hisid).exists()){
                     //executes if following user
                     followBTN.setText("Following");
                 }else{
@@ -287,30 +256,9 @@ public class ViewProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void checkFollow(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(firebaseUser.getUid()).child("following");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(hisid).exists()){
-                    followBTN.setTag("Following");
-                }else{
-                    followBTN.setTag("Follow");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
     public void getFollowers(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(hisid).child("followers");
-        reference.addValueEventListener(new ValueEventListener() {
+
+        followersReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 followersNo.setText(dataSnapshot.getChildrenCount() + "");
@@ -322,12 +270,9 @@ public class ViewProfileActivity extends AppCompatActivity {
             }
         });
 
-        DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(hisid).child("following");
-        reference1.addValueEventListener(new ValueEventListener() {
+        followingReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                 followingNo.setText(dataSnapshot.getChildrenCount() + "");
             }
 
@@ -353,22 +298,21 @@ public class ViewProfileActivity extends AppCompatActivity {
 
         profileBTN.setVisibility(View.GONE);
         videoCallBTN.setImageResource(R.drawable.ic_video_call_black_24dp);
+        universalFunctions.checkActiveStories(proPicPopUp, hisid);
 
-        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.keepSynced(true);
-
-        Query query = reference.orderByChild("USER_ID").equalTo(hisid);
-        query.addValueEventListener(new ValueEventListener() {
+        final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
-                        String proPic = "" + ds.child("ImageURL").getValue();
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    User user = ds.getValue(User.class);
 
-                        try{
+                    assert user != null;
+                    if (user.getUSER_ID().equals(hisid)) {
+                        try {
                             //load pro pic into imageView
-                            Picasso.get().load(proPic).placeholder(R.drawable.default_profile_display_pic).into(proPicPopUp);
-                        }catch (Exception ignored){
+                            Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(proPicPopUp);
+                        } catch (Exception ignored) {
 
                         }
                     }
@@ -400,16 +344,43 @@ public class ViewProfileActivity extends AppCompatActivity {
         proPicPopUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
-                intent1.putExtra("itemID", hisid);
-                intent1.putExtra("reason", "userImage");
-                startActivity(intent1);
-                picDialog.dismiss();
+                if (proPicPopUp.getTag().equals("storyActive")){
+                    AlertDialog alertDialog = new AlertDialog.Builder(ViewProfileActivity.this).create();
+                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "View Picture",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
+                                    intent1.putExtra("itemID", hisid);
+                                    intent1.putExtra("reason", "userImage");
+                                    startActivity(intent1);
+                                    dialogInterface.dismiss();
+                                }
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "View Stories",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(ViewProfileActivity.this, StoryActivity.class);
+                                    intent.putExtra("userid", hisid);
+                                    startActivity(intent);
+                                    dialogInterface.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                }else if (proPicPopUp.getTag().equals("noStories")){
+                    Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
+                    intent1.putExtra("itemID", hisid);
+                    intent1.putExtra("reason", "userImage");
+                    startActivity(intent1);
+                    picDialog.dismiss();
+                }
             }
         });
+
     }
 
-    private void getUserInfo(final String hisid) {
+    private void getUserInfo() {
 
         List<ContactsModel> phoneBook = new ArrayList<>();
         ContactsList contactsList= new ContactsList(phoneBook, ViewProfileActivity.this);
@@ -423,11 +394,13 @@ public class ViewProfileActivity extends AppCompatActivity {
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         User user = snapshot.getValue(User.class);
 
+                        assert user != null;
                         if (user.getUSER_ID().equals(hisid)){
                                 hisUsername.setVisibility(View.VISIBLE);
                                 hisBiography.setVisibility(View.VISIBLE);
 
                                 hisBiography.setText(user.getBio());
+                                aboutTV.setText("About " + user.getUsername());
 
                                 for(ContactsModel contactsModel: finalContacts){
 
@@ -456,34 +429,8 @@ public class ViewProfileActivity extends AppCompatActivity {
                                 try{
                                     latitude = user.getLatitude();
                                     longitude = user.getLongitude();
-                                    //find address, country, state, city
-
-                                    Geocoder geocoder;
-                                    List<Address> addresses;
-                                    geocoder = new Geocoder(ViewProfileActivity.this, Locale.getDefault());
-
-                                    try{
-                                        addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                                        String address = addresses.get(0).getAddressLine(0);//complete address
-                                        hisLocationDetails.setText(address);
-                                        hisLocationDetails.setVisibility(View.VISIBLE);
-
-                                    }catch (Exception e){
-                                        Toast.makeText(ViewProfileActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
+                                    universalFunctions.findAddress(latitude, longitude, hisLocationDetails, hisProfileLocationArea);
                                 }catch (NullPointerException ignored){}
-
-
-                                try{
-                                    if(user.getOnlineStatus().equals("online")){
-                                        onlineStatus.setVisibility(View.VISIBLE);
-                                    }else{
-                                        onlineStatus.setVisibility(View.VISIBLE);
-                                        onlineStatus.setImageResource(R.drawable.offline_circle);
-                                    }
-                                }catch (Exception e){
-                                    Toast.makeText(ViewProfileActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
                             }
 
                     }
@@ -501,22 +448,19 @@ public class ViewProfileActivity extends AppCompatActivity {
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int i = 0;
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                int totalCount = 0;
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     PostModel post = snapshot.getValue(PostModel.class);
-                    if(post.getUserID().equals(hisid)){
-                        if (post.getPostType().equals("videoPost"))
-                            videoCount++;
-                    }
-                    if(post.getUserID().equals(hisid)){
-                        if (!post.getPostType().equals("videoPost"))
-                            postCount++;
+                    assert post != null;
+
+                    if (post.getUserID().equals(hisid) && post.getPostType().equals("videoPost")) {
+                        videoCount++;
+                    } else if (post.getUserID().equals(hisid) && !post.getPostType().equals("videoPost")){
+                        postCount++;
                     }
                 }
-                i = postCount + videoCount;
-
-                postsNo.setText(String.valueOf(i));
-
+                totalCount = videoCount + postCount;
+                postsNo.setText(String.valueOf(totalCount));
             }
 
             @Override
@@ -526,54 +470,35 @@ public class ViewProfileActivity extends AppCompatActivity {
         });
     }
 
-    public void checkUserStatus(){
-
-       try{
-           FirebaseUser user = firebaseAuth.getCurrentUser();
-           if(user != null){
-               myID = user.getUid();
-           }else{
-               startActivity(new Intent(ViewProfileActivity.this, MainActivity.class));
-               finish();
-           }
-       }catch (NullPointerException e){
-           Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-       }
-    }
-
-    @Override
-    protected void onStart() {
-        checkUserStatus();
-        checkOnlineStatus("online");
-        super.onStart();
-    }
-
-    private void checkOnlineStatus(String status){
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users").child(myID);
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("onlineStatus", status);
-        dbRef.updateChildren(hashMap);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //set last seen time
-
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        checkOnlineStatus(timestamp);
-    }
-
-    @Override
-    protected void onResume() {
-        checkOnlineStatus("online");
-        super.onResume();
-    }
-
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
-        return super.onSupportNavigateUp();
+        return true;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!hisid.equals(firebaseUser.getUid()))
+            getMenuInflater().inflate(R.menu.his_profile_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.postNotifications:
+                Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.report:
+                Intent intent1  = new Intent(ViewProfileActivity.this, ReportActivity.class);
+                intent1.putExtra("reported", hisid);
+                startActivity(intent1);
+                return true;
+
+            default:
+                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
 }

@@ -2,12 +2,14 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -32,23 +34,30 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FeedbackActivity extends AppCompatActivity {
 
-    CircleImageView feedbackPic;
-    EditText nameET, numberET, messageET;
-    TextView submitBTN, rateCounter;
+    private CircleImageView feedbackPic;
+    private EditText nameET, numberET, messageET;
+    private Button submitBTN;
+    private TextView rateCounter;
 
-    DatabaseReference userRef, enquiryRef;
-    FirebaseUser firebaseUser;
+    private DatabaseReference userRef, enquiryRef;
+    private FirebaseUser firebaseUser;
 
-    String name, number, message;
+    private String name, number, message;
 
-    RatingBar ratingBar;
-    float rateValue;
+    private RatingBar ratingBar;
+    private float rateValue;
+
+    private Toolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feedback);
+
+        toolbar = findViewById(R.id.feedback_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         feedbackPic = findViewById(R.id.feedbackPic);
         nameET = findViewById(R.id.feedbackName);
@@ -126,13 +135,6 @@ public class FeedbackActivity extends AppCompatActivity {
 
             }
         });
-
-        findViewById(R.id.feedbackBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
     }
 
     private void getUserDetails() {
@@ -190,5 +192,11 @@ public class FeedbackActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

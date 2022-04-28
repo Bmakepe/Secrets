@@ -25,21 +25,24 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
+import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.R;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class UniversalFunctions {
     private Context context;
-    FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-    DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
-    DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("Posts");
-    DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
-    DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
-    DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
 
+    private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
+    private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("Posts");
+    private DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
+    private DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
+    private DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
 
     public UniversalFunctions(Context context) {
         this.context = context;
@@ -48,19 +51,20 @@ public class UniversalFunctions {
     public UniversalFunctions() {
     }
 
-    public void findAddress(PostModel listItem, TextView postCheckIn) {
+    public void findAddress(double latitude, double longitude, TextView postCheckIn, LinearLayout locationArea) {
         //find address, country, state, city
         try {
             Geocoder geocoder;
             List<Address> addresses;
             geocoder = new Geocoder(context, Locale.getDefault());
 
-            addresses = geocoder.getFromLocation(listItem.getLatitude(), listItem.getLongitude(), 1);
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
 
             String address = addresses.get(0).getAddressLine(0);//complete address
 
             postCheckIn.setText(address);
             postCheckIn.setVisibility(View.VISIBLE);
+            locationArea.setVisibility(View.VISIBLE);
         }catch (Exception ignored){}
     }
 
@@ -136,22 +140,6 @@ public class UniversalFunctions {
 
             }
         });
-    }
-
-    public void addLikesNotifications(String userid, String postid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
-        String timeStamp = String.valueOf(System.currentTimeMillis());
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-
-        hashMap.put("userid", firebaseUser.getUid());
-        hashMap.put("text", "liked your post");
-        hashMap.put("postid", postid);
-        hashMap.put("ispost", true);
-        hashMap.put("isStory", false);
-        hashMap.put("timeStamp", timeStamp);
-
-        reference.push().setValue(hashMap);
     }
 
     public void beginDelete(String pId, String postImage) {
@@ -244,37 +232,58 @@ public class UniversalFunctions {
         });
     }
 
-    public void addVideoLikesNotification(String postID, String userID) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userID);
-        String timeStamp = String.valueOf(System.currentTimeMillis());
+    public void checkActiveStories(CircleImageView avatarIv, String userID) {
+        DatabaseReference storyReference = FirebaseDatabase.getInstance().getReference("Story").child(userID);
+        storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    Story story = ds.getValue(Story.class);
 
-        String key = reference.push().getKey();
+                    long currentTime = System.currentTimeMillis();
 
-        HashMap<String, Object> hashMap = new HashMap<>();
+                    assert story != null;
+                    if (currentTime > story.getTimeStart() && currentTime < story.getTimeEnd()){
+                        avatarIv.setBorderColor(context.getResources().getColor(R.color.colorGreen));
+                        avatarIv.setTag("storyActive");
+                    }else{
+                        avatarIv.setTag("noStories");
+                    }
+                }
+            }
 
-        hashMap.put("notificationID", key);
-        hashMap.put("userid", firebaseUser.getUid());
-        hashMap.put("text", "liked your video");
-        hashMap.put("postid", postID);
-        hashMap.put("ispost", true);
-        hashMap.put("timeStamp", timeStamp);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-        reference.child(key).setValue(hashMap);
+            }
+        });
+
     }
 
-    public void addFollowNotifications(String user_id) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(user_id);
-        String timeStamp = String.valueOf(System.currentTimeMillis());
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-
-        hashMap.put("userid", firebaseUser.getUid());
-        hashMap.put("text", "started following you");
-        hashMap.put("postid", "");
-        hashMap.put("ispost", false);
-        hashMap.put("isStory", false);
-        hashMap.put("timeStamp", timeStamp);
-
-        reference.push().setValue(hashMap);
+    public void addView(String storyID) {
+        FirebaseDatabase.getInstance().getReference("Views")
+                .child(storyID).child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .setValue(true);
     }
+
+    public void seenNumber(String storyID, TextView seen_number) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Views")
+                .child(storyID);
+
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.getChildrenCount() == 1)
+                    seen_number.setText(snapshot.getChildrenCount() + " View");
+                else
+                    seen_number.setText(snapshot.getChildrenCount() + " Views");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
 }

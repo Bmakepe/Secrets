@@ -122,7 +122,8 @@ public class HisPostsFragment extends Fragment {
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     if(modelPost.getPostImage().equals("noImage")
                             && hisUserID.equals(modelPost.getUserID())
-                            && !modelPost.getPostType().equals("videoPost")){
+                            && !modelPost.getPostType().equals("videoPost")
+                            && !modelPost.getPostType().equals("sharedVideoPost")){
                         postList.add(modelPost);
                         i++;
                     }

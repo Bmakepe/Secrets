@@ -1,24 +1,16 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -27,53 +19,40 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.makepe.blackout.GettingStarted.Fragments.ProfileFragment;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenVideoActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PostDetailActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SharePostActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
-import com.makepe.blackout.GettingStarted.Models.CommentModel;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -82,17 +61,29 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     private Context context;
     private List<PostModel> postList;
     private FirebaseUser firebaseUser;
-    private DatabaseReference postReference, userReference;
+    private DatabaseReference postReference, userReference, movementReference,
+            movementPostReference, followingReference;
 
     private UniversalFunctions universalFunctions;
+    private UniversalNotifications universalNotifications;
     private GetTimeAgo getTimeAgo;
+    private AudioPlayer audioPlayer;
 
     public static final int TEXT_POST_ITEM = 100;
     public static final int IMAGE_POST_ITEM = 200;
     public static final int SHARED_TEXT_POST_ITEM = 300;
-    public static final int VIDEO_POST_ITEM = 400;
-    public static final int SHARED_VIDEO_POST_ITEM = 500;
-    public static final int SHARED_IMAGE_POST_ITEM = 600;
+    public static final int SHARED_IMAGE_POST_ITEM = 400;
+    public static final int AUDIO_POST_ITEM = 500;
+    public static final int AUDIO_IMAGE_POST_ITEM = 600;
+    public static final int SHARED_AUDIO_TEXT_POST = 700;
+    public static final int SHARED_AUDIO_IMAGE_POST = 800;
+    public static final int SHARED_TEXT_AUDIO_POST = 900;
+    public static final int SHARED_TEXT_AUDIO_IMAGE_POST = 1000;
+    public static final int SHARED_AUDIO_AUDIO_IMAGE_POST = 1100;
+    public static final int SHARED_AUDIO_AUDIO_POST = 1200;
+
+    private boolean isFollowing = false;
+    private String followingText;
 
     public PostAdapter(Context context, List<PostModel> postList) {
         this.context = context;
@@ -108,9 +99,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             case TEXT_POST_ITEM:
                 return new MyHolder(LayoutInflater.from(context).inflate(R.layout.raw_post, parent, false));
 
-            case VIDEO_POST_ITEM:
-                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.raw_video_post, parent, false));
-
             case IMAGE_POST_ITEM:
                 return new MyHolder(LayoutInflater.from(context).inflate(R.layout.raw_image_post, parent, false));
 
@@ -120,8 +108,29 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             case SHARED_IMAGE_POST_ITEM:
                 return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_image_post_item, parent, false));
 
-            case SHARED_VIDEO_POST_ITEM:
-                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_video_post_item, parent, false));
+            case AUDIO_POST_ITEM:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.audio_post_item, parent, false));
+
+            case AUDIO_IMAGE_POST_ITEM:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.audio_image_post_item, parent, false));
+
+            case SHARED_AUDIO_IMAGE_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_image_post_item, parent, false));
+
+            case SHARED_AUDIO_TEXT_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_text_item, parent, false));
+
+            case SHARED_TEXT_AUDIO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_text_audio_post_item, parent, false));
+
+            case SHARED_TEXT_AUDIO_IMAGE_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_text_audio_image_item, parent, false));
+
+            case SHARED_AUDIO_AUDIO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_audio_post_item, parent, false));
+
+            case SHARED_AUDIO_AUDIO_IMAGE_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_audio_image_item, parent, false));
 
             default:
                 throw new IllegalStateException("Unexpected value" + viewType);
@@ -131,39 +140,75 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
 
+        PostModel post = postList.get(position);
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        PostModel post = postList.get(position);
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
+        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
+        followingReference = FirebaseDatabase.getInstance().getReference().child("Follow")
+                .child(firebaseUser.getUid()).child("following");
         universalFunctions = new UniversalFunctions(context);
+        universalNotifications = new UniversalNotifications(context);
         getTimeAgo = new GetTimeAgo();
+
+        getAdapterFunctions(post, holder);
 
         switch (getItemViewType(position)){
             case IMAGE_POST_ITEM:
                 displayImagePost(holder, post);
                 break;
 
-            case VIDEO_POST_ITEM:
-                displayVideoPost(holder, post);
-                break;
-
             case TEXT_POST_ITEM:
                 displayTextPost(holder, post);
                 break;
 
+            case AUDIO_POST_ITEM:
+                displayAudioPost(holder, post);
+                break;
+
+            case AUDIO_IMAGE_POST_ITEM:
+                displayAudioImagePost(holder, post);
+                break;
+
             case SHARED_TEXT_POST_ITEM:
-                displayTextPost(holder, post);
-                getSharedTextPost(holder, post);
+                displaySharedTextPost(holder, post);
+                getSharedPostButtons(holder, post);
                 break;
 
             case SHARED_IMAGE_POST_ITEM:
-                displayTextPost(holder, post);
-                getSharedImagePost(holder, post);
+                displaySharedImagePost(holder, post);
+                getSharedPostButtons(holder, post);
                 break;
-                
-            case SHARED_VIDEO_POST_ITEM:
-                displayTextPost(holder, post);
-                getSharedVideoPost(holder, post);
+
+            case SHARED_AUDIO_IMAGE_POST:
+                displaySharedAudioImageTextPost(holder, post);
+                getSharedPostButtons(holder, post);
+                break;
+
+            case SHARED_AUDIO_TEXT_POST:
+                displaySharedAudioTextPost(holder, post);
+                getSharedPostButtons(holder, post);
+                break;
+
+            case SHARED_TEXT_AUDIO_POST:
+                displaySharedTextAudioPost(holder, post);
+                getSharedPostButtons(holder, post);
+                break;
+
+            case SHARED_TEXT_AUDIO_IMAGE_POST:
+                displaySharedTextImageAudioPost(holder, post);
+                getSharedPostButtons(holder, post);
+                break;
+
+            case SHARED_AUDIO_AUDIO_POST:
+                displaySharedAudioAudioPost(holder, post);
+                getSharedPostButtons(holder, post);
+                break;
+
+            case SHARED_AUDIO_AUDIO_IMAGE_POST:
+                displayAudioImageAudioPost(holder, post);
+                getSharedPostButtons(holder, post);
                 break;
 
             default:
@@ -172,181 +217,376 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     }
 
-    //----sharing functions
-    private void getSharedVideoPost(MyHolder holder, PostModel post) {
-        postReference.addValueEventListener(new ValueEventListener() {
+    //-----------for retrieving shared posts only
+    private void displaySharedTextPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
 
-                    if (postModel.getPostID().equals(post.getSharedPost())){
-                        getSharedPostOwner(holder, postModel);
-                        holder.sharedPostDesc.setText(postModel.getPostCaption());
+                    assert model != null;
+                    displayTextPost(holder, model);
 
-                        try{
-                            universalFunctions.findAddress(postModel, holder.sharedPostCheckIn);
-                        }catch (Exception ignored){}
+                    postReference.child(model.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
 
-                        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context);
-                            holder.sharedPostDate.setText(timeStamp);
-                        }catch (NumberFormatException n){
-                            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                        }//for converting timestamp
+                                assert sharedPost != null;
+                                holder.sharedPostDesc.setText(sharedPost.getPostCaption());
 
-                        try{
-                            holder.sharedPostVideoView.setVideoURI(Uri.parse(postModel.getVideoURL()));
-                            holder.sharedPostVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                @Override
-                                public void onPrepared(MediaPlayer mediaPlayer) {
-                                    mediaPlayer.start();
-                                    holder.sharedProgressBar.setVisibility(View.GONE);
-                                    mediaPlayer.setLooping(true);
-                                    mediaPlayer.setVolume(0f, 0f);
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.sharedPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(sharedPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
 
-                                    holder.sharedPostVolumeBTN.setImageResource(R.drawable.ic_baseline_volume_up_24);
+                                try{
+                                    universalFunctions.findAddress(sharedPost.getLatitude(), sharedPost.getLongitude(),  holder.sharedPostCheckIn, holder.sharedLocationArea);
+                                }catch (Exception ignored){}
 
-                                    float videoRatio = mediaPlayer.getVideoWidth() / (float)mediaPlayer.getVideoHeight();
-                                    float screenRatio = holder.sharedPostVideoView.getWidth() / (float)holder.sharedPostVideoView.getHeight();
-                                    float scale  = videoRatio / screenRatio;
-                                    if (scale >= 1f){
-                                        holder.sharedPostVideoView.setScaleX(scale);
-                                    }else {
-                                        holder.sharedPostVideoView.setScaleY(1f / scale);
-                                    }
-                                }
-                            });
-
-                            holder.sharedPostVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mediaPlayer) {
-                                    mediaPlayer.start();
-                                }
-                            });
-                        }catch (NullPointerException ignored){}
-
-                        holder.sharedPostVideoView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-
-                                Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
-                                videoIntent.putExtra("videoID", postModel.getPostID());
-                                videoIntent.putExtra("reason", "random");
-                                videoIntent.putExtra("userID", post.getUserID());
-                                context.startActivity(videoIntent);
+                                getSharedPostOwner(holder, sharedPost);
                             }
-                        });
-
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getSharedImagePost(MyHolder holder, PostModel post) {
-        postReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
-
-                    if (postModel.getPostID().equals(post.getSharedPost())){
-                        holder.sharedPostDesc.setText(postModel.getPostCaption());
-
-                        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context);
-                            holder.sharedPostDate.setText(timeStamp);
-                        }catch (NumberFormatException n){
-                            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                        }//for converting timestamp
-
-                        try{
-                            Picasso.get().load(postModel.getPostImage()).into(holder.sharedPostImage);
-                            holder.sharedProgressBar.setVisibility(View.GONE);
-                        }catch (NullPointerException ignored){}
-
-                        getSharedPostOwner(holder, postModel);
-
-                        try{
-                            universalFunctions.findAddress(postModel, holder.sharedPostCheckIn);
-                        }catch (Exception ignored){}
-
-                        holder.sharedPostImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent imageIntent = new Intent(context, FullScreenImageActivity.class);
-                                imageIntent.putExtra("itemID", postModel.getPostID());
-                                imageIntent.putExtra("reason", "postImage");
-                                context.startActivity(imageIntent);
-                            }
-                        });
-
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getSharedTextPost(MyHolder holder, PostModel post) {
-        postReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
-
-                    if (postModel.getPostID().equals(post.getSharedPost())){
-                        holder.sharedPostDesc.setText(postModel.getPostCaption());
-
-                        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), context);
-                            holder.sharedPostDate.setText(timeStamp);
-                        }catch (NumberFormatException n){
-                            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                        }//for converting timestamp
-
-                         getSharedPostOwner(holder, postModel);
-
-                        try{
-                            universalFunctions.findAddress(postModel, holder.sharedPostCheckIn);
-                        }catch (Exception ignored){}
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getSharedPostOwner(MyHolder holder, PostModel post) {
-        userReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    User user = ds.getValue(User.class);
-
-                    if (user.getUSER_ID().equals(post.getUserID())){
-                        try{
-                            Picasso.get().load(user.getImageURL()).into(holder.sharedPostProPic);
-                        }catch (NullPointerException e){
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.sharedPostProPic);
                         }
 
-                        holder.sharedPostUsername.setText(user.getUsername());
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displaySharedImagePost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+
+                    assert postModel != null;
+                    displayTextPost(holder, postModel);
+
+                    postReference.child(post.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+                                holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.sharedPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(sharedPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                try{
+                                    Picasso.get().load(sharedPost.getPostImage()).into(holder.sharedPostImage);
+                                    holder.sharedProgressBar.setVisibility(View.GONE);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.sharedPostImage);
+                                }
+
+                                getSharedPostOwner(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displaySharedAudioTextPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+
+                    assert postModel != null;
+                    displayAudioPost(holder, postModel);
+
+                    postReference.child(postModel.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+                                holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.sharedPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(sharedPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                try{
+                                    universalFunctions.findAddress(sharedPost.getLatitude(), sharedPost.getLongitude(),  holder.sharedPostCheckIn, holder.sharedLocationArea);
+                                }catch (Exception ignored){}
+
+                                getSharedPostOwner(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displaySharedAudioImageTextPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+                    displayAudioPost(holder, model);
+
+                    postReference.child(model.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+                                holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.sharedPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(sharedPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                try{
+                                    Picasso.get().load(sharedPost.getPostImage()).into(holder.sharedPostImage);
+                                    holder.sharedProgressBar.setVisibility(View.GONE);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.sharedPostImage);
+                                }
+
+                                getSharedPostOwner(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displaySharedTextAudioPost(MyHolder holder, PostModel post) {
+
+        audioPlayer = new AudioPlayer(context, holder.playBTN,
+                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+                    displayTextPost(holder, model);
+
+                    postReference.child(model.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+
+                                getSharedPostOwner(holder, sharedPost);
+                                getSharedAudio(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displaySharedTextImageAudioPost(MyHolder holder, PostModel post) {
+
+        audioPlayer = new AudioPlayer(context, holder.playBTN,
+                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+                    displayTextPost(holder, model);
+
+                    postReference.child(model.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+
+                                try{
+                                    Picasso.get().load(sharedPost.getPostImage()).into(holder.sharedPostImage);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.sharedPostImage);
+                                }
+
+                                getSharedPostOwner(holder, sharedPost);
+                                getSharedAudio(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displayAudioImageAudioPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+
+                    assert postModel != null;
+                    displayAudioPost(holder, postModel);
+
+                    postReference.child(postModel.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+
+                                getSharedPostOwner(holder, sharedPost);
+                                getSharedAudio(holder, sharedPost);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
+    private void displaySharedAudioAudioPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+
+                    assert postModel != null;
+                    displayAudioPost(holder, postModel);
+
+                    postReference.child(postModel.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel sharedPost = snapshot.getValue(PostModel.class);
+
+                                assert sharedPost != null;
+
+                                try{
+                                    Picasso.get().load(sharedPost.getPostImage()).into(holder.sharedPostImage);
+                                }catch (NullPointerException e) {
+                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.sharedPostImage);
+                                }
+
+                                getSharedPostOwner(holder, sharedPost);
+                                getSharedAudio(holder, sharedPost);
+
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                 }
             }
 
@@ -358,154 +598,401 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     }
 
 
-    //normal post functions
-    private void displayTextPost(MyHolder holder, PostModel post) {
-
-        getPostDetails(post, holder);
-        checkOnlineStatus(post.getUserID(), holder);
-        iniPicPopUp(context, holder, post.getUserID());
-        universalFunctions.getCommentsCount(post.getPostID(), holder.commentCounter);
-        updateUserInfo(holder, post.getUserID());
-
-        universalFunctions.isLiked(post.getPostID(), holder.postLikeBTN);
-        universalFunctions.nrLikes(holder.likeCounter, post.getPostID());
-        universalFunctions.isSaved(post.getPostID(), holder.savePostBTN);
-
-        universalOnClickListeners(post, holder);
-
-    }
-
+    //-----------for retrieving normal posts details
     private void displayImagePost(MyHolder holder, PostModel post) {
-        getImagePostDetails(post, holder);
-        checkOnlineStatus(post.getUserID(), holder);
-        iniPicPopUp(context, holder, post.getUserID());
-        universalFunctions.getCommentsCount(post.getPostID(), holder.commentCounter);
-        updateUserInfo(holder, post.getUserID());
-
-        universalFunctions.isLiked(post.getPostID(), holder.postLikeBTN);
-        universalFunctions.nrLikes(holder.likeCounter, post.getPostID());
-        universalFunctions.isSaved(post.getPostID(), holder.savePostBTN);
-
-        universalOnClickListeners(post, holder);
-
-        holder.postImage.setOnClickListener(new View.OnClickListener() {
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onClick(View view) {
-                Intent intent1 = new Intent(context, FullScreenImageActivity.class);
-                intent1.putExtra("itemID", post.getPostID());
-                intent1.putExtra("reason", "postImage");
-                context.startActivity(intent1);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                //for retrieving normal image posts only
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+                    assert model != null;
+                    holder.postCaption.setText(model.getPostCaption());
+
+                    try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                        holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(model.getPostTime()), context));
+                    }catch (NumberFormatException n){
+                        Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                    }//for converting timestamp
+
+                    try{
+                        Picasso.get().load(model.getPostImage()).into(holder.postImage);
+                        holder.imageLoader.setVisibility(View.GONE);
+                    }catch (NullPointerException e){
+                        Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
+                    }
+
+                    getPostUserDetails(holder, post);
+                }else{
+                    //for retrieving normal movement image posts only
+                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+
+                                PostModel movementPost = snapshot.getValue(PostModel.class);
+                                assert movementPost != null;
+                                holder.postCaption.setText(movementPost.getPostCaption());
+                                try{
+                                    Picasso.get().load(movementPost.getPostImage()).into(holder.postImage);
+                                    holder.imageLoader.setVisibility(View.GONE);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
+                                }
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(movementPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+                                getMovementUserDetails(holder, post);
+                            }else{
+                                Toast.makeText(context, "Could not retrieve post from database", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }
 
-    private void getImagePostDetails(PostModel post, MyHolder holder) {
+    private void displayTextPost(MyHolder holder, PostModel post) {
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
 
-        holder.postCaption.setText(post.getPostCaption());
+                    assert model != null;
+                    holder.postCaption.setText(model.getPostCaption());
 
-        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), context);
-            holder.postTimeStamp.setText(timeStamp);
-        }catch (NumberFormatException n){
-            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-        }//for converting timestamp
+                    try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                        holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(model.getPostTime()), context));
+                    }catch (NumberFormatException n){
+                        Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                    }//for converting timestamp
 
-        try{
-            Picasso.get().load(post.getPostImage()).into(holder.postImage);
-        }catch (Exception e){
-            Toast.makeText(context, "could not upload post pic", Toast.LENGTH_SHORT).show();
-        }
+                    getPostUserDetails(holder, post);
+
+                }else{
+                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel movementPost = snapshot.getValue(PostModel.class);
+
+                                assert movementPost != null;
+                                holder.postCaption.setText(movementPost.getPostCaption());
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(movementPost.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                getMovementUserDetails(holder, post);
+                            }else{
+                                Toast.makeText(context, "Could not retrieve post from database", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
-    private void displayVideoPost(MyHolder holder, PostModel post) {
+    private void displayAudioImagePost(MyHolder holder, PostModel post) {
 
-        getVideoPostDetails(post, holder);
-        checkOnlineStatus(post.getUserID(), holder);
-        iniPicPopUp(context, holder, post.getUserID());
-        universalFunctions.getCommentsCount(post.getPostID(), holder.commentCounter);
-        updateUserInfo(holder, post.getUserID());
-
-        universalFunctions.isLiked(post.getPostID(), holder.postLikeBTN);
-        universalFunctions.nrLikes(holder.likeCounter, post.getPostID());
-        universalFunctions.isSaved(post.getPostID(), holder.savePostBTN);
-
-        universalOnClickListeners(post, holder);
-
-        holder.postVideoView.setOnClickListener(new View.OnClickListener() {
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onClick(View view) {
-                Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
-                videoIntent.putExtra("videoID", post.getPostID());
-                videoIntent.putExtra("reason", "random");
-                videoIntent.putExtra("userID", post.getUserID());
-                context.startActivity(videoIntent);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+                    try{
+                        Picasso.get().load(model.getPostImage()).into(holder.postImage);
+                        holder.imageLoader.setVisibility(View.GONE);
+                    }catch (NullPointerException e){
+                        Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
+                    }
+
+                    try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                        holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(model.getPostTime()), context));
+                    }catch (NumberFormatException n){
+                        Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                    }//for converting timestamp
+
+                    try{
+                        universalFunctions.findAddress(model.getLatitude(), model.getLongitude(), holder.rPostLocation, holder.locationArea);
+                    }catch (Exception ignored){}
+
+                    getPostUserDetails(holder, model);
+                    getNormalPostAudio(holder, model);
+
+                }else{
+                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel postModel = snapshot.getValue(PostModel.class);
+
+                                assert postModel != null;
+                                try{
+                                    Picasso.get().load(postModel.getPostImage()).into(holder.postImage);
+                                    holder.imageLoader.setVisibility(View.GONE);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
+                                }
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                try{
+                                    universalFunctions.findAddress(postModel.getLatitude(), postModel.getLongitude(), holder.rPostLocation, holder.locationArea);
+                                }catch (Exception ignored){}
+
+                                getMovementUserDetails(holder, postModel);
+                                getNormalPostAudio(holder, postModel);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void displayAudioPost(MyHolder holder, PostModel post) {
+
+        postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+
+                    try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                        holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(model.getPostTime()), context));
+                    }catch (NumberFormatException n){
+                        Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                    }//for converting timestamp
+
+                    try{
+                        universalFunctions.findAddress(model.getLatitude(), model.getLongitude(), holder.rPostLocation, holder.locationArea);
+                    }catch (Exception ignored){}
+
+                    getPostUserDetails(holder, model);
+                    getNormalPostAudio(holder, model);
+
+                }else{
+                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                PostModel postModel = snapshot.getValue(PostModel.class);
+
+                                assert postModel != null;
+
+                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context));
+                                }catch (NumberFormatException n){
+                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                                }//for converting timestamp
+
+                                try{
+                                    universalFunctions.findAddress(postModel.getLatitude(), postModel.getLongitude(), holder.rPostLocation, holder.locationArea);
+                                }catch (Exception ignored){}
+
+                                getMovementUserDetails(holder, postModel);
+                                getNormalPostAudio(holder, postModel);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
 
     }
 
-    private void getVideoPostDetails(PostModel post, MyHolder holder) {
-        holder.postCaption.setText(post.getPostCaption());
 
-        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), context);
-            holder.postTimeStamp.setText(timeStamp);
-        }catch (NumberFormatException ignored){
-            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-        }//for converting timestamp
+    //-----------for retrieving user details
+    private void getPostUserDetails(MyHolder holder, PostModel post) {
+        userReference.child(post.getUserID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    User user = snapshot.getValue(User.class);
+                    assert user != null;
+                    holder.postUsername.setText(user.getUsername());
 
-        try{
-            holder.postVideoView.setVideoURI(Uri.parse(post.getVideoURL()));
-            holder.postVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    mediaPlayer.start();
-                    holder.videoLoader.setVisibility(View.GONE);
-                    mediaPlayer.setLooping(true);
-                    mediaPlayer.setVolume(0f, 0f);
-
-                    holder.volumeBTN.setImageResource(R.drawable.ic_baseline_volume_up_24);
-
-                    float videoRatio = mediaPlayer.getVideoWidth() / (float)mediaPlayer.getVideoHeight();
-                    float screenRatio = holder.postVideoView.getWidth() / (float)holder.postVideoView.getHeight();
-                    float scale  = videoRatio / screenRatio;
-                    if (scale >= 1f){
-                        holder.postVideoView.setScaleX(scale);
-                    }else {
-                        holder.postVideoView.setScaleY(1f / scale);
+                    try{
+                        Picasso.get().load(user.getImageURL()).into(holder.postProPic);
+                    }catch (NullPointerException e){
+                        Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.postProPic);
                     }
                 }
-            });
+            }
 
-            holder.postVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    mediaPlayer.start();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getMovementUserDetails(MyHolder holder, PostModel post) {
+        movementReference.child(post.getMovementID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    Movement movement = snapshot.getValue(Movement.class);
+
+                    userReference.child(post.getUserID()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                User user = snapshot.getValue(User.class);
+                                holder.postUsername.setText(user.getUsername() + " > " + movement.getMovementName());
+
+                                try{
+                                    Picasso.get().load(user.getImageURL()).into(holder.postProPic);
+                                }catch (NullPointerException e){
+                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.postProPic);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                 }
-            });
-        }catch (NullPointerException ignored){}
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSharedPostOwner(MyHolder holder, PostModel sharedPost) {
+        userReference.child(sharedPost.getUserID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    User user = snapshot.getValue(User.class);
+
+                    holder.sharedPostUsername.setText(user.getUsername());
+
+                    try{
+                        Picasso.get().load(user.getImageURL()).into(holder.sharedPostProPic);
+                    }catch (NullPointerException e){
+                        Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.sharedPostProPic);
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 
-    //post retrieval functions
-    private void universalOnClickListeners(PostModel post, MyHolder holder) {
+    //-----------button onclick listeners
+    private void getAdapterFunctions(PostModel post, MyHolder holder) {
+        iniPicPopUp(context, holder, post.getUserID());
+        universalFunctions.getCommentsCount(post.getPostID(), holder.commentCounter);
+        checkFollowing(post);
+
+        universalFunctions.isLiked(post.getPostID(), holder.postLikeBTN);
+        universalFunctions.nrLikes(holder.likeCounter, post.getPostID());
+        universalFunctions.isSaved(post.getPostID(), holder.savePostBTN);
+        universalFunctions.checkActiveStories(holder.postProPic, post.getUserID());
+
+        onClickListeners(holder, post);
+
+        if (firebaseUser.getUid().equals(post.getUserID()))
+            holder.shareArea.setVisibility(View.GONE);
+
+        /*try{
+            if (post.isCommentsAllowed())
+                holder.commentLayout.setVisibility(View.GONE);
+        }catch (NullPointerException ignored){}*/
+    }
+
+    private void getSharedPostButtons(MyHolder holder, PostModel post) {
+
+        holder.shareArea.setVisibility(View.GONE);
+
+        holder.sharedPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
+                sharedPostIntent.putExtra("postID", post.getPostID());
+                context.startActivity(sharedPostIntent);
+            }
+        });
+    }
+
+    private void onClickListeners(MyHolder holder, PostModel post){
 
         holder.postUsername.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //open the profile of post owner
-                if(post.getUserID().equals(firebaseUser.getUid())){
-                    FragmentManager fm = ((AppCompatActivity)context).getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                    fragmentTransaction.replace(R.id.content,  new ProfileFragment());
-                    fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
-                }else{
+                if(!post.getUserID().equals(firebaseUser.getUid())){
                     Intent intent = new Intent(context, ViewProfileActivity.class);
                     intent.putExtra("uid", post.getUserID());
                     context.startActivity(intent);
-
                 }
             }
         });//for displaying post owner profile
@@ -515,7 +1002,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             public void onClick(View view) {
                 Toast.makeText(context, "menu clicked", Toast.LENGTH_SHORT).show();
                 //showMoreOptions(holder.postMenuBTN, uid, pId, PostImage);
-                menuOptions(holder.postMenuBTN, post.getUserID(), post.getPostID(), post.getPostImage());
+                menuOptions(holder.postMenuBTN, post);
             }
         });
 
@@ -523,7 +1010,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             @Override
             public void onClick(View v) {
                 //holder.commentDialog.show();
-                Intent postDetailIntent= new Intent(context, PostDetailActivity.class);
+                Intent postDetailIntent= new Intent(context, CommentsActivity.class);
                 postDetailIntent.putExtra("postID", post.getPostID());
                 context.startActivity(postDetailIntent);
             }
@@ -532,7 +1019,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         holder.postProPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.popAddPost.show();
+                if (holder.postProPic.getTag().equals("storyActive")){
+                    Intent intent = new Intent(context, StoryActivity.class);
+                    intent.putExtra("userid", post.getUserID());
+                    context.startActivity(intent);
+                }else if(holder.postProPic.getTag().equals("noStories")){
+                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
+                    picIntent.putExtra("itemID", post.getUserID());
+                    picIntent.putExtra("reason", "userImage");
+                    context.startActivity(picIntent);
+                }
+                //holder.popAddPost.show();
             }
         });//popping up profile picture
 
@@ -553,7 +1050,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                 if(holder.postLikeBTN.getTag().equals("like")){
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostID())
                             .child(firebaseUser.getUid()).setValue(true);
-                    universalFunctions.addLikesNotifications(post.getUserID(), post.getPostID());
+                    if (!firebaseUser.getUid().equals(post.getUserID()))
+                        universalNotifications.addLikesNotifications(post.getUserID(), post.getPostID());
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostID())
                             .child(firebaseUser.getUid()).removeValue();
@@ -585,170 +1083,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     }
 
-    private void getPostDetails(PostModel post, final MyHolder holder) {
-
-        holder.postCaption.setText(post.getPostCaption());
-
-        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), context);
-            holder.postTimeStamp.setText(timeStamp);
-        }catch (NumberFormatException n){
-            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-        }//for converting timestamp
-
-        try{
-            if (post.getPostPrivacy().equals("Private")){
-                holder.shareArea.setVisibility(View.GONE);
-            }
-        }catch (NullPointerException ignored){}
-
-        try{
-            universalFunctions.findAddress(post, holder.rPostLocation);
-        }catch (Exception ignored){}
-
-        if (post.getUserID().equals(firebaseUser.getUid()))
-            holder.shareArea.setVisibility(View.GONE);
-
-        /*try{
-            if(PostImage.equals("noImage")){
-                if(VoiceStatus.equals("noVoice")){
-                    //handle no image, no voice - Text Only
-                    holder.postImage.setVisibility(View.GONE);
-                    holder.postCaption.setVisibility(View.VISIBLE);
-                }else{
-                    //handle no image, active voice
-                    holder.playStatusBTN.setTag("Play");
-                    holder.playStatusBTN.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if(holder.playStatusBTN.getTag().equals("Play")){
-                                //for playing status with no image
-                                holder.playStatusBTN.setImageResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                                holder.playStatusBTN.setTag("Pause");
-                                playVoiceStatus(VoiceStatus, holder);
-                            }else{
-                                //for pausing status
-                                holder.playStatusBTN.setImageResource(R.drawable.ic_play_circle_outline_black_24dp);
-                                holder.playStatusBTN.setTag("Play");
-                                pause();
-                            }
-
-                        }
-                    });
-                }
-            }else {
-                if(!VoiceStatus.equals("noVoice")){
-                    //handle image, active voice
-                    holder.postImage.setVisibility(View.VISIBLE);
-                    holder.mediaPlayer.setVisibility(View.VISIBLE);
-
-                    try{
-                        Picasso.get().load(PostImage).networkPolicy(NetworkPolicy.OFFLINE).into(holder.postImage, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                Picasso.get().load(PostImage).into(holder.postImage);
-                            }
-                        });
-                    }catch (Exception e){
-                        Toast.makeText(context, "could not upload post pic", Toast.LENGTH_SHORT).show();
-                    }
-
-                    holder.playStatusBTN.setTag("Play");
-                    holder.playStatusBTN.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if(holder.playStatusBTN.getTag().equals("Play")){
-                                //for playing status with an image
-                                holder.playStatusBTN.setImageResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                                holder.playStatusBTN.setTag("Pause");
-                                playVoiceStatus(VoiceStatus, holder);
-                            }else{
-                                //for pausing status with an image
-                                holder.playStatusBTN.setImageResource(R.drawable.ic_play_circle_outline_black_24dp);
-                                holder.playStatusBTN.setTag("Play");
-                                pause();
-                            }
-
-                        }
-                    });
-
-                }else{
-                    //handle image, no voice
-                    holder.postImage.setVisibility(View.VISIBLE);
-                    holder.postCaption.setVisibility(View.VISIBLE);
-
-                    try{
-                        Picasso.get().load(PostImage).into(holder.postImage);
-                    }catch (Exception e){
-                        Toast.makeText(context, "could not upload post pic", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
-        }catch (NullPointerException ignored){ }*/
-    }
-
-    private void updateUserInfo(final MyHolder holder, final String uid) {
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList = new ContactsList(phoneBook, context);
-        contactsList.readContacts();
-        final List<ContactsModel> phoneNumbers = contactsList.getContactsList();
-
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.keepSynced(true);
-        Query query = ref.orderByChild("USER_ID").equalTo(uid);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
-                        String name = "" + ds.child("Username").getValue();
-                        String number = "" + ds.child("Number").getValue();
-                        final String proPic = "" + ds.child("ImageURL").getValue();
-
-                        for(ContactsModel cm : phoneNumbers){
-
-                            if(firebaseUser.getUid().equals(uid)){
-                                holder.postUsername.setText("Me");
-                            }else if(cm.getNumber().equals(number)){
-                                holder.postUsername.setText(cm.getUsername());
-                            }
-                        }
-
-                        try{
-                            Picasso.get().load(proPic).placeholder(R.drawable.default_profile_display_pic).networkPolicy(NetworkPolicy.OFFLINE).into(holder.postProPic, new Callback() {
-                                @Override
-                                public void onSuccess() {
-
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.postProPic);
-                                }
-                            });
-                        }catch (NullPointerException ignored){
-
-                        }
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
 
     //other post functions
     private void iniPicPopUp(final Context context, final MyHolder holder, final String uid) {
@@ -760,38 +1094,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
         ImageView viewProfile = holder.popAddPost.findViewById(R.id.popUP_ViewProfile);
         ImageView sendMessage = holder.popAddPost.findViewById(R.id.popUP_SendMessage);
-        final ImageView superProPic = holder.popAddPost.findViewById(R.id.popUP_ProPic);
+        ImageView superProPic = holder.popAddPost.findViewById(R.id.popUP_ProPic);
         ImageView callBTN = holder.popAddPost.findViewById(R.id.popUP_callUser);
-        final TextView lastSeen = holder.popAddPost.findViewById(R.id.popUpLastSeen);
+        RelativeLayout popButtonsArea = holder.popAddPost.findViewById(R.id.popButtonsArea);
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(uid);
-        query.addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    String image = "" + ds.child("ImageURL").getValue();
-                    String timeStamp = "" + ds.child("onlineStatus").getValue();
-                    Calendar calendar = Calendar.getInstance(Locale.getDefault());
+                    User user = ds.getValue(User.class);
 
-                    if(timeStamp.equals("online")){
-                        lastSeen.setText(timeStamp);
-                        lastSeen.setVisibility(View.VISIBLE);
-                    }else{
-                        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                            calendar.setTimeInMillis(Long.parseLong(timeStamp));
-                            String pTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
-                            lastSeen.setVisibility(View.VISIBLE);
-                            lastSeen.setText("Last seen at: " + pTime);
-                        }catch (NumberFormatException n){
-                            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+                    assert user != null;
+                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+
+                        try{
+                            Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(superProPic);
+                        }catch (Exception e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(superProPic);
                         }
-                    }
-
-                    try{
-                        Picasso.get().load(image).placeholder(R.drawable.default_profile_display_pic).into(superProPic);
-                    }catch (Exception e){
-                        Picasso.get().load(R.drawable.default_profile_display_pic).into(superProPic);
                     }
 
                 }
@@ -803,10 +1123,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             }
         });
 
-        final FirebaseUser user =  FirebaseAuth.getInstance().getCurrentUser();
-        if(uid.equals(user.getUid())){
-            sendMessage.setVisibility(View.GONE);
-            callBTN.setVisibility(View.GONE);
+        if(uid.equals(firebaseUser.getUid())){
+            popButtonsArea.setVisibility(View.GONE);
 
         }
         callBTN.setOnClickListener(new View.OnClickListener() {
@@ -821,16 +1139,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             @Override
             public void onClick(View v) {
 
-                if(uid.equals(user.getUid())){
-
-                    FragmentManager fm = ((AppCompatActivity)context).getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                    fragmentTransaction.replace(R.id.content,  new ProfileFragment());
-                    fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
-                    holder.popAddPost.dismiss();
-
-                }else{
+                if(!uid.equals(firebaseUser.getUid())){
                     Intent intent = new Intent(context, ViewProfileActivity.class);
                     intent.putExtra("uid", uid);
                     context.startActivity(intent);
@@ -864,76 +1173,207 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     }
 
-    private void checkOnlineStatus(String uid, final MyHolder holder) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(uid);
-        //display and retrieve current user info
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-
-                    String userOnline = "" + ds.child("onlineStatus").getValue();
-
-                    if(userOnline.equals("online")){
-                        holder.onlineStatus.setVisibility(View.VISIBLE);
-                    }else{
-                        holder.onlineStatus.setVisibility(View.VISIBLE);
-                        holder.onlineStatus.setImageResource(R.drawable.offline_circle);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void menuOptions(ImageView menuIcon, final String uid, final String pId, final String postImage) {
-        PopupMenu popupMenu = new PopupMenu(context, menuIcon, Gravity.END);
+    private void menuOptions(ImageView postMenuBTN, PostModel post) {
+        PopupMenu popupMenu = new PopupMenu(context, postMenuBTN, Gravity.END);
 
         popupMenu.getMenu().add(Menu.NONE, 0,0,"View Profile");
-        if(uid.equals(firebaseUser.getUid())){
+
+        if(post.getUserID().equals(firebaseUser.getUid())){
             popupMenu.getMenu().add(Menu.NONE, 1,0,"Delete Post");
             popupMenu.getMenu().add(Menu.NONE, 2,0,"Edit Post");
             popupMenu.getMenu().add(Menu.NONE, 3,0,"Post Views");
+        }
 
+        if (!post.getUserID().equals(firebaseUser.getUid())){
+            if (isFollowing){
+                userReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            assert user != null;
+                            if (user.getUSER_ID().equals(post.getUserID())){
+                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Unfollow " + user.getUsername());
+                            }else{
+                                movementReference.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        for (DataSnapshot snap : snapshot.getChildren()){
+                                            Movement movement = snap.getValue(Movement.class);
+
+                                            assert movement != null;
+                                            if (movement.getMovementID().equals(post.getMovementID())){
+                                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Unfollow " + movement.getMovementName());
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }else{
+                userReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            assert user != null;
+                            if (user.getUSER_ID().equals(post.getUserID())){
+                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Follow " + user.getUsername());
+                            }else{
+                                movementReference.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        for (DataSnapshot snap : snapshot.getChildren()){
+                                            Movement movement = snap.getValue(Movement.class);
+
+                                            assert movement != null;
+                                            if (movement.getMovementID().equals(post.getUserID())){
+                                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Follow " + movement.getMovementName());
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
         }
 
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                int id = item.getItemId();
 
-                if(id == 0){
-                    if(uid.equals(firebaseUser.getUid())){
-                        FragmentManager fm = ((AppCompatActivity)context).getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                        fragmentTransaction.replace(R.id.content,  new ProfileFragment());
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
-                    }else{
-                        Intent intent = new Intent(context, ViewProfileActivity.class);
-                        intent.putExtra("uid", uid);
+                switch (item.getItemId()){
+                    case 0:
+                        if(post.getUserID().equals(firebaseUser.getUid())){
+                            FragmentManager fm = ((AppCompatActivity)context).getSupportFragmentManager();
+                            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                            fragmentTransaction.replace(R.id.content,  new ProfileFragment());
+                            fragmentTransaction.addToBackStack(null);
+                            fragmentTransaction.commit();
+                        }else{
+                            Intent intent = new Intent(context, ViewProfileActivity.class);
+                            intent.putExtra("uid", post.getUserID());
+                            context.startActivity(intent);
+                        }
+                        break;
+
+                    case 1:
+                        universalFunctions.beginDelete(post.getUserID(), post.getPostImage());
+                        break;
+
+                    case 2:
+                        Toast.makeText(context, "Edit Post Details", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case 3:
+                        Intent intent = new Intent(context, ConnectionsActivity.class);
+                        intent.putExtra("UserID", post.getUserID());
+                        intent.putExtra("Interaction", "Views");
                         context.startActivity(intent);
-                    }
-                }else if(id == 1){
-                    universalFunctions.beginDelete(pId, postImage);
-                }else if(id == 2){
-                    Toast.makeText(context, "Edit Post Details", Toast.LENGTH_SHORT).show();
-                }else if (id == 3){
-                    Intent intent = new Intent(context, ConnectionsActivity.class);
-                    intent.putExtra("UserID", pId);
-                    intent.putExtra("Interaction", "Views");
-                    context.startActivity(intent);
+                        break;
+
+                    case 4:
+                        Toast.makeText(context, "You will be able to follow/unfollow this account", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    default:
+                        Toast.makeText(context, "Unknown Selection made", Toast.LENGTH_SHORT).show();
+
                 }
 
                 return false;
             }
         });
         popupMenu.show();
+    }
+
+    private void checkFollowing(PostModel post) {
+        followingReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.child(post.getUserID()).exists()){
+                    isFollowing = true;
+                }else{
+                    isFollowing = false;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSharedAudio(MyHolder holder, PostModel sharedPost) {
+
+        audioPlayer = new AudioPlayer(context, holder.shared_playBTN,
+                holder.shared_seekTimer, holder.shared_postTotalTime, holder.shared_audioAnimation);
+
+        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
+            holder.sharedPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(sharedPost.getPostTime()), context));
+        }catch (NumberFormatException n){
+            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+        }//for converting timestamp
+
+        try{
+            universalFunctions.findAddress(sharedPost.getLatitude(), sharedPost.getLongitude(),  holder.sharedPostCheckIn, holder.sharedLocationArea);
+        }catch (Exception ignored){}
+
+        holder.shared_playBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!audioPlayer.isPlaying()){
+                    audioPlayer.startPlayingAudio(sharedPost.getAudioURL());
+                }else{
+                    audioPlayer.stopPlayingAudio();
+                }
+            }
+        });
+    }
+
+    private void getNormalPostAudio(MyHolder holder, PostModel post){
+
+
+        audioPlayer = new AudioPlayer(context, holder.playBTN,
+                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
+
+        holder.playBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!audioPlayer.isPlaying()){
+                    audioPlayer.startPlayingAudio(post.getAudioURL());
+                }else{
+                    audioPlayer.stopPlayingAudio();
+                }
+            }
+        });
     }
 
 
@@ -947,7 +1387,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             //---------------view for post owner details
         public CircleImageView postProPic;
         public TextView postUsername;
-        public ImageView onlineStatus;
 
             //--------------views for post details
         public TextView postTimeStamp, postCaption, taggedUsers, rPostLocation;
@@ -958,30 +1397,34 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         public TextView likeCounter, commentCounter;
 
             //------------other
-        public RelativeLayout commentLayout, likesLayout, shareArea;
+        public RelativeLayout commentLayout, likesLayout, shareArea, postPicArea;
         public Dialog popAddPost;
-        public CardView postPicArea;
+        public LinearLayout locationArea;
+        public ProgressBar imageLoader;
 
-        //----------------for videos
-        public VideoView postVideoView;
-        public ProgressBar videoLoader;
-        public ImageView volumeBTN;
-
-        //---------------for shared posts
+            //---------------for shared posts
         public CircleImageView sharedPostProPic;
         public TextView sharedPostUsername, sharedPostDate, sharedPostCheckIn, sharedPostDesc;
         public ProgressBar sharedProgressBar;
         public LinearLayout sharedLocationArea;
         public ImageView sharedPostImage, sharedPostVolumeBTN;
-        public CardView sharedPost;
-        public VideoView sharedPostVideoView;
+        public RelativeLayout sharedPost;
+
+            //--------------for audio post buttons
+        public CircleImageView playBTN;
+        public LottieAnimationView audioAnimation;
+        public TextView seekTimer, postTotalTime;
+
+            //--------------for shared audio post buttons
+        public CircleImageView shared_playBTN;
+        public LottieAnimationView shared_audioAnimation;
+        public TextView shared_seekTimer, shared_postTotalTime;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
 
             postProPic = itemView.findViewById(R.id.postProPic);
             postUsername = itemView.findViewById(R.id.postUsername);
-            onlineStatus = itemView.findViewById(R.id.onlineStatus);
 
             postTimeStamp = itemView.findViewById(R.id.postTimeStamp);
             postCaption = itemView.findViewById(R.id.postCaption);
@@ -990,6 +1433,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
             privacyIcon = itemView.findViewById(R.id.privacyIcon);
             postImage = itemView.findViewById(R.id.rPostImage);
+            imageLoader = itemView.findViewById(R.id.post_item_image_loader);
 
             postLikeBTN = itemView.findViewById(R.id.postLikeBTN);
             postMenuBTN = itemView.findViewById(R.id.postMenuBTN);
@@ -1002,10 +1446,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             likesLayout = itemView.findViewById(R.id.likesArea);
             shareArea = itemView.findViewById(R.id.shareArea);
             postPicArea = itemView.findViewById(R.id.postPicArea);
-
-            postVideoView = itemView.findViewById(R.id.timelineVideoView);
-            videoLoader = itemView.findViewById(R.id.videoItemLoader);
-            volumeBTN = itemView.findViewById(R.id.postItemVolumeBTN);
+            locationArea = itemView.findViewById(R.id.post_location_area);
 
             //for shared posts
             sharedPostProPic = itemView.findViewById(R.id.shared_image_user);
@@ -1017,8 +1458,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             sharedLocationArea = itemView.findViewById(R.id.sharedLocationArea);
             sharedPostImage = itemView.findViewById(R.id.shared_postImage);
             sharedPost = itemView.findViewById(R.id.shared_post_item);
-            sharedPostVideoView = itemView.findViewById(R.id.sharedTimelineVideoView);
             sharedPostVolumeBTN = itemView.findViewById(R.id.sharePostItemVolumeBTN);
+
+            //for audio buttons
+            playBTN = itemView.findViewById(R.id.postItem_playVoiceIcon);
+            audioAnimation = itemView.findViewById(R.id.postItem_lav_playing);
+            seekTimer = itemView.findViewById(R.id.postItemSeekTimer);
+            postTotalTime = itemView.findViewById(R.id.postTotalTime);
+
+            //for audio buttons
+            shared_playBTN = itemView.findViewById(R.id.shared_postItem_playVoiceIcon);
+            shared_audioAnimation = itemView.findViewById(R.id.shared_postItem_lav_playing);
+            shared_seekTimer = itemView.findViewById(R.id.shared_postItemSeekTimer);
+            shared_postTotalTime = itemView.findViewById(R.id.shared_postTotalTime);
         }
     }
 
@@ -1032,17 +1484,35 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             case "imagePost":
                 return IMAGE_POST_ITEM;
 
-            case "videoPost":
-                return VIDEO_POST_ITEM;
-
             case "sharedTextPost":
                 return SHARED_TEXT_POST_ITEM;
 
             case "sharedImagePost":
                 return SHARED_IMAGE_POST_ITEM;
 
-            case "sharedVideoPost":
-                return SHARED_VIDEO_POST_ITEM;
+            case "audioPost":
+                return AUDIO_POST_ITEM;
+
+            case "audioImagePost":
+                return AUDIO_IMAGE_POST_ITEM;
+
+            case "sharedAudioTextPost":
+                return SHARED_AUDIO_TEXT_POST;
+
+            case "sharedAudioImagePost":
+                return SHARED_AUDIO_IMAGE_POST;
+
+            case "sharedTextAudioPost":
+                return SHARED_TEXT_AUDIO_POST;
+
+            case "sharedTextAudioImagePost":
+                return SHARED_TEXT_AUDIO_IMAGE_POST;
+
+            case "sharedAudioAudioPost":
+                return SHARED_AUDIO_AUDIO_POST;
+
+            case "sharedAudioAudioImagePost":
+                return SHARED_AUDIO_AUDIO_IMAGE_POST;
 
             default:
                 throw new IllegalStateException("Unexpected value" + postList.get(position).getPostType());

@@ -21,6 +21,7 @@
         android:required="true" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -42,53 +43,104 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator">
-        <activity android:name=".GettingStarted.InAppActivities.PostListActivity"></activity>
-        <activity android:name=".GettingStarted.InAppActivities.ChatListActivity" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.CameraActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.TimelineSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.ChangeNumberActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.SearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.MovementChatsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.CommentsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.AddGroupMembersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.ReportActivity"
+            android:exported="false"
+            android:label="@string/title_activity_report"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.EditMovementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.MovementDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.NewMovementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.MovementsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.EditGroupDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.GroupDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.GroupChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.CreateGroupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.MainActivity"
+            android:exported="false" />
+        <activity android:name=".GettingStarted.InAppActivities.PostListActivity" />
+        <activity android:name=".GettingStarted.InAppActivities.MessagesActivity" />
         <activity android:name=".GettingStarted.InAppActivities.FeedbackActivity" />
         <activity android:name=".GettingStarted.InAppActivities.FullScreenVideoActivity" />
         <activity android:name=".GettingStarted.InAppActivities.SharePostActivity" />
         <activity android:name=".GettingStarted.InAppActivities.FullScreenImageActivity" />
         <activity android:name=".GettingStarted.InAppActivities.NotificationsActivity" />
         <activity android:name=".GettingStarted.InAppActivities.EditProfileActivity" />
-        <activity android:name=".GettingStarted.SplashActivity">
+        <activity
+            android:name=".GettingStarted.SplashActivity"
+            android:exported="true"
+            android:parentActivityName=".GettingStarted.SplashActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GettingStarted.InAppActivities.PostDetailActivity" />
         <activity android:name=".GettingStarted.InAppActivities.InteractionsActivity" />
         <activity android:name=".GettingStarted.InAppActivities.MyContactsActivity" />
         <activity android:name=".GettingStarted.InAppActivities.ConnectionsActivity" />
         <activity
             android:name=".GettingStarted.InAppActivities.SavedPostsActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".GettingStarted.InAppActivities.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.InAppActivities.ContactsActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.InAppActivities.StoryActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.InAppActivities.AddStoryActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.InAppActivities.ChatActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
@@ -96,17 +148,10 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
             android:name=".GettingStarted.InAppActivities.ViewProfileActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.InAppActivities.PostActivity"
-            android:parentActivityName=".GettingStarted.InAppActivities.HomeConsoleActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="InnerclassSeparator" />
-        <activity
-            android:name=".GettingStarted.InAppActivities.HomeConsoleActivity"
-            android:parentActivityName=".GettingStarted.UserDetailsActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
@@ -116,19 +161,13 @@
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name=".GettingStarted.VerifyPhoneActivity"
-            android:parentActivityName=".GettingStarted.MainActivity"
+            android:parentActivityName=".GettingStarted.RegisterActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name=".GettingStarted.MainActivity"
+            android:name=".GettingStarted.RegisterActivity"
             android:screenOrientation="portrait"
-            tools:ignore="InnerclassSeparator">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            tools:ignore="InnerclassSeparator" />
 
         <service
             android:name=".GettingStarted.Notifications.MyFirebaseMessaging"

@@ -2,6 +2,7 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
@@ -17,12 +18,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FullScreenVideoActivity extends AppCompatActivity {
@@ -37,6 +37,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
     private String videoID, reason, userID;
 
     private List<String> followingList;
+    private Toolbar toolbar;
 
 
     @Override
@@ -46,6 +47,9 @@ public class FullScreenVideoActivity extends AppCompatActivity {
 
         fullScreenPager = findViewById(R.id.fullScreenVideoPager);
         fullScreenLoader = findViewById(R.id.fullScreenVideoLoader);
+        toolbar = findViewById(R.id.fullScreenVideosToolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         videoID = intent.getStringExtra("videoID");
@@ -72,13 +76,6 @@ public class FullScreenVideoActivity extends AppCompatActivity {
             default:
                 Toast.makeText(this, "Unknown reason", Toast.LENGTH_SHORT).show();
         }
-
-        findViewById(R.id.fullScreenVideoBackBTN).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
     }
 
     private void checkFollowing() {
@@ -121,7 +118,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
                         fullScreenLoader.setVisibility(View.GONE);
                     }catch (NullPointerException ignored){}
                 }
-                fullScreenPager.setAdapter(new VideoAdapter(videoList, FullScreenVideoActivity.this));
+                fullScreenPager.setAdapter(new VideoFootageAdapter(videoList, FullScreenVideoActivity.this));
             }
 
             @Override
@@ -157,7 +154,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
                         fullScreenLoader.setVisibility(View.GONE);
                     }catch (NullPointerException ignored){}
                 }
-                fullScreenPager.setAdapter(new VideoAdapter(videoList, FullScreenVideoActivity.this));
+                fullScreenPager.setAdapter(new VideoFootageAdapter(videoList, FullScreenVideoActivity.this));
             }
 
             @Override
@@ -166,4 +163,11 @@ public class FullScreenVideoActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
 }

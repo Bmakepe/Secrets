@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/createGroupBTN"
+        android:icon="@drawable/ic_group_add_black_24dp"
+        app:showAsAction="always"
+        android:title="Create Group" />
+
+    <item
+        android:id="@+id/createMovementBTN"
+        android:icon="@drawable/ic_baseline_campaign_24"
+        app:showAsAction="always"
+        android:title="Create Movements" />
+
+    <item
+        android:id="@+id/inbox"
+        android:icon="@drawable/ic_baseline_inbox_24"
+        app:showAsAction="always"
+        android:title="Inbox" />
+
+</menu>

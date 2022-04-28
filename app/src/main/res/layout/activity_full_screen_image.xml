@@ -9,28 +9,13 @@
     tools:context=".GettingStarted.InAppActivities.FullScreenImageActivity">
 
     <androidx.appcompat.widget.Toolbar
+        android:id="@+id/fullScreenImageToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_collapseMode="pin"
-        android:id="@+id/hisProfileToolbar">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_back_black_24dp"
-                android:padding="5dp"
-                android:layout_alignParentStart="true"
-                android:id="@+id/imageBackBTN"
-                android:layout_centerVertical="true"
-                android:tint="@color/colorBlack"/>
-
-        </RelativeLayout>
-
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="wrap_content"
+        android:elevation="5dp"
+        android:background="@null"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStartWithNavigation="0dp"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

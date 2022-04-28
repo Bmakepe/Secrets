@@ -2,13 +2,10 @@ package com.makepe.blackout.GettingStarted.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,37 +14,41 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
+import com.makepe.blackout.GettingStarted.Models.ChatList;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHolder> {
 
     private Context context;
-    private List<User> chatList;
+    private List<ChatList> chatList;
+
     private HashMap<String, String> lastMessageMap;
     private HashMap<String, String> lastTimeStampMap;
 
     private GetTimeAgo getTimeAgo;
+    private UniversalFunctions universalFunctions;
 
-    private DatabaseReference userRef;
+    private DatabaseReference userReference, movementReference;
 
-    public ChatlistAdapter(Context context, List<User> chatList) {
+    public ChatlistAdapter(Context context, List<ChatList> chatList) {
         this.context = context;
         this.chatList = chatList;
         lastMessageMap = new HashMap<>();
@@ -57,8 +58,6 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
     @NonNull
     @Override
     public MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-       // View view = LayoutInflater.from(context).inflate(R.layout.raw_user_list, parent, false);
-
         View view = LayoutInflater.from(context).inflate(R.layout.chat_list_item, parent, false);
         return new MyHolder(view);
     }
@@ -67,17 +66,18 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
 
         //get data;
-        User user = chatList.get(position);
+        ChatList chats = chatList.get(position);
         getTimeAgo= new GetTimeAgo();
-        userRef = FirebaseDatabase.getInstance().getReference("Users");
+        universalFunctions = new UniversalFunctions(context);
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
 
-        final String hisUid = user.getUSER_ID();
-        String lastmessage = lastMessageMap.get(hisUid);
-        String lastTime = lastTimeStampMap.get(hisUid);
 
-        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        String lastmessage = lastMessageMap.get(chats.getId());
+        String lastTime = lastTimeStampMap.get(chats.getId());
 
-        getUserDetails(hisUid, holder);
+        getUserDetails(chats.getId(), holder);
+        universalFunctions.checkActiveStories(holder.chatlistProPic, chats.getId());
 
         //set Data
 
@@ -91,29 +91,30 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
             holder.timestamp.setText("-" + postTime);
         }
 
-        //for online status
-        if(user.getOnlineStatus().equals("online")){
-            //online
-            holder.chatlistStatus.setImageResource(R.drawable.online_circle);
-            holder.onlineStatus.setText("Online");
-        }else{
-            //offline
-            holder.chatlistStatus.setImageResource(R.drawable.offline_circle);
-            try{
-                String lastSeen = getTimeAgo.getTimeAgo(Long.parseLong(user.getOnlineStatus()), context);
-                holder.onlineStatus.setText("last seen " + lastSeen);
-            }catch (NumberFormatException n){
-                Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-            }
-        }
-
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //start chat activity with that user
                 Intent intent = new Intent(context, ChatActivity.class);
-                intent.putExtra("userid", hisUid);
+                intent.putExtra("userid", chats.getId());
                 context.startActivity(intent);
+            }
+        });
+
+        holder.chatlistProPic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (holder.chatlistProPic.getTag().equals("storyActive")){
+
+                    Intent intent = new Intent(context, StoryActivity.class);
+                    intent.putExtra("userid", chats.getId());
+                    context.startActivity(intent);
+                }else{
+                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
+                    picIntent.putExtra("itemID", chats.getId());
+                    picIntent.putExtra("reason", "userImage");
+                    context.startActivity(picIntent);
+                }
             }
         });
     }
@@ -124,19 +125,17 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
         contactsList.readContacts();
         final List<ContactsModel> phoneNumbers = contactsList.getContactsList();
 
-        userRef.addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
-
                         User user = ds.getValue(User.class);
 
                         assert user != null;
                         if (user.getUSER_ID().equals(hisUid)) {
 
                             for (ContactsModel cm : phoneNumbers) {
-
                                 if (cm.getNumber().equals(user.getNumber())) {
                                     holder.chatListUser.setText(cm.getUsername());
                                 }else{
@@ -149,6 +148,31 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
                             } catch (NullPointerException e) {
                                 Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatlistProPic);
                             }
+                        }else{
+                            movementReference.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    for (DataSnapshot ds : snapshot.getChildren()){
+                                        Movement movement = ds.getValue(Movement.class);
+
+                                        assert movement != null;
+                                        if (movement.getMovementID().equals(hisUid)){
+                                            holder.chatListUser.setText(movement.getMovementName());
+
+                                            try{
+                                                Picasso.get().load(movement.getMovementProPic()).into(holder.chatlistProPic);
+                                            }catch (NullPointerException e){
+                                                Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatlistProPic);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
                         }
                     }
                 }
@@ -176,8 +200,8 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
 
     class MyHolder extends RecyclerView.ViewHolder {
 
-        CircleImageView chatlistStatus, chatlistProPic;// chatlistCover;
-        TextView chatListUser, chatlistMessage, typingTV, onlineStatus, timestamp;// unreadTexts;
+        CircleImageView chatlistProPic;// chatlistCover;
+        TextView chatListUser, chatlistMessage, onlineStatus, timestamp;// unreadTexts;
 
         MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -185,12 +209,8 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
             chatlistProPic = itemView.findViewById(R.id.chatListPropic);;
             chatListUser = itemView.findViewById(R.id.chatlistUsername);
             chatlistMessage = itemView.findViewById(R.id.chatlistMessage);
-            typingTV = itemView.findViewById(R.id.typingTV);
-            chatlistStatus = itemView.findViewById(R.id.chatlistStatus);
-            onlineStatus = itemView.findViewById(R.id.chatlistOnlineStatus);
+            onlineStatus = itemView.findViewById(R.id.chatlistLastSeen);
             timestamp = itemView.findViewById(R.id.cl_message_timeStamp);
-            /*chatlistCover = itemView.findViewById(R.id.chatlistCover);
-            unreadTexts = itemView.findViewById(R.id.unreadTexts);*/
         }
     }
 }

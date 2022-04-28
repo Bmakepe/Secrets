@@ -25,6 +25,7 @@ import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.NotiModel;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -36,6 +37,8 @@ import java.util.Locale;
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyHolder> {
     private Context mContext;
     private List<NotiModel> mNotifications;
+
+    private GetTimeAgo getTimeAgo;
 
     public NotificationAdapter(Context mContext, List<NotiModel> mNotifications) {
         this.mContext = mContext;
@@ -53,17 +56,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
         final NotiModel notification = mNotifications.get(position);
-        final String pTimeStamp = mNotifications.get(position).getTimeStamp();
-        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        getTimeAgo = new GetTimeAgo();
 
         holder.text.setText(notification.getText());
 
         getUserinfo(holder.image_profile, holder.username, notification.getUserid());
 
         try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            calendar.setTimeInMillis(Long.parseLong(pTimeStamp));
-            String pTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
-            holder.timeStamp.setText(" - " + pTime);
+            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(notification.getTimeStamp()), mContext);
+            holder.timeStamp.setText(timeStamp);
         }catch (NumberFormatException n){
             Toast.makeText(mContext, "Could not format time", Toast.LENGTH_SHORT).show();
         }//for converting timestamp

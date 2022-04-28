@@ -12,41 +12,39 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_below="@+id/flmiddle">
+            android:layout_below="@+id/flmiddle"
+            android:orientation="vertical">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="16dp"
+                android:padding="5dp"
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/hisMediaNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:padding="5dp"
                     android:fontFamily="@font/roboto_regular"
+                    android:padding="5dp"
+                    android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:id="@+id/hisMediaNo"
-                    android:textColor="@color/colorBlack"/>
+                    android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/viewHisMedia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center_vertical"
                     android:fontFamily="@font/roboto_regular"
+                    android:padding="8dp"
                     android:text="@string/see_more"
                     android:textColor="@color/colorBlack"
-                    android:padding="8dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_centerVertical="true"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_alignParentEnd="true"
-                    android:id="@+id/viewHisMedia"/>
+                    android:textStyle="bold" />
 
             </RelativeLayout>
 
@@ -54,30 +52,27 @@
                 android:id="@+id/hisMedia"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
                 android:orientation="horizontal"
-                android:scrollbars="horizontal"
-                android:nestedScrollingEnabled="false"/>
+                android:scrollbars="horizontal" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="16dp"
+                android:padding="5dp"
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/hisPostsNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:padding="5dp"
                     android:fontFamily="@font/roboto_regular"
+                    android:padding="5dp"
+                    android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:id="@+id/hisPostsNo"
-                    android:textColor="@color/colorBlack"/>
+                    android:textStyle="bold" />
 
             </RelativeLayout>
 
@@ -85,9 +80,8 @@
                 android:id="@+id/hisPostsRecycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
                 tools:ignore="UnusedAttribute" />
 
         </LinearLayout>

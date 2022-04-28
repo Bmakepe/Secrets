@@ -25,6 +25,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.AddStoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -38,6 +39,9 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
     private Context context;
     private List<Story> mStory;
 
+    private DatabaseReference userReference, storyReference, movementReference;
+    private FirebaseUser firebaseUser;
+
     public StoryAdapter(Context context, List<Story> mStory) {
         this.context = context;
         this.mStory = mStory;
@@ -46,24 +50,26 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
     @NonNull
     @Override
     public MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view;
         if(viewType == 0){
-            view = LayoutInflater.from(context).inflate(R.layout.add_story_item, parent, false);
+            return new MyHolder(LayoutInflater.from(context).inflate(R.layout.add_story_item, parent, false));
         }else{
-            view = LayoutInflater.from(context).inflate(R.layout.item_story, parent, false);
+            return new MyHolder(LayoutInflater.from(context).inflate(R.layout.item_story, parent, false));
         }
-        return new MyHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
 
         final Story story = mStory.get(position);
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        storyReference = FirebaseDatabase.getInstance().getReference("Story");
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
 
-        userInfo(holder, position, story.getUserid());
+        userInfo(holder, position, story);
 
         if(holder.getAdapterPosition() != 0){
-            seenStory(holder, story.getUserid());
+            seenStory(holder, story.getUserID());
         }
 
         if(holder.getAdapterPosition() == 0){
@@ -78,7 +84,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                 }else{
                     //TODO: go to story
                     Intent intent = new Intent(context, StoryActivity.class);
-                    intent.putExtra("userid", story.getUserid());
+                    intent.putExtra("userid", story.getUserID());
                     context.startActivity(intent);
                 }
             }
@@ -114,65 +120,37 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
         return 1;
     }
 
-    private void userInfo(final MyHolder viewHolder, final int pos, String userID){
-        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(userID);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void userInfo(final MyHolder viewHolder, final int pos, Story story) {
+        userReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    User user = ds.getValue(User.class);
 
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    assert user != null;
+                    if (user.getUSER_ID().equals(story.getUserID())){
 
-                        final String proPic = "" + ds.child("ImageURL").getValue();
-                        String userName = "" + ds.child("Username").getValue();
-                        final String coverPic = "" + ds.child("CoverURL").getValue();
-
-
-                        Picasso.get().load(proPic).networkPolicy(NetworkPolicy.OFFLINE).into(viewHolder.story_photo, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                            }
-                            @Override
-                            public void onError(Exception e) {
-                                Picasso.get().load(proPic).into(viewHolder.story_photo);
-                            }
-                        });
+                        viewHolder.story_username.setText(user.getUsername());
 
                         try{
-                            Picasso.get().load(coverPic).networkPolicy(NetworkPolicy.OFFLINE).into(viewHolder.storyCoverPic, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Picasso.get().load(coverPic).into(viewHolder.storyCoverPic);
-                                }
-                            });
-                        }catch (IllegalArgumentException ignored){}
-
-                        if(pos != 0){
-
-                            Picasso.get().load(proPic).networkPolicy(NetworkPolicy.OFFLINE).into(viewHolder.story_photo_seen, new Callback() {
-                                @Override
-                                public void onSuccess() {
-
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-
-                                    Picasso.get().load(proPic).into(viewHolder.story_photo_seen);
-                                }
-                            });
-                            viewHolder.story_username.setText(userName);
+                            Picasso.get().load(user.getImageURL()).into(viewHolder.story_photo);
+                            Picasso.get().load(user.getCoverURL()).into(viewHolder.storyCoverPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo);
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.storyCoverPic);
                         }
-                    }
-                }else{
-                    Toast.makeText(context, "Cannot find relevant data", Toast.LENGTH_SHORT).show();
-                }
 
+                        if (pos != 0){
+                            try{
+                                Picasso.get().load(user.getImageURL()).into(viewHolder.story_photo_seen);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo_seen);
+                            }
+                        }
+                    }else{
+                        getMovementDetails(viewHolder, pos, story);
+                    }
+                }
             }
 
             @Override
@@ -182,10 +160,46 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
         });
     }
 
+    private void getMovementDetails(MyHolder viewHolder, int pos, Story story) {
+        movementReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    Movement movement = ds.getValue(Movement.class);
+
+                    assert movement != null;
+                    if (movement.getMovementID().equals(story.getUserID())){
+                        viewHolder.story_username.setText(movement.getMovementName());
+
+                        try{
+                            Picasso.get().load(movement.getMovementProPic()).into(viewHolder.story_photo);
+                            Picasso.get().load(movement.getMovementCoverPic()).into(viewHolder.storyCoverPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo);
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.storyCoverPic);
+                        }
+
+                        if (pos != 0){
+                            try{
+                                Picasso.get().load(movement.getMovementProPic()).into(viewHolder.story_photo_seen);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo_seen);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     private void myStory(final TextView textView, final ImageView imageView, final boolean click){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Story")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+
+        storyReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 int count = 0;
@@ -193,7 +207,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     Story story = snapshot.getValue(Story.class);
                     assert story != null;
-                    if(timecurrent > story.getTimestart() && timecurrent < story.getTimeend()){
+                    if(timecurrent > story.getTimeStart() && timecurrent < story.getTimeEnd()){
                         count++;
                     }
                 }
@@ -205,7 +219,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         Intent intent = new Intent(context, StoryActivity.class);
-                                        intent.putExtra("userid", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                        intent.putExtra("userid", firebaseUser.getUid());
                                         context.startActivity(intent);
                                         dialog.dismiss();
                                     }
@@ -215,6 +229,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         Intent intent = new Intent(context, AddStoryActivity.class);
+                                        intent.putExtra("userid", firebaseUser.getUid());
                                         context.startActivity(intent);
                                         dialog.dismiss();
                                     }
@@ -222,6 +237,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                         alertDialog.show();
                     }else{
                         Intent intent = new Intent(context, AddStoryActivity.class);
+                        intent.putExtra("userid", firebaseUser.getUid());
                         context.startActivity(intent);
                     }
 
@@ -244,17 +260,15 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
     }
 
     private void seenStory(final MyHolder viewHolder, String userid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Story")
-                .child(userid);
-        reference.addValueEventListener(new ValueEventListener() {
+        storyReference.child(userid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {
                     int i = 0;
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         if (!snapshot.child("views")
-                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                .exists() && System.currentTimeMillis() < snapshot.getValue(Story.class).getTimeend()) {
+                                .child(firebaseUser.getUid()).exists()
+                                && System.currentTimeMillis() < snapshot.getValue(Story.class).getTimeEnd()) {
                             i++;
                         }
                     }
@@ -277,4 +291,5 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
             }
         });
     }
+
 }

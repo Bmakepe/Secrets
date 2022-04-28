@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/videoCall"
+        android:icon="@drawable/ic_video_call_black_24dp"
+        app:showAsAction="always"
+        android:title="Video" />
+    <item
+        android:id="@+id/voiceCall"
+        android:icon="@drawable/ic_call_black_24dp"
+        app:showAsAction="always"
+        android:title="Call" />
+    <item
+        android:id="@+id/profileView"
+        android:title="View Profile" />
+    <item
+        android:id="@+id/sendAlert"
+        android:title="Send Alert" />
+    <item
+        android:id="@+id/chatSearch"
+        android:title="Search" />
+    <item
+        android:id="@+id/location"
+        android:title="Share Location" />
+    <item
+        android:id="@+id/sendFiles"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:title="Send Files" />
+</menu>

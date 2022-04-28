@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,6 +40,8 @@ public class VideosFragment extends Fragment {
     private FirebaseUser firebaseUser;
     private DatabaseReference postReference, followReference;
 
+    private ProgressBar videoPostsLoader;
+
     public VideosFragment() {
         // Required empty public constructor
     }
@@ -50,6 +53,7 @@ public class VideosFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_videos, container, false);
 
         postRecycler = view.findViewById(R.id.timeLineRecyclerview);
+        videoPostsLoader = view.findViewById(R.id.videoPostsLoader);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
@@ -121,6 +125,7 @@ public class VideosFragment extends Fragment {
                     //Collections.shuffle(postList);
                     adapterPost = new PostAdapter(getActivity(), postList);
                     postRecycler.setAdapter(adapterPost);
+                    videoPostsLoader.setVisibility(View.GONE);
                 }
 
             }

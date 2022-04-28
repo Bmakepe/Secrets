@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,11 +18,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -38,22 +44,25 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private List<ContactsModel> phoneContacts;
     private ContactsList contacts;
 
-    DatabaseReference userRef;
-    FirebaseUser firebaseUser;
+    private DatabaseReference userRef, movementReference;
+    private FirebaseUser firebaseUser;
 
-    UniversalFunctions universalFunctions;
+    private UniversalFunctions universalFunctions;
+    private UniversalNotifications notifications;
 
-    public UserAdapter(Context context, ArrayList<ContactsModel> userList) {
+    private String choice;
+
+    public UserAdapter(Context context, ArrayList<ContactsModel> userList, String choice) {
         this.context = context;
         this.userList = userList;
+        this.choice = choice;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.user_list_item, parent, false);
 
-        return new ViewHolder(view);
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.user_list_item, parent, false));
     }
 
     @Override
@@ -62,7 +71,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
+        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
         universalFunctions = new UniversalFunctions(context);
+        notifications = new UniversalNotifications(context);
 
         phoneContacts = new ArrayList<>();
         contacts = new ContactsList(phoneContacts, context);
@@ -73,15 +84,45 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         getUserDetails(user, holder);
         checkFollowing(user, holder);
-        checkOnlineStatus(user, holder);
+        universalFunctions.checkActiveStories(holder.userProPic, user.getUSER_ID());
+
+        holder.userProPic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (holder.userProPic.getTag().equals("storyActive")){
+                    Intent intent = new Intent(context, StoryActivity.class);
+                    intent.putExtra("userid", user.getUSER_ID());
+                    context.startActivity(intent);
+                }else{
+                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
+                    picIntent.putExtra("itemID", user.getUSER_ID());
+                    picIntent.putExtra("reason", "userImage");
+                    context.startActivity(picIntent);
+                }
+            }
+        });
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!user.getUSER_ID().equals(firebaseUser.getUid())) {
-                    Intent intent = new Intent(context, ViewProfileActivity.class);
-                    intent.putExtra("uid", user.getUSER_ID());
-                    context.startActivity(intent);
+                switch (choice){
+                    case "goToProfile":
+                        if (!user.getUSER_ID().equals(firebaseUser.getUid())) {
+                            Intent intent = new Intent(context, ViewProfileActivity.class);
+                            intent.putExtra("uid", user.getUSER_ID());
+                            context.startActivity(intent);
+                        }
+                        break;
+
+                    case "goToChats":
+                        Intent messageIntent = new Intent(context, ChatActivity.class);
+                        messageIntent.putExtra("userid", user.getUSER_ID());
+                        context.startActivity(messageIntent);
+                        break;
+
+                    default:
+                        Toast.makeText(context, "Unknown Selection", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -95,39 +136,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(user.getUSER_ID())
                             .child("followers").child(firebaseUser.getUid()).setValue(true);
 
-                    universalFunctions.addFollowNotifications(user.getUSER_ID());
+                    notifications.addFollowNotifications(user.getUSER_ID());
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                             .child("following").child(user.getUSER_ID()).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(user.getUSER_ID())
                             .child("followers").child(firebaseUser.getUid()).removeValue();
                 }
-            }
-        });
-    }
-
-    private void checkOnlineStatus(ContactsModel user, ViewHolder holder) {
-        userRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    User user1 = ds.getValue(User.class);
-
-                    assert user1 != null;
-                    if (user1.getUSER_ID().equals(user.getUSER_ID())){
-                        if(user1.getOnlineStatus().equals("online")){
-                            holder.statusIndicator.setVisibility(View.VISIBLE);
-                        }else{
-                            holder.statusIndicator.setVisibility(View.VISIBLE);
-                            holder.statusIndicator.setImageResource(R.drawable.offline_circle);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
@@ -162,6 +177,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user1 = ds.getValue(User.class);
 
+                    assert user1 != null;
                     if (user1.getUSER_ID().equals(user.getUSER_ID())){
 
                         if (myContacts != null){
@@ -181,6 +197,30 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                         }catch (NullPointerException e){
                             Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.userProPic);
                         }
+                    }else{
+                        movementReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for(DataSnapshot snap : snapshot.getChildren()){
+                                    Movement movement = snap.getValue(Movement.class);
+
+                                    if(movement.getMovementID().equals(user.getUSER_ID())){
+                                        holder.usernameTV.setText(movement.getMovementName());
+
+                                        try{
+                                            Picasso.get().load(movement.getMovementProPic()).into(holder.userProPic);
+                                        }catch (NullPointerException e){
+                                            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.userProPic);
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                     }
                 }
             }
@@ -200,14 +240,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private CircleImageView userProPic, statusIndicator;
+        private CircleImageView userProPic;
         private TextView followBTN, usernameTV;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             userProPic = itemView.findViewById(R.id.userItemProPic);
-            statusIndicator = itemView.findViewById(R.id.contactOnlineStatusIndicator);
             followBTN = itemView.findViewById(R.id.userItemFollow);
             usernameTV = itemView.findViewById(R.id.userItemContactName);
 

@@ -2,6 +2,7 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,12 +14,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.MovementInteractionAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserInteractionAdapter;
+import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -29,64 +35,196 @@ import java.util.List;
 
 public class InteractionsActivity extends AppCompatActivity {
 
-    private ImageView backBTN, searchBTN;
     private RecyclerView connectionsRecycler;
-    private TextView connectionsHeader;
+    private Toolbar connectionsToolbar;
 
-    String userID, interactionType;
+    private String userID, interactionType;
 
     //for all Media concerns
     private List<PostModel> mediaList;
-    private MediaAdapter mediaAdapter;
+    private List<String> savedList;
 
-    DatabaseReference postReference, userReference;
+    //for movements & Users
+    private ArrayList<Movement> movementsList;
+    private ArrayList<User> userList;
+
+    private DatabaseReference postReference, userReference, movementPostReference,
+            savedMediaRef, movementReference;
+    private FirebaseUser firebaseUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connections);
 
-        backBTN = findViewById(R.id.connectBackBTN);
-        searchBTN = findViewById(R.id.connectionsSearchBTN);
         connectionsRecycler = findViewById(R.id.connectionsRecycler);
-        connectionsHeader = findViewById(R.id.connectionsHeader);
-        searchBTN.setVisibility(View.GONE);
+        connectionsToolbar = findViewById(R.id.connectionsToolbar);
+        setSupportActionBar(connectionsToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         userID = intent.getStringExtra("userID");
         interactionType = intent.getStringExtra("interactionType");
 
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        movementPostReference = FirebaseDatabase.getInstance().getReference("Movements");
+        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
+        savedMediaRef = FirebaseDatabase.getInstance().getReference("Saves")
+                .child(firebaseUser.getUid());
+
+        connectionsRecycler.hasFixedSize();
+        connectionsRecycler.setLayoutManager(new GridLayoutManager(InteractionsActivity.this, 3));
 
         switch (interactionType){
             case "seeMoreMedia":
                 prepareMedia();
                 break;
 
+            case "seeSavedMedia":
+                getSavedMedia();
+                break;
+
+            case "seeMoreMovements":
+                getAllMovements();
+                break;
+
+            case "seeMoreUsers":
+                getAllUsers();
+                break;
+
             default:
                 Toast.makeText(this, "Illegal Selection", Toast.LENGTH_SHORT).show();
         }
 
-        backBTN.setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void getAllUsers() {
+        userList = new ArrayList<>();
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onClick(View view) {
-                finish();
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    User user = ds.getValue(User.class);
+
+                    if (!user.getUSER_ID().equals(firebaseUser.getUid())){
+                        userList.add(user);
+                    }
+                }
+                connectionsRecycler.setAdapter(new UserInteractionAdapter(userList, InteractionsActivity.this));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getAllMovements() {
+        movementsList = new ArrayList<>();
+        movementReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                movementsList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    Movement movement = ds.getValue(Movement.class);
+
+                    if (!movement.getMovementAdmin().equals(firebaseUser.getUid())){
+                        movementsList.add(movement);
+                    }
+                }
+                connectionsRecycler.setAdapter(new MovementInteractionAdapter(movementsList, InteractionsActivity.this));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSavedMedia() {
+
+        savedList = new ArrayList<>();
+        savedMediaRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                savedList.clear();
+                if (snapshot.exists()) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        savedList.add(ds.getKey());
+                    }
+
+                    getSavedPosts();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSavedPosts() {
+        mediaList = new ArrayList<>();
+
+        postReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mediaList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    PostModel post = ds.getValue(PostModel.class);
+
+                    for (String id : savedList) {
+                        assert post != null;
+                        if (post.getPostID().equals(id)
+                                &&post.getPostType().equals("imagePost")) {
+                            mediaList.add(post);
+                        }
+                    }
+                }
+                getSavedMovements();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSavedMovements() {
+
+        movementPostReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()){
+                    PostModel postModel = snap.getValue(PostModel.class);
+
+                    for (String id : savedList){
+                        assert postModel != null;
+                        if (postModel.getPostID().equals(id)
+                                && postModel.getPostType().equals("imagePost")){
+                            mediaList.add(postModel);
+                        }
+                    }
+                }
+                connectionsRecycler.setAdapter(new MediaAdapter(InteractionsActivity.this, mediaList));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }
 
     private void prepareMedia() {
-
-        connectionsRecycler.setHasFixedSize(true);
-        connectionsRecycler.hasFixedSize();
-        LinearLayoutManager linearLayoutManager = new GridLayoutManager(InteractionsActivity.this, 3);
-        connectionsRecycler.setLayoutManager(linearLayoutManager);
-
         mediaList = new ArrayList<>();
-
-        mediaAdapter = new MediaAdapter(InteractionsActivity.this, mediaList);
-        connectionsRecycler.setAdapter(mediaAdapter);
 
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -94,14 +232,16 @@ public class InteractionsActivity extends AppCompatActivity {
                 mediaList.clear();
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
-                    if(!modelPost.getPostImage().equals("noImage") && userID.equals(modelPost.getUserID())){
+                    assert modelPost != null;
+                    if(!modelPost.getPostImage().equals("noImage")
+                            && modelPost.getUserID().equals(userID)){
                         mediaList.add(modelPost);
                     }
 
                 }
 
                 Collections.reverse(mediaList);
-                mediaAdapter.notifyDataSetChanged();
+                connectionsRecycler.setAdapter(new MediaAdapter(InteractionsActivity.this, mediaList));
             }
 
             @Override
@@ -118,7 +258,7 @@ public class InteractionsActivity extends AppCompatActivity {
 
                     assert user != null;
                     if (user.getUSER_ID().equals(userID)){
-                        connectionsHeader.setText(user.getUsername() + " Media");
+                        connectionsToolbar.setTitle(user.getUsername() + " Media");
                     }
                 }
             }
@@ -128,5 +268,11 @@ public class InteractionsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

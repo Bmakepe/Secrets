@@ -3,35 +3,22 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -41,104 +28,103 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.FriendsAdapter;
-import com.makepe.blackout.GettingStarted.MainActivity;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
+import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
+import com.makepe.blackout.GettingStarted.RegisterActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class PostActivity extends AppCompatActivity implements LocationListener {
+public class PostActivity extends AppCompatActivity{
 
-    CircleImageView postActivityProPic;
+    private CircleImageView postActivityProPic;
 
-    FirebaseUser firebaseUser;
-    DatabaseReference userRef, postRef;
-    StorageReference storageReference;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference userRef, postRef;
+    private StorageReference storageReference, audioReference;
 
-    private ImageView picToUpload, goToCam, tagFriends, backBTN, voiceShareIcon, statusPlayBTN;
-    private TextView postBTN, recVoiceBTN;
+    private ImageView picToUpload;
+    private TextView postBTN, postDurationTV;
     private EditText captionArea;
-    private String name, uid, caption;
+    private String name, uid, caption, postID, timeStamp;
     private CardView imageCardView, videoCardView;
+    private TextInputLayout postCaptionArea;
+    private RelativeLayout postDurationArea;
+    private Switch commentSwitch;
 
-    private boolean isPlaying = false;
-
-    ProgressBar postProgress;
-    ProgressDialog uploadDialog;
+    private ProgressBar postProgress;
+    private ProgressDialog uploadDialog;
 
     private Dialog friendListDialog, searchDialog;
+    private Toolbar postToolbar;
 
-    Uri imageUri;
-    String myUri = "";
-    StorageTask uploadTask;
+    private Uri imageUri;
+    private String myUri = "";
+    private StorageTask uploadTask;
 
     public static final int REQUEST_CODE_SPEECH_INPUT = 1000;
     public static final int STORAGE_REQUEST_CODE = 100;
     public static final int IMAGE_PICK_GALLERY_CODE = 200;
-    public static final int LOCATION_REQUEST_CODE = 300;
-    private static final int PICK_VIDEO_REQUEST = 400;
-
-    //for recording audio status
-    private MediaRecorder mediaRecorder;
-    private MediaPlayer mediaPlayer;
-    private String AudioSavePath = null;
+    private static final int PICK_VIDEO_REQUEST = 300;
 
     //for video gallery
     private Uri videoURI;
-    VideoView videoView;
-    ConstraintLayout videoArea;
-    String mediaUrl;
+    private VideoView videoView;
+    private ConstraintLayout videoArea;
+    private String mediaUrl;
 
     //for Location services
-    private String[] locationPermission;
-    private LocationManager locationManager;
-    private double latitude, longitude;
+    private LocationServices locationServices;
     private RelativeLayout myLocationAreaBTN, privacyBTN;
     private TextView tagLocation, audiencePicker;
     private String privacyProtection = "Public";
 
+    //for recording audio status
+    private AudioRecorder audioRecorder;
+    private LottieAnimationView lavPlaying;
+    private ImageView voicePlayBTN, deleteAudioBTN;
+    private TextView seekTimer;
+    private RelativeLayout playAudioArea;
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     @Override
@@ -146,17 +132,16 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
-        locationPermission = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        postToolbar = findViewById(R.id.postToolbar);
+        setSupportActionBar(postToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         postActivityProPic = findViewById(R.id.addPostProPic);
         postBTN = findViewById(R.id.postFAB);
         postProgress = findViewById(R.id.postProgress);
-        goToCam = findViewById(R.id.goToCamera);
         tagLocation = findViewById(R.id.locationCheckIn);
         myLocationAreaBTN = findViewById(R.id.postLocationBTN);
-        tagFriends = findViewById(R.id.tagFriends);
         picToUpload = findViewById(R.id.picToUpload);
-        backBTN = findViewById(R.id.backBTN);
         captionArea = findViewById(R.id.addPostArea);
         imageCardView = findViewById(R.id.imageCardView);
         videoView = findViewById(R.id.previewCameraSelectedVideo);
@@ -164,52 +149,102 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
         videoCardView = findViewById(R.id.videoCardView);
         privacyBTN = findViewById(R.id.privacySettingsBTN);
         audiencePicker = findViewById(R.id.audience_picker);
-        recVoiceBTN = findViewById(R.id.recVoiceBTN);
-        voiceShareIcon = findViewById(R.id.share_recVoiceIcon);
-        statusPlayBTN = findViewById(R.id.share_playVoiceIcon);
+        postCaptionArea = findViewById(R.id.postCaptionArea);
+        deleteAudioBTN = findViewById(R.id.recordingDeleteBTN);
+        commentSwitch = findViewById(R.id.commentSwitch);
+        postDurationArea = findViewById(R.id.postDurationArea);
+        postDurationTV = findViewById(R.id.postDurationTV);
+
+        playAudioArea = findViewById(R.id.playAudioArea);
+        voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
+        seekTimer = findViewById(R.id.seekTimer);
+        lavPlaying = findViewById(R.id.lav_playing);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         postRef = FirebaseDatabase.getInstance().getReference("Posts");
-        storageReference = FirebaseStorage.getInstance().getReference("Post_Pics");
+        storageReference = FirebaseStorage.getInstance().getReference("ImagePosts");
+        audioReference = FirebaseStorage.getInstance().getReference();
 
         uploadDialog = new ProgressDialog(this);
+        locationServices = new LocationServices(tagLocation, PostActivity.this);
+        audioRecorder = new AudioRecorder(lavPlaying, PostActivity.this,
+                PostActivity.this, playAudioArea, voicePlayBTN, seekTimer);
+
+        postID = postRef.push().getKey();
+        timeStamp = String.valueOf(System.currentTimeMillis());
 
         getUserDetails();
         checkUserStatus();
         iniFriendList();
         iniSearchDialog();
-        //getTags();
+
+        captionArea.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() != 0)
+                    postBTN.setText("Post");
+                else
+                    postBTN.setText("Record");
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
         postBTN.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("RestrictedApi")
             @Override
             public void onClick(View v) {
-                //Button for posting to the database
-                caption = captionArea.getText().toString().trim();
-                uploadDialog.setMessage("Loading...");
 
-                if(TextUtils.isEmpty(caption)){
-                    captionArea.setError("Whats Up???");
-                    captionArea.requestFocus();
-                }else if(imageUri != null){
-                    uploadImagePost(caption);
-                }else if(videoURI != null){
-                    uploadVideoPost(caption);
-                }else{
-                    uploadTextPost(caption);
+                if (postBTN.getText().toString().trim().equals("Record")){
+
+                    if(audioRecorder.checkRecordingPermission()){
+                        postCaptionArea.setVisibility(View.GONE);
+                        if (!audioRecorder.isRecording()){
+                            postBTN.setText("Stop");
+                            audioRecorder.startRecording();
+                        }
+                    }else{
+                        audioRecorder.requestRecordingPermission();
+                    }
+
+                }else if (postBTN.getText().toString().trim().equals("Stop")){
+
+                    postBTN.setText("Post");
+                    audioRecorder.stopRecording();
+
+                }else if (postBTN.getText().toString().trim().equals("Post")){
+                    //Button for posting to the database
+                    caption = captionArea.getText().toString().trim();
+                    uploadDialog.setMessage("Loading...");
+
+                    if (!TextUtils.isEmpty(captionArea.getText().toString().trim())){
+                        uploadDialog.show();
+                        if (imageUri != null)
+                            uploadImagePost();
+                        else if (videoURI != null)
+                            uploadVideoPost();
+                        else
+                            uploadTextPost();
+
+                    }else if (audioRecorder.getRecordingFilePath() != null){
+                        if (imageUri != null)
+                            uploadAudioImagePost();
+                        else if (videoURI != null)
+                            uploadVideoAudioPost();
+                        else
+                            uploadAudioPost();
+                    }
+
                 }
-            }
-        });
-
-        goToCam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //used to access the gallery and camera options
-                CropImage.activity()
-                        .setAspectRatio(1,1)
-                        .start(PostActivity.this);
-
             }
         });
 
@@ -217,33 +252,7 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
             @Override
             public void onClick(View v) {
 
-                if (checkLocationPermission()){
-                    detectLocation();
-                }else{
-                    ActivityCompat.requestPermissions(PostActivity.this, locationPermission, LOCATION_REQUEST_CODE);
-                }
-            }
-        });
-
-        tagFriends.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(PostActivity.this, "Friends list will popup", Toast.LENGTH_SHORT).show();
-                friendListDialog.show();
-            }
-        });
-
-        backBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        findViewById(R.id.goToVideos).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                chooseVideo();
+                locationServices.getMyLocation();
             }
         });
 
@@ -253,6 +262,7 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                 PopupMenu popupMenu = new PopupMenu(PostActivity.this, privacyBTN, Gravity.END);
                 popupMenu.getMenu().add(Menu.NONE, 0, 0, "Public");
                 popupMenu.getMenu().add(Menu.NONE, 1, 0, "Only To My Followers");
+                popupMenu.getMenu().add(Menu.NONE, 2, 0, "For Me");
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -269,6 +279,11 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                                 audiencePicker.setText("Only To My Followers");
                                 break;
 
+                            case 2:
+                                privacyProtection = "For Me";
+                                audiencePicker.setText("For Me");
+                                break;
+
                             default:
                                 Toast.makeText(PostActivity.this, "Unknown Selection", Toast.LENGTH_SHORT).show();
                         }
@@ -279,143 +294,261 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
             }
         });
 
-        findViewById(R.id.recButtonArea).setOnClickListener(new View.OnClickListener() {
+        postDurationArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (recVoiceBTN.getText().toString().equals("Rec")){
+                PopupMenu popupMenu = new PopupMenu(PostActivity.this, postDurationTV, Gravity.END);
+                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Default");
+                popupMenu.getMenu().add(Menu.NONE, 1, 0, "1 Hour");
+                popupMenu.getMenu().add(Menu.NONE, 2, 0, "6 Hours");
+                popupMenu.getMenu().add(Menu.NONE, 3, 0, "12 Hours");
+                popupMenu.getMenu().add(Menu.NONE, 4, 0, "24 Hours");
+                popupMenu.getMenu().add(Menu.NONE, 5, 0, "3 Days");
 
-                    if (checkAudioPermissions()){
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
 
-                        Toast.makeText(PostActivity.this, "Recording has began", Toast.LENGTH_SHORT).show();
+                        switch (menuItem.getItemId()){
+                            case 0:
+                                postDurationTV.setText("Default");
+                                break;
 
-                        recVoiceBTN.setText("Stop");
-                        voiceShareIcon.setImageResource(R.drawable.ic_baseline_stop_circle_24);
-                        findViewById(R.id.recordingAlert).setVisibility(View.VISIBLE);
-                        findViewById(R.id.postCaptionArea).setVisibility(View.GONE);
+                            case 1:
+                                postDurationTV.setText("1 Hour");
+                                break;
 
-                    }else{
-                        ActivityCompat.requestPermissions(PostActivity.this, new String[]{
-                                Manifest.permission.RECORD_AUDIO,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        }, 1);
+                            case 2:
+                                postDurationTV.setText("6 Hours");
+                                break;
+
+                            case 3:
+                                postDurationTV.setText("12 Hours");
+                                break;
+
+                            case 4:
+                                postDurationTV.setText("24 Hours");
+                                break;
+
+                            case 5:
+                                postDurationTV.setText("3 Days");
+                                break;
+
+                            default:
+                                Toast.makeText(PostActivity.this, "Unknown Selection", Toast.LENGTH_SHORT).show();
+                        }
+                        return false;
                     }
+                });
+                popupMenu.show();
 
-                }else if (recVoiceBTN.getText().toString().equals("Stop")){
+            }
+        });
 
-                    Toast.makeText(PostActivity.this, "Recording has stopped", Toast.LENGTH_SHORT).show();
-                    recVoiceBTN.setText("Del");
-                    voiceShareIcon.setImageResource(R.drawable.ic_delete_black_24dp);
-                    findViewById(R.id.playAudioArea).setVisibility(View.VISIBLE);
-                    findViewById(R.id.postCaptionArea).setVisibility(View.GONE);
-                    findViewById(R.id.recordingAlert).setVisibility(View.GONE);
+        voicePlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-                }else if (recVoiceBTN.getText().toString().equals("Del")){
-
-                    Toast.makeText(PostActivity.this, "you will be able to delete the recording and listen to it", Toast.LENGTH_SHORT).show();
-
-                    recVoiceBTN.setText("Rec");
-                    findViewById(R.id.playAudioArea).setVisibility(View.GONE);
-                    findViewById(R.id.postCaptionArea).setVisibility(View.VISIBLE);
-                    voiceShareIcon.setImageResource(R.drawable.ic_baseline_fiber_manual_record_24);
-
+                if (!audioRecorder.isPlaying()){
+                    audioRecorder.startPlayingRecording();
+                }else{
+                    audioRecorder.stopPlayingAudio();
                 }
             }
         });
 
-
-
-    }
-
-    private boolean checkAudioPermissions(){
-        int first = ActivityCompat.checkSelfPermission(getApplicationContext(),
-                Manifest.permission.RECORD_AUDIO);
-        int second = ActivityCompat.checkSelfPermission(getApplicationContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        return first == PackageManager.PERMISSION_GRANTED  &&
-                second == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private boolean checkLocationPermission() {
-        boolean result = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) ==
-                (PackageManager.PERMISSION_GRANTED);
-        return result;
-    }
-
-    private void detectLocation() {
-        Toast.makeText(this, "Please wait... Detecting your location", Toast.LENGTH_LONG).show();
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //audioRecorder.deleteRecording();
+                Toast.makeText(PostActivity.this, "Recording will be deleted", Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
-    private void findAddress() {
-        //find address, country, state, city
-
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(this, Locale.getDefault());
-
-        try{
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-
-            String address = addresses.get(0).getAddressLine(0);//complete address
-            String city = addresses.get(0).getLocality();
-            String state = addresses.get(0).getAdminArea();
-            String country = addresses.get(0).getCountryName();
-
-            String myLocation = address + ", " + city + ", " + state + ", " + country;
-
-            tagLocation.setText(myLocation);
-
-        }catch (Exception e){
-            Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
+    private void uploadVideoAudioPost() {
+        Toast.makeText(PostActivity.this, "You will be able to upload video audio file", Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void onLocationChanged(@NonNull Location location) {
-        //location detected
-
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-
-        findAddress();
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(@NonNull String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(@NonNull String provider) {
-
-    }
-
-
-    private void uploadTextPost(String caption) {
+    private void uploadAudioImagePost() {
         uploadDialog.show();
-        final String timeStamp = String.valueOf(System.currentTimeMillis());
-        String postID = postRef.push().getKey();
+
+        final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
+                + "." + getFileExtension(imageUri));
+
+        uploadTask = fileReference.putFile(imageUri);
+        uploadTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return fileReference.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri imageDownloadLink = task.getResult();
+                    myUri = imageDownloadLink.toString();
+
+                    final StorageReference audioPath = audioReference.child("AudioPosts").child(postID + ".3gp");
+                    Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+                    StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+                    audioTask.continueWithTask(new Continuation() {
+                        @Override
+                        public Object then(@NonNull Task task) throws Exception {
+                            if (!task.isSuccessful())
+                                throw task.getException();
+                            return audioPath.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()){
+                                Uri audioDownloadLink = task.getResult();
+                                String audioLink = audioDownloadLink.toString();
+
+                                HashMap<String, Object> audioImageMap = new HashMap<>();
+
+                                //put the post info
+                                audioImageMap.put("userID", firebaseUser.getUid());//usersID
+                                audioImageMap.put("postID", postID); //the id of the post is the time at which the post has been added
+                                audioImageMap.put("postCaption", ""); // the post caption
+                                audioImageMap.put("postImage", myUri); //the post image which has been send to firebase storage and only the uri is stored
+                                audioImageMap.put("postTime", timeStamp);// the time at which the post has been posted
+                                audioImageMap.put("postType", "audioImagePost");
+                                audioImageMap.put("videoURL", "noVideo");
+                                audioImageMap.put("postPrivacy", privacyProtection);
+                                audioImageMap.put("audioURL", audioLink);
+
+                                if (!tagLocation.getText().toString().equals("No Location")) {
+                                    audioImageMap.put("latitude", locationServices.getLatitude());
+                                    audioImageMap.put("longitude", locationServices.getLongitude());
+                                }
+
+                                if (commentSwitch.isChecked())
+                                    audioImageMap.put("commentsAllowed", false);
+                                else
+                                    audioImageMap.put("commentsAllowed", true);
+
+                                postRef.child(postID).setValue(audioImageMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                uploadDialog.dismiss();
+
+                                                if (!tagLocation.getText().toString().equals("No Location")) {
+                                                    tagLocation.setText("No Location");
+                                                }
+
+                                                audioRecorder.resetRecorder();
+
+                                                captionArea.setText("");
+                                                picToUpload.setImageURI(null);
+                                                imageUri = null;
+
+                                                finish();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(PostActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(PostActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void uploadAudioPost() {
+        uploadDialog.show();
+        StorageReference filePath = audioReference.child("AudioPosts").child(postID + ".3gp");
+
+        Uri audiUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = filePath.putFile(audiUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return filePath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri downloadUri = task.getResult();
+                    String audioLink = downloadUri.toString();
+
+                    HashMap<String, Object> audioMap = new HashMap<>();
+
+                    //put the post info
+                    audioMap.put("userID", firebaseUser.getUid());//usersID
+                    audioMap.put("postID", postID); //the id of the post is the time at which the post has been added
+                    audioMap.put("postCaption", ""); // the post caption
+                    audioMap.put("postImage", "noImage"); //the post image which has been send to firebase storage and only the uri is stored
+                    audioMap.put("postTime", timeStamp);// the time at which the post has been posted
+                    audioMap.put("postType", "audioPost");
+                    audioMap.put("videoURL", "noVideo");
+                    audioMap.put("postPrivacy", privacyProtection);
+                    audioMap.put("audioURL", audioLink);
+
+                    if (!tagLocation.getText().toString().equals("No Location")) {
+                        audioMap.put("latitude", locationServices.getLatitude());
+                        audioMap.put("longitude", locationServices.getLongitude());
+                    }
+
+                    if (commentSwitch.isChecked())
+                        audioMap.put("commentsAllowed", false);
+                    else
+                        audioMap.put("commentsAllowed", true);
+
+                    postRef.child(postID).setValue(audioMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    uploadDialog.dismiss();
+
+                                    if (!tagLocation.getText().toString().equals("No Location")) {
+                                        tagLocation.setText("No Location");
+                                    }
+
+                                    audioRecorder.resetRecorder();
+
+                                    finish();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(PostActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(PostActivity.this, "Uploading Audio Failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void uploadTextPost() {
 
         HashMap<String, Object> textMap = new HashMap<>();
 
@@ -427,11 +560,17 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
         textMap.put("postPrivacy", privacyProtection);//post security
         textMap.put("postType", "textPost");//post security
         textMap.put("videoURL", "noVideo");//post security
+        textMap.put("audioURL", "noAudio");
 
-        if (!TextUtils.isEmpty(tagLocation.getText().toString())) {
-            textMap.put("latitude", latitude);
-            textMap.put("longitude", longitude);
+        if (!tagLocation.getText().toString().equals("No Location")) {
+            textMap.put("latitude", locationServices.getLatitude());
+            textMap.put("longitude", locationServices.getLongitude());
         }
+
+        if (commentSwitch.isChecked())
+            textMap.put("commentsAllowed", false);
+        else
+            textMap.put("commentsAllowed", true);
 
         postRef.child(postID).setValue(textMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -440,6 +579,10 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                         postProgress.setVisibility(View.GONE);
                         captionArea.setText("");
                         uploadDialog.dismiss();
+
+                        if (!tagLocation.getText().toString().equals("No Location")) {
+                            tagLocation.setText("No Location");
+                        }
 
                         finish();
                     }
@@ -452,9 +595,7 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
 
     }
 
-    private void uploadVideoPost(String caption) {
-        uploadDialog.show();
-        final String timeStamp = String.valueOf(System.currentTimeMillis());
+    private void uploadVideoPost() {
 
         long systemMillis = System.currentTimeMillis();
 
@@ -490,7 +631,6 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                 mediaUrl = downloadUri.toString();
                 Log.i("downloadTag", mediaUrl);
 
-                String postID = postRef.push().getKey();
                 HashMap<String, Object> videoMap = new HashMap<>();
 
                 //put the post info
@@ -502,11 +642,17 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                 videoMap.put("postPrivacy", privacyProtection);
                 videoMap.put("postType", "videoPost");
                 videoMap.put("videoURL", mediaUrl);
+                videoMap.put("audioURL", "noAudio");
 
-                if (!TextUtils.isEmpty(tagLocation.getText().toString())) {
-                    videoMap.put("latitude", latitude);
-                    videoMap.put("longitude", longitude);
+                if (!tagLocation.getText().toString().equals("No Location")) {
+                    videoMap.put("latitude", locationServices.getLatitude());
+                    videoMap.put("longitude", locationServices.getLongitude());
                 }
+
+                if (commentSwitch.isChecked())
+                    videoMap.put("commentsAllowed", false);
+                else
+                    videoMap.put("commentsAllowed", true);
 
                 postRef.child(postID).setValue(videoMap)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -516,6 +662,12 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                                 videoView.setVideoURI(null);
                                 Toast.makeText(PostActivity.this, "Video Posted Successfully", Toast.LENGTH_SHORT).show();
                                 uploadDialog.dismiss();
+
+
+
+                                if (!tagLocation.getText().toString().equals("No Location")) {
+                                    tagLocation.setText("No Location");
+                                }
 
                                 finish();
                             }
@@ -530,9 +682,7 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
         });
     }
 
-    private void uploadImagePost(String caption) {
-        uploadDialog.show();
-        final String timeStamp = String.valueOf(System.currentTimeMillis());
+    private void uploadImagePost() {
 
         final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
                 + "." + getFileExtension(imageUri));
@@ -553,8 +703,6 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                     Uri downloadUri = task.getResult();
                     myUri = downloadUri.toString();
 
-                    String postID = postRef.push().getKey();
-
                     HashMap<String, Object> imageMap = new HashMap<>();
 
                     //put the post info
@@ -566,11 +714,17 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                     imageMap.put("postType", "imagePost");
                     imageMap.put("videoURL", "noVideo");
                     imageMap.put("postPrivacy", privacyProtection);
+                    imageMap.put("audioURL", "noAudio");
 
-                    if (!TextUtils.isEmpty(tagLocation.getText().toString())) {
-                        imageMap.put("latitude", latitude);
-                        imageMap.put("longitude", longitude);
+                    if (!tagLocation.getText().toString().equals("No Location")) {
+                        imageMap.put("latitude", locationServices.getLatitude());
+                        imageMap.put("longitude", locationServices.getLongitude());
                     }
+
+                    if (commentSwitch.isChecked())
+                        imageMap.put("commentsAllowed", false);
+                    else
+                        imageMap.put("commentsAllowed", true);
 
                     postRef.child(postID).setValue(imageMap)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -578,6 +732,10 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
                                 public void onSuccess(Void aVoid) {
                                     postProgress.setVisibility(View.GONE);
                                     uploadDialog.dismiss();
+
+                                    if (!tagLocation.getText().toString().equals("No Location")) {
+                                        tagLocation.setText("No Location");
+                                    }
 
                                     captionArea.setText("");
                                     picToUpload.setImageURI(null);
@@ -626,20 +784,6 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
         });
 
     }
-
-    /*private void getTags() {
-        final Intent tags = getIntent();
-        tagged = tags.getStringExtra("taggedPeople");
-
-        try{
-            if(tagged.isEmpty()){
-                taggedPeople.setVisibility(View.GONE);
-            }else{
-                taggedPeople.setVisibility(View.VISIBLE);
-                taggedPeople.setText(tagged);
-            }
-        }catch (NullPointerException ignored){}
-    }*/
 
     private void iniSearchDialog() {
         searchDialog = new Dialog(this);
@@ -756,11 +900,28 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
             assert result != null;
             imageUri = result.getUri();
 
+            if (imageUri != null){
+                if (videoURI != null){
+                    videoURI = null;
+
+                    videoCardView.setVisibility(View.GONE);
+                }
+
+            }
+
             imageCardView.setVisibility(View.VISIBLE);
             picToUpload.setImageURI(imageUri);
 
         }else if (requestCode == PICK_VIDEO_REQUEST && resultCode == -1 && data != null & data.getData() != null){
             videoURI = data.getData();
+
+            if (videoURI != null){
+                if (imageUri != null){
+                    imageUri = null;
+
+                    imageCardView.setVisibility(View.GONE);
+                }
+            }
 
             //video set to video view in the next activity
             videoArea.setVisibility(View.VISIBLE);
@@ -787,21 +948,17 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
+        if (requestCode == audioRecorder.REQUEST_AUDIO_PERMISSION){
+            if (grantResults.length > 0){
+                boolean permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-    @Override
-    protected void onStart() {
-        checkOnlineStatus();
-        //executes when the activity is launched to check if the user is still logged in properly
-        super.onStart();
-        checkUserStatus();
-    }
-
-    @Override
-    protected void onResume() {
-        checkOnlineStatus();
-        super.onResume();
-        checkUserStatus();
+                if (permissionToRecord){
+                    Toast.makeText(this, "Recording permission granted", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(this, "Recording permission denied", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
     public void checkUserStatus(){
@@ -814,132 +971,44 @@ public class PostActivity extends AppCompatActivity implements LocationListener 
             name = user.getDisplayName();
 
         } else {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, RegisterActivity.class));
             finish();
         }
     }
 
-    private void checkOnlineStatus(){
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("onlineStatus", "online");
-        dbRef.updateChildren(hashMap);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.share_post_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.uploadImageItems:
+                //used to access the gallery and camera options
+                CropImage.activity()
+                        .setAspectRatio(1,1)
+                        .start(PostActivity.this);
+                break;
+            case R.id.uploadVideosItem:
+                chooseVideo();
+                break;
+            case R.id.tagFriendsItem:
+                friendListDialog.show();
+                break;
+
+            default:
+                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        return super.onSupportNavigateUp();
+        onBackPressed();
+        return true;
     } //below is the handler for recording voice status
-
-    private void uploadData(final String caption, String uri, final String privacyLock) {//for post image name, post id, post timestamp
-
-        final String timeStamp = String.valueOf(System.currentTimeMillis());
-
-        if(!uri.equals("noImage")){
-            //posts with images - noImage is not parsed into the function
-
-            final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(imageUri));
-
-            uploadTask = fileReference.putFile(imageUri);
-            uploadTask.continueWithTask(new Continuation(){
-                @Override
-                public Object then(@NonNull Task task) throws Exception{
-                    if(!task.isSuccessful()){
-                        throw task.getException();
-                    }
-                    return fileReference.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if(task.isSuccessful()){
-                        Uri downloadUri = task.getResult();
-                        myUri = downloadUri.toString();
-
-                        String postID = postRef.push().getKey();
-
-                        //url is received upload post to firebase database
-
-                        HashMap<Object, String> hashMap = new HashMap<>();
-
-                        //put the post info
-                        hashMap.put("userID", firebaseUser.getUid());//usersID
-                        hashMap.put("postID", postID); //the id of the post is the time at which the post has been added
-                        hashMap.put("postCaption", caption); // the post caption
-                        hashMap.put("postImage", myUri); //the post image which has been send to firebase storage and only the uri is stored
-                        hashMap.put("postTime", timeStamp);// the time at which the post has been posted
-                        hashMap.put("postPrivacy", privacyLock);//post security
-                        hashMap.put("postType", "imagePost");
-
-                        //put data in this reference
-                        postRef.child(postID).setValue(hashMap)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @SuppressLint("RestrictedApi")
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        //executes when the post has successfully been posted to firebase database
-                                        postBTN.setVisibility(View.VISIBLE);
-                                        postProgress.setVisibility(View.INVISIBLE);
-
-                                        //reset view after posting
-                                        captionArea.setText("");
-                                        picToUpload.setImageURI(null);
-                                        imageUri = null;
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(PostActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(PostActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }else{
-            //executes when there is not image added to the post
-            HashMap<Object, String> hashMap = new HashMap<>();
-
-            String postID = postRef.push().getKey();
-
-            hashMap.put("userID", firebaseUser.getUid());//usersID
-            hashMap.put("postID", postID);
-            hashMap.put("postCaption", caption);
-            hashMap.put("postImage", "noImage");
-            hashMap.put("postTime", timeStamp);
-            hashMap.put("postPrivacy", privacyLock);//post security
-            hashMap.put("postType", "textPost");//post security
-
-            postRef.child(postID).setValue(hashMap)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @SuppressLint("RestrictedApi")
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            //executes when the post with no image has been posted successfully to firebase
-                            postBTN.setVisibility(View.VISIBLE);
-                            postProgress.setVisibility(View.INVISIBLE);
-
-                            //reset view after posting
-                            captionArea.setText("");
-                            picToUpload.setImageURI(null);
-                            imageUri = null;
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(PostActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
-
-    }
 
 }
