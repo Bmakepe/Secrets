@@ -103,6 +103,49 @@
     </androidx.core.widget.NestedScrollView>
 
     <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomBar">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_image_black_24dp"
+            android:id="@+id/replyMessageImage"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/replyMessageImage"
+            android:id="@+id/replyTextArea"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/replyMessageText"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:textStyle="normal"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/replyMessageAudioArea"
+                android:visibility="gone">
+
+                <include
+                    layout="@layout/audio_media_player" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="2dp"

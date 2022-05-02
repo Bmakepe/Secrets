@@ -1,12 +1,13 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
-import android.annotation.SuppressLint;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.YuvImage;
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.Gravity;
@@ -15,6 +16,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.RotateAnimation;
+import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
@@ -23,7 +30,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.makepe.blackout.GettingStarted.InAppActivities.CameraActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.PostActivity;
 import com.makepe.blackout.R;
 import com.wonderkiln.camerakit.CameraKit;
@@ -31,7 +37,6 @@ import com.wonderkiln.camerakit.CameraListener;
 import com.wonderkiln.camerakit.CameraView;
 
 import java.io.File;
-import java.util.Objects;
 
 public class PhotoFragment extends Fragment {
 
@@ -43,6 +48,10 @@ public class PhotoFragment extends Fragment {
     private RadioGroup imageVideoBTN;
     private RadioButton selectedMediaType;
     private boolean isRecording = false;
+
+    private int[] colorIntArray = {R.color.colorBlack, R.color.colorBlack};
+    private int[] iconIntArray = {R.drawable.ic_camera_black_24dp, R.drawable.ic_baseline_fiber_manual_record_24};
+
 
     public PhotoFragment() {
         // Required empty public constructor
@@ -78,11 +87,13 @@ public class PhotoFragment extends Fragment {
                 switch (i){
                     case R.id.photoMediaBTN:
                         photoButton.setTag("photoSelected");
-                        photoButton.setImageResource(R.drawable.ic_camera_black_24dp);
+                        //photoButton.setImageResource(R.drawable.ic_camera_black_24dp);
+                        animatePhotoBTN(0);
                         break;
                     case R.id.videoMediaBTN:
                         photoButton.setTag("videoSelected");
-                        photoButton.setImageResource(R.drawable.ic_baseline_fiber_manual_record_24);
+                        animatePhotoBTN(1);
+                        //photoButton.setImageResource(R.drawable.ic_baseline_fiber_manual_record_24);
                         break;
 
                     default:
@@ -228,6 +239,51 @@ public class PhotoFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void animatePhotoBTN(int position){
+        photoButton.clearAnimation();
+
+        ScaleAnimation shrink = new ScaleAnimation(1f, 0.1f, 1f, 0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        shrink.setDuration(100);
+        shrink.setInterpolator(new AccelerateInterpolator());
+        shrink.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                photoButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), colorIntArray[position]));
+                photoButton.setImageDrawable(ContextCompat.getDrawable(getActivity(), iconIntArray[position]));
+
+                // Rotate Animation
+                Animation rotate = new RotateAnimation(60.0f, 0.0f,
+                        Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                        0.5f);
+                rotate.setDuration(150);
+                rotate.setInterpolator(new DecelerateInterpolator());
+
+                // Scale up animation
+                ScaleAnimation expand = new ScaleAnimation(0.1f, 1f, 0.1f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                expand.setDuration(150);     // animation duration in milliseconds
+                expand.setInterpolator(new DecelerateInterpolator());
+
+                // Add both animations to animation state
+                AnimationSet s = new AnimationSet(false); //false means don't share interpolators
+                s.addAnimation(rotate);
+                s.addAnimation(expand);
+                photoButton.startAnimation(s);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        photoButton.startAnimation(shrink);
     }
 
     private boolean hasFlash(Context context) {

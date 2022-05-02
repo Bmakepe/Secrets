@@ -7,13 +7,13 @@
     tools:context=".GettingStarted.MainActivity">
 
     <fragment
-        android:id="@+id/fragmentContainerView"
+        android:id="@+id/homeFragmentContainerView"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottomNavigationView"
         app:defaultNavHost="true"
         app:layout_constraintEnd_toEndOf="parent"
+        android:layout_above="@+id/bottomNavigationView"
         app:layout_constraintStart_toStartOf="parent"
         app:navGraph="@navigation/bottom_nav_graph" />
 
@@ -41,7 +41,7 @@
             android:layout_gravity="bottom|end"
             android:backgroundTint="@color/colorPrimaryDark"
             android:src="@drawable/ic_add_black_24dp"
-            android:tint="@color/white" />
+            app:tint="@color/white" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/newPostFAB"
@@ -52,7 +52,7 @@
             android:visibility="invisible"
             android:backgroundTint="@color/colorPrimaryDark"
             android:src="@drawable/ic_add_circle_black_24dp"
-            android:tint="@color/white" />
+            app:tint="@color/white" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/viewMovementsFAB"
@@ -63,7 +63,7 @@
             android:visibility="invisible"
             android:backgroundTint="@color/colorPrimaryDark"
             android:src="@drawable/ic_baseline_movement_24"
-            android:tint="@color/white" />
+            app:tint="@color/white" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/openContactsFAB"
@@ -74,9 +74,8 @@
             android:visibility="invisible"
             android:backgroundTint="@color/colorPrimaryDark"
             android:src="@drawable/ic_contacts_black_24dp"
-            android:tint="@color/white" />
+            app:tint="@color/white" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
 
 </RelativeLayout>

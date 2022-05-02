@@ -64,7 +64,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
     private CircleImageView storyProPic;
     private TextView storyUsername, storyTimeStamp, storyCap, likesCounter,
             commentCounter, shareCounter, storyLocationTV, seen_number;
-    private RelativeLayout likesArea, commentsArea, sharesArea, storyAudioArea;
+    private RelativeLayout likesArea, commentsArea, sharesArea, storyAudioArea, story_slideDMArea;
     private LinearLayout r_seen;
 
     private List<Story> storyList;
@@ -132,6 +132,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         sharesArea = findViewById(R.id.story_shareArea);
         seen_number = findViewById(R.id.storyViewsCount);
         r_seen = findViewById(R.id.r_seen);
+        story_slideDMArea = findViewById(R.id.story_slideDMArea);
 
         //for audio buttons
         playBTN = findViewById(R.id.postItem_playVoiceIcon);
@@ -152,10 +153,13 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         audioPlayer = new AudioPlayer(StoryActivity.this, playBTN,
                 audioSeekTimer, postTotalTime, audioAnimation);
 
-        if (userID.equals(firebaseUser.getUid()))
+        if (userID.equals(firebaseUser.getUid())) {
             r_seen.setVisibility(View.VISIBLE);
-        else
+            sharesArea.setVisibility(View.GONE);
+            story_slideDMArea.setVisibility(View.GONE);
+        }else{
             r_seen.setVisibility(View.GONE);
+        }
 
         getStories();
         displayUsersDetails(userID);
@@ -180,11 +184,20 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
         skip.setOnTouchListener(onTouchListener);
 
-        findViewById(R.id.replyStory).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.pauseStory).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 storiesProgressView.pause();
+            }
+        });
+
+        story_slideDMArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent messageIntent = new Intent(StoryActivity.this, ChatActivity.class);
+                messageIntent.putExtra("userid", userID);
+                startActivity(messageIntent);
             }
         });
 

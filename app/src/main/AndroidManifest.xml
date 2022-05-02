@@ -44,6 +44,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator">
         <activity
+            android:name=".GettingStarted.InAppActivities.EditImageActivity"
+            android:exported="false" />
+        <activity
             android:name=".GettingStarted.InAppActivities.CameraActivity"
             android:exported="false" />
         <activity
@@ -153,7 +156,28 @@
         <activity
             android:name=".GettingStarted.InAppActivities.PostActivity"
             android:screenOrientation="portrait"
-            tools:ignore="InnerclassSeparator" />
+            tools:ignore="InnerclassSeparator"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="image/*"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="video/*"/>
+            </intent-filter>
+
+        </activity>
         <activity
             android:name=".GettingStarted.UserDetailsActivity"
             android:parentActivityName=".GettingStarted.VerifyPhoneActivity"

@@ -132,7 +132,7 @@
                 android:background="@drawable/button_selector"
                 android:padding="3dp"
                 android:text="Verify"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/white"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 

@@ -157,6 +157,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         switch (getItemViewType(position)){
             case IMAGE_POST_ITEM:
                 displayImagePost(holder, post);
+                getNormalPostButtons(holder, post);
                 break;
 
             case TEXT_POST_ITEM:
@@ -169,6 +170,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
             case AUDIO_IMAGE_POST_ITEM:
                 displayAudioImagePost(holder, post);
+                getNormalPostButtons(holder, post);
                 break;
 
             case SHARED_TEXT_POST_ITEM:
@@ -463,9 +465,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     }
 
     private void displaySharedTextImageAudioPost(MyHolder holder, PostModel post) {
-
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
-                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -973,12 +972,97 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
         holder.shareArea.setVisibility(View.GONE);
 
+        /*holder.sharedPostImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                postReference.child(post.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+
+                            Intent intent = new Intent(context, FullScreenImageActivity.class);
+                            intent.putExtra("itemID", post.getSharedPost());
+                            intent.putExtra("reason", "postImage");
+                            context.startActivity(intent);
+                        }else{
+                            movementPostReference.child(post.getSharedPost()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()){
+
+                                        Intent intent = new Intent(context, FullScreenImageActivity.class);
+                                        intent.putExtra("itemID", post.getSharedPost());
+                                        intent.putExtra("postImage", "movementPostPic");
+                                        context.startActivity(intent);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+        });*/
+
         holder.sharedPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
                 sharedPostIntent.putExtra("postID", post.getPostID());
                 context.startActivity(sharedPostIntent);
+            }
+        });
+    }
+
+    private void getNormalPostButtons(MyHolder holder, PostModel post){
+
+        holder.postImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+
+                            Intent intent = new Intent(context, FullScreenImageActivity.class);
+                            intent.putExtra("itemID", post.getPostID());
+                            intent.putExtra("reason", "postImage");
+                            context.startActivity(intent);
+                        }else{
+                            movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()){
+
+                                        Intent intent = new Intent(context, FullScreenImageActivity.class);
+                                        intent.putExtra("itemID", post.getPostID());
+                                        intent.putExtra("postImage", "movementPostPic");
+                                        context.startActivity(intent);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
             }
         });
     }
@@ -1000,8 +1084,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         holder.postMenuBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "menu clicked", Toast.LENGTH_SHORT).show();
-                //showMoreOptions(holder.postMenuBTN, uid, pId, PostImage);
                 menuOptions(holder.postMenuBTN, post);
             }
         });
@@ -1359,7 +1441,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     }
 
     private void getNormalPostAudio(MyHolder holder, PostModel post){
-
 
         audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);

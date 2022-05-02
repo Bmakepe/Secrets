@@ -83,7 +83,7 @@ public class PostActivity extends AppCompatActivity{
     private DatabaseReference userRef, postRef;
     private StorageReference storageReference, audioReference;
 
-    private ImageView picToUpload;
+    private ImageView picToUpload, editImageBTN;
     private TextView postBTN, postDurationTV;
     private EditText captionArea;
     private String name, uid, caption, postID, timeStamp;
@@ -154,6 +154,7 @@ public class PostActivity extends AppCompatActivity{
         commentSwitch = findViewById(R.id.commentSwitch);
         postDurationArea = findViewById(R.id.postDurationArea);
         postDurationTV = findViewById(R.id.postDurationTV);
+        editImageBTN = findViewById(R.id.editImageBTN);
 
         playAudioArea = findViewById(R.id.playAudioArea);
         voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
@@ -173,6 +174,20 @@ public class PostActivity extends AppCompatActivity{
 
         postID = postRef.push().getKey();
         timeStamp = String.valueOf(System.currentTimeMillis());
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null){
+
+            if ("text/plain".equals(type))
+                handleSendText(intent);
+            else if (type.startsWith("image/*"))
+                handleSendImage(intent);
+            else if (type.startsWith("video/*"))
+                handleSendVideo(intent);
+        }
 
         getUserDetails();
         checkUserStatus();
@@ -365,6 +380,39 @@ public class PostActivity extends AppCompatActivity{
             }
         });
 
+        editImageBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent editImageIntent = new Intent(PostActivity.this, EditImageActivity.class);
+                //editImageIntent.putExtra("imageUri", imageUri);
+                editImageIntent.setData(imageUri);
+                startActivity(editImageIntent);
+            }
+        });
+
+    }
+
+    private void handleSendVideo(Intent intent) {
+
+    }
+
+    private void handleSendImage(Intent intent) {
+
+        Uri imageURI = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+        if (imageURI != null){
+            imageUri = imageURI;
+
+            picToUpload.setImageURI(imageUri);
+        }
+    }
+
+    private void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+        if (sharedText != null){
+            captionArea.setText(sharedText);
+        }
     }
 
     private void uploadVideoAudioPost() {

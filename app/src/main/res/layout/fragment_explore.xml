@@ -15,16 +15,18 @@
         android:id="@+id/exploreViewPager"/>
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/videosTab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:tabGravity="center"
         android:layout_centerHorizontal="true"
-        app:tabMode="fixed"
-        android:layout_margin="10dp"
-        app:tabTextColor="@color/white"
+        android:id="@+id/videosTab"
         app:tabSelectedTextColor="@color/white"
         app:tabIndicatorColor="@color/white"
-        app:tabRippleColor="@null"/>
+        app:tabIndicatorHeight="2dp"
+        android:overScrollMode="ifContentScrolls"
+        app:tabMode="fixed"
+        android:layout_margin="10dp"
+        android:background="@null"
+        app:tabTextColor="@color/white" />
 
 </RelativeLayout>

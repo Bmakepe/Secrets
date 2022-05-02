@@ -15,7 +15,7 @@
         android:src="@drawable/default_profile_display_pic" />
 
     <ImageView
-        android:id="@+id/replyStory"
+        android:id="@+id/pauseStory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -69,14 +69,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_centerVertical="true"
                 android:layout_toEndOf="@+id/storyProPic"
-                android:layout_centerVertical="true">
+                android:orientation="vertical">
 
                 <RelativeLayout
+                    android:id="@+id/storyOwnerDetails"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/storyOwnerDetails">
+                    android:layout_height="wrap_content">
 
                     <TextView
                         android:id="@+id/storyUsername"
@@ -109,13 +109,13 @@
                     android:id="@+id/storyLocationDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
                     android:fontFamily="sans-serif"
                     android:singleLine="true"
-                    android:layout_marginStart="5dp"
-                    android:visibility="gone"
                     android:textColor="@color/colorBlack"
                     android:textSize="10sp"
                     android:textStyle="normal"
+                    android:visibility="gone"
                     tools:ignore="SmallSp" />
 
             </LinearLayout>
@@ -214,7 +214,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
                         android:orientation="vertical">
 
                         <ImageView
@@ -229,6 +228,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:singleLine="true"
+                            android:text="0 Likes"
                             android:textAlignment="center"
                             android:textColor="@color/colorBlack"
                             android:textSize="12sp"
@@ -266,6 +266,7 @@
                             android:textStyle="normal"
                             android:textAlignment="center"
                             android:textSize="12sp"
+                            android:text="0 Comments"
                             android:id="@+id/story_commentCounter"
                             android:singleLine="true"/>
 
@@ -304,6 +305,43 @@
                             android:textAlignment="center"
                             android:textSize="12sp"
                             android:id="@+id/movement_shareCounter"
+                            android:singleLine="true"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/story_slideDMArea"
+                    tools:ignore="Suspicious0dp"  >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_baseline_slide_24"
+                            app:tint="@color/colorBlack"
+                            android:id="@+id/storySlideBTN"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorBlack"
+                            android:textStyle="normal"
+                            android:text="Reply"
+                            android:textAlignment="center"
+                            android:textSize="12sp"
+                            android:id="@+id/storySlideTV"
                             android:singleLine="true"/>
 
                     </LinearLayout>

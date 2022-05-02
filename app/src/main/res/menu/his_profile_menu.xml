@@ -9,6 +9,10 @@
         app:showAsAction="always"/>
 
     <item
+        android:id="@+id/blockUser"
+        android:title="Block"/>
+
+    <item
         android:id="@+id/report"
         android:title="Report"/>
 

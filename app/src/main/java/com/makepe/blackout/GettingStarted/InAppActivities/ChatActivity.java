@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
@@ -80,6 +81,11 @@ public class  ChatActivity extends AppCompatActivity {
     //for checking if user has seen message or not
     private ValueEventListener seenListener;
     private DatabaseReference userRefForSeen;
+
+    //responsible for message reply quotes
+    private ImageView replyMessageImage;
+    private TextView replyMessageTextView;
+
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
