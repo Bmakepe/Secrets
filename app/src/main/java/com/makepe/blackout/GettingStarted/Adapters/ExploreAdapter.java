@@ -17,10 +17,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.InAppActivities.MovementDetailsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.PostListActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -33,7 +31,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
     private ArrayList<String> exploreItems;
     private Context context;
 
-    private DatabaseReference postRef, userRef, movementReference, movementPostReference;
+    private DatabaseReference postRef, userRef;
 
     public ExploreAdapter(ArrayList<String> exploreItems, Context context) {
         this.exploreItems = exploreItems;
@@ -73,40 +71,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
                                         Intent postIntent = new Intent(context, ViewProfileActivity.class);
                                         postIntent.putExtra("uid", exploreItemID);
                                         context.startActivity(postIntent);
-                                    }else{
-                                        movementReference = FirebaseDatabase.getInstance().getReference("Movements").child(exploreItemID);
-                                        movementReference.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                if (snapshot.exists()){
-                                                    Intent movementIntent = new Intent(context, MovementDetailsActivity.class);
-                                                    movementIntent.putExtra("movementID", exploreItemID);
-                                                    context.startActivity(movementIntent);
-                                                }else{
-                                                    movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts").child(exploreItemID);
-                                                    movementPostReference.addValueEventListener(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                            if (snapshot.exists()){
-                                                                Intent movePostIntent = new Intent(context, PostListActivity.class);
-                                                                movePostIntent.putExtra("postID", exploreItemID);
-                                                                context.startActivity(movePostIntent);
-                                                            }
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError error) {
-
-                                                        }
-                                                    });
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
-
-                                            }
-                                        });
                                     }
                                 }
 
@@ -151,48 +115,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
                                     Picasso.get().load(user.getImageURL()).into(holder.exploreImage);
                                     holder.imageLoader.setVisibility(View.GONE);
                                 }catch (NullPointerException ignored){}
-                            }else{
-                                movementReference =  FirebaseDatabase.getInstance().getReference("Movements").child(exploreItemID);
-                                movementReference.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if (snapshot.exists()){
-                                            Movement movement = snapshot.getValue(Movement.class);
-
-                                            try{
-                                                assert movement != null;
-                                                Picasso.get().load(movement.getMovementProPic()).into(holder.exploreImage);
-                                                holder.imageLoader.setVisibility(View.GONE);
-                                            }catch (NullPointerException ignored){}
-                                        }else{
-                                            movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts").child(exploreItemID);
-                                            movementPostReference.addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                    if (snapshot.exists()){
-
-                                                        PostModel ps = snapshot.getValue(PostModel.class);
-                                                        try{
-                                                            assert ps != null;
-                                                            Picasso.get().load(ps.getPostImage()).into(holder.exploreImage);
-                                                            holder.imageLoader.setVisibility(View.GONE);
-                                                        }catch (NullPointerException ignored){}
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
                             }
                         }
 

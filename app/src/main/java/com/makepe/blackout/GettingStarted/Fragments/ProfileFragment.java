@@ -8,8 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -48,13 +46,10 @@ import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.EditProfileActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.MessagesActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.MovementsActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.NotificationsActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PostActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SavedPostsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SettingsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
-import com.makepe.blackout.GettingStarted.Models.Story;
+import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.GettingStarted.RegisterActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
@@ -62,10 +57,6 @@ import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ViewPagerAdapter;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import static com.google.firebase.storage.FirebaseStorage.getInstance;
 
@@ -93,9 +84,7 @@ public class ProfileFragment extends Fragment {
 
     //firebase
     private FirebaseUser firebaseUser;
-    private DatabaseReference userRef, postReference, followersReference, followingReference, storyReference;
-
-    private int postCount = 0, videoCount = 0, totalCount = 0;
+    private DatabaseReference userRef, postReference, storyReference;
 
     //for fragments
     private TabLayout profileTabs;
@@ -104,6 +93,7 @@ public class ProfileFragment extends Fragment {
     private boolean activeStories = false;
 
     private UniversalFunctions universalFunctions;
+    private FollowInteraction followInteraction;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -146,8 +136,6 @@ public class ProfileFragment extends Fragment {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        followersReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid()).child("followers");
-        followingReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid()).child("following");
         storyReference = FirebaseDatabase.getInstance().getReference("Story").child(firebaseUser.getUid());
 
         SharedPreferences prefs = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
@@ -156,16 +144,18 @@ public class ProfileFragment extends Fragment {
         pd = new ProgressDialog(getActivity());
 
         universalFunctions = new UniversalFunctions(getContext());
+        followInteraction = new FollowInteraction(getContext());
 
         getUserDetails();
-        getFollowers();
-        getNrPosts();
+        followInteraction.getFollowersNo(firebaseUser.getUid(), followersNo);
+        followInteraction.getFollowingNo(firebaseUser.getUid(), followingNo);
+        universalFunctions.getNrPosts(firebaseUser.getUid(), postNo);
         universalFunctions.checkActiveStories(avatarIv, firebaseUser.getUid());
 
         //setting up fragments
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getChildFragmentManager());
-        viewPagerAdapter.addFragment(new MyPostsFragment(), "Posts [" + postCount + "]");
-        viewPagerAdapter.addFragment(new MyVideosFragment(), "Videos [" + videoCount + "]");
+        viewPagerAdapter.addFragment(new MyPostsFragment(), "Posts");
+        viewPagerAdapter.addFragment(new MyVideosFragment(), "Videos");
         profilePager.setAdapter(viewPagerAdapter);
         profileTabs.setupWithViewPager(profilePager);
 
@@ -305,63 +295,6 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void getFollowers(){
-
-        followersReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followersNo.setText(dataSnapshot.getChildrenCount() + "");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });//function to get number of followers
-
-        followingReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followingNo.setText(dataSnapshot.getChildrenCount() + "");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }//function for followers and users i follow
-
-    private void getNrPosts(){
-       postReference.addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               int totalCount = 0;
-               for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                   PostModel post = snapshot.getValue(PostModel.class);
-                   assert post != null;
-
-                   if (post.getUserID().equals(firebaseUser.getUid())
-                           && post.getPostType().equals("videoPost"))
-                       videoCount++;
-                   else if (post.getUserID().equals(firebaseUser.getUid())
-                           && !post.getPostType().equals("videoPost"))
-                       postCount++;
-
-               }
-               totalCount = videoCount + postCount;
-               postNo.setText(String.valueOf(totalCount));
-
-
-           }
-
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
-
-           }
-       });
-   }
-
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.profile_menu, menu);
@@ -370,14 +303,6 @@ public class ProfileFragment extends Fragment {
         menu.add(0, 3, 3, menuIconWithText(getResources().getDrawable(R.drawable.ic_baseline_arrow_forward_24), getResources().getString(R.string.saved_posts)));*/
 
         super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    private CharSequence menuIconWithText(Drawable drawable, String title) {
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        SpannableString sb = new SpannableString("    " + title);
-        ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-        sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return sb;
     }
 
     @Override

@@ -94,7 +94,8 @@ public class ExploreFootageFragment extends Fragment {
                         assert postModel != null;
                         if (postModel.getUserID().equals(id)){
                             if (postModel.getPostType().equals("videoPost")
-                                        || postModel.getPostType().equals("sharedVideoPost")){
+                                    || postModel.getPostType().equals("sharedVideoPost")
+                                    || postModel.getPostType().equals("audioVideoPost")){
                                 videoList.add(postModel);
                             }
                         }

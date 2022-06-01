@@ -120,10 +120,12 @@ public class HisPostsFragment extends Fragment {
                 int i = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
+                    assert modelPost != null;
                     if(modelPost.getPostImage().equals("noImage")
                             && hisUserID.equals(modelPost.getUserID())
                             && !modelPost.getPostType().equals("videoPost")
-                            && !modelPost.getPostType().equals("sharedVideoPost")){
+                            && !modelPost.getPostType().equals("sharedVideoPost")
+                            && !modelPost.getPostType().equals("audioVideoPost")){
                         postList.add(modelPost);
                         i++;
                     }
@@ -166,7 +168,9 @@ public class HisPostsFragment extends Fragment {
                 mediaCount = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
-                    if(!modelPost.getPostImage().equals("noImage") && hisUserID.equals(modelPost.getUserID())){
+                    assert modelPost != null;
+                    if(modelPost.getPostType().equals("imagePost")
+                            && hisUserID.equals(modelPost.getUserID())){
                         mediaList.add(modelPost);
                         mediaCount++;
                     }

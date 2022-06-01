@@ -42,7 +42,6 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
@@ -64,7 +63,7 @@ public class AddStoryActivity extends AppCompatActivity {
     private String myUri = "", userID, storyID;
     private StorageTask storageTask;
     private StorageReference storageReference, audioReference;
-    private DatabaseReference userReference, storyReference, movementReference;
+    private DatabaseReference userReference, storyReference;
 
     private CircleImageView storyProPic;
     private ImageView storyPic;
@@ -111,7 +110,6 @@ public class AddStoryActivity extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReference("Story");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
         audioReference = FirebaseStorage.getInstance().getReference();
 
         locationServices = new LocationServices(locationTV, AddStoryActivity.this);
@@ -310,30 +308,6 @@ public class AddStoryActivity extends AppCompatActivity {
                         }catch (NullPointerException e){
                             Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
                         }
-                    }else{
-                        movementReference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot data : snapshot.getChildren()){
-                                    Movement movement = data.getValue(Movement.class);
-
-                                    if (movement.getMovementID().equals(userID)){
-                                        storyUser.setText(movement.getMovementName());
-
-                                        try{
-                                            Picasso.get().load(movement.getMovementProPic()).into(storyProPic);
-                                        }catch (NullPointerException e){
-                                            Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
-                                        }
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
                     }
                 }
             }

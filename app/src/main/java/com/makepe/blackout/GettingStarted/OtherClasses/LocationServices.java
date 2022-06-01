@@ -2,6 +2,7 @@ package com.makepe.blackout.GettingStarted.OtherClasses;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -19,8 +20,16 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.makepe.blackout.GettingStarted.InAppActivities.AddStoryActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,11 +40,18 @@ public class LocationServices implements LocationListener {
     private LocationManager locationManager;
     private double latitude, longitude;
     public static final int LOCATION_REQUEST_CODE = 100;
+    private final DatabaseReference chatReference = FirebaseDatabase.getInstance().getReference("Chats");
+    private final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
     private TextView locationTV;
     private EditText locationET;
 
     private Context context;
+
+    private String receiverID;
+    private boolean sendMessage = false;
+
+    private ProgressDialog locationDialog;
 
     public LocationServices() {
     }
@@ -50,12 +66,22 @@ public class LocationServices implements LocationListener {
         this.context = context;
     }
 
+    public LocationServices(Context context, String receiverID) {
+        this.context = context;
+        this.receiverID = receiverID;
+    }
+
     public void getMyLocation(){
         if (checkLocationPermission()){
             detectLocation();
         }else{
             ActivityCompat.requestPermissions((Activity) context, locationPermission, LOCATION_REQUEST_CODE);
         }
+    }
+
+    public void sendMyLocation(){
+        getMyLocation();
+        sendMessage = true;
     }
 
     private boolean checkLocationPermission() {
@@ -66,7 +92,9 @@ public class LocationServices implements LocationListener {
     }
 
     private void detectLocation() {
-        Toast.makeText(context, "Please wait... Detecting your location", Toast.LENGTH_LONG).show();
+        locationDialog = new ProgressDialog(context);
+        locationDialog.setMessage("Detecting Location, Please wait...");
+        //Toast.makeText(context, "Please wait... Detecting your location", Toast.LENGTH_LONG).show();
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -88,21 +116,58 @@ public class LocationServices implements LocationListener {
     }
 
     private void findAddress() {
-        //find address, country, state, city
 
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(context, Locale.getDefault());
+        if (!sendMessage) {
+            //find address, country, state, city
 
-        try{
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            Geocoder geocoder;
+            List<Address> addresses;
+            geocoder = new Geocoder(context, Locale.getDefault());
 
-            String address = addresses.get(0).getAddressLine(0);//complete address
+            try {
+                addresses = geocoder.getFromLocation(latitude, longitude, 1);
 
-            locationTV.setText(address);
-            locationET.setText(address);
+                String address = addresses.get(0).getAddressLine(0);//complete address
 
-        }catch (Exception ignored){ }
+                locationTV.setText(address);
+                locationET.setText(address);
+
+                locationDialog.dismiss();
+
+            } catch (Exception ignored) {
+            }
+        }else{
+            String chatID = chatReference.push().getKey();
+            assert firebaseUser != null;
+
+            HashMap<String, Object> messageMap = new HashMap<>();
+            messageMap.put("chatID", chatID);
+            messageMap.put("sender", firebaseUser.getUid());
+            messageMap.put("receiver", receiverID);
+            messageMap.put("isSeen", false);
+            messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+            messageMap.put("message", "location");
+            messageMap.put("message_type", "location");
+            messageMap.put("latitude", getLatitude());
+            messageMap.put("longitude", getLongitude());
+
+            assert chatID != null;
+            chatReference.child(chatID).setValue(messageMap)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Toast.makeText(context, "Shared your location", Toast.LENGTH_SHORT).show();
+                            sendMessage = false;
+
+                            locationDialog.dismiss();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(context, "Unable to share location", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
 
     }
 

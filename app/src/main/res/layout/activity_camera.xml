@@ -36,7 +36,6 @@
                 android:layout_width="match_parent"
                 android:layout_toEndOf="@+id/cameraProPic"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@+id/skipCamBTN"
                 android:layout_centerVertical="true">
 
                 <TextView
@@ -60,9 +59,9 @@
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/cameraViewPager"
         android:layout_width="match_parent"
-        android:layout_below="@+id/cameraToolbar"
+        android:layout_height="match_parent"
         android:layout_above="@+id/cameraButtonsArea"
-        android:layout_height="match_parent" />
+        android:layout_below="@+id/cameraToolbar" />
 
     <RelativeLayout
         android:layout_width="match_parent"

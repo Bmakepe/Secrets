@@ -20,12 +20,8 @@
         android:title="Send Alert" />
     <item
         android:id="@+id/chatSearch"
-        android:title="Search" />
-    <item
-        android:id="@+id/location"
-        android:title="Share Location" />
-    <item
-        android:id="@+id/sendFiles"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:title="Send Files" />
+        app:showAsAction="collapseActionView"
+        android:title="Search" />
+
 </menu>

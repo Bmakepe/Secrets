@@ -4,33 +4,69 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable-anydpi/ic_baseline_movement_24.xml" value="0.114" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable-v24/btm_nav_bg.xml" value="0.1" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/attach_msg.xml" value="0.279" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/background_gradient.xml" value="0.1" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/btn_msg.xml" value="0.11" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/button_selector.xml" value="0.11" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/chat_in.xml" value="0.141" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/chat_out.xml" value="0.141" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_access_time_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_add_black_24dp.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_add_circle_black_24dp.xml" value="0.279" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_add_circle_outline_black_24dp.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_arrow_circle_up_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_arrow_forward_24.xml" value="0.248" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_campaign_24.xml" value="0.2245" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_data_usage_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_date_range_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_dialpad_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_explore_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_fiber_manual_record_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_filter_list_24.xml" value="0.114" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_help_center_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_inbox_24.xml" value="0.279" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_meeting_room_24.xml" value="0.25" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_menu_book_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_ondemand_video_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_person_add_24.xml" value="0.2445" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_person_add_alt_1_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_phonelink_erase_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_play_circle_outline_24.xml" value="0.179" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_privacy_tip_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_rule_24.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_security_24.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_stop_circle_24.xml" value="0.1765" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_baseline_video_library_24.xml" value="0.1465" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_bookmark_border_black_24dp.xml" value="0.3435" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_contacts_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_delete_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_dialpad_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_done_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_edit_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_group_add_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_image_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_info.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_insert_comment_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_lock_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_mic_black_24dp.xml" value="0.1" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_my_location_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_person_add_black_24dp.xml" value="0.1465" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_person_black_24dp.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_person_pin_black_24dp.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.206" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/ic_verified_user_black_24dp.xml" value="0.137" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/pink_out_line.xml" value="0.11" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/rounded_edittext.xml" value="0.1" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/toggle_widget_background.xml" value="0.11" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/transparent_circle_with_border.xml" value="0.279" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/drawable/transparent_hallow_circle.xml" value="0.137" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout-v23/chat_item_location_right.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_add_group_members.xml" value="0.22" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_add_story.xml" value="0.33" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_camera.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_camera.xml" value="0.22" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_change_number.xml" value="0.34270833333333334" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_chat.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_chat_list.xml" value="0.33" />
@@ -52,9 +88,10 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_messages.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_movement_chats.xml" value="0.34270833333333334" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_movement_details.xml" value="0.25" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_movement_details.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_movements.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_new_movement.xml" value="0.3411458333333333" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_phone_call.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_post.xml" value="0.27873563218390807" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_post_detail.xml" value="0.3388888888888889" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_post_list.xml" value="0.32222222222222224" />
@@ -65,7 +102,7 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_secret.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_share_post.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_splash.xml" value="0.35" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_story.xml" value="0.33" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_story.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_timeline_setup.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_user_details.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/activity_verify_phone.xml" value="0.33" />
@@ -74,17 +111,25 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/audio_image_post_item.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/audio_media_player.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/audio_post_item.xml" value="0.35520833333333335" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/audio_video_post_layout.xml" value="0.3541666666666667" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_item_left.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_item_location_left.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_item_location_right.xml" value="0.34270833333333334" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_item_right.xml" value="0.4678030303030303" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_list_item.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_media_item_layout.xml" value="0.35520833333333335" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_media_left_item.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/chat_media_right_item.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/comment_audio_image_item.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/comment_audio_item.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/comment_image_layout.xml" value="0.5" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/comment_layout.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/comment_pop_up.xml" value="0.35520833333333335" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/contact_display_item.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/content_report.xml" value="0.16979166666666667" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/explore_layout.xml" value="0.17962962962962964" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/explore_video_item.xml" value="0.17962962962962964" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_call_history.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_chat.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_chat_list.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_chats.xml" value="0.33" />
@@ -104,6 +149,7 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_group_detail.xml" value="0.3411458333333333" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_group_list.xml" value="0.3421875" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_his_posts.xml" value="0.34974358974358977" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_his_videos.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_home.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_home_console.xml" value="0.3388888888888889" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_live.xml" value="0.25" />
@@ -111,24 +157,28 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_movement_details.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_movements_list.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_my_posts.xml" value="0.35520833333333335" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_my_videos.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_new_group.xml" value="0.3411458333333333" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_notifications.xml" value="0.33589743589743587" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_photo.xml" value="0.35520833333333335" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_podcast.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_post.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_profile.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_saved_posts.xml" value="0.3411458333333333" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_second.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_share_post.xml" value="0.35520833333333335" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_timeline.xml" value="0.33" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_timeline.xml" value="0.25" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_video.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_videos.xml" value="0.2657407407407407" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/fragment_view_profile.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/full_screen_pro_pic.xml" value="0.17962962962962964" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/group_chatlist_item.xml" value="0.22" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/group_members_layout.xml" value="0.67" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/image_adapter_item.xml" value="0.3541666666666667" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/item_story.xml" value="0.5" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/layout_tester.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/media_audio_layout.xml" value="0.34974358974358977" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/media_item_layout.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/media_player_layout.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/movement_layout.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/movement_post_item.xml" value="0.5" />
@@ -160,7 +210,8 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/shared_video_post_item.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/shared_video_post_layout.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/user_interaction_item.xml" value="0.21851851851851853" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/user_list_item.xml" value="0.5" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/user_list_call_item.xml" value="0.25" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/user_list_item.xml" value="0.45075757575757575" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/video_item_layout.xml" value="0.34974358974358977" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/layout/video_post_layout.xml" value="0.33" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/camera_menu.xml" value="0.35520833333333335" />
@@ -175,12 +226,13 @@
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/movement_details_menu.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/movement_menu.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/navigation_menu.xml" value="0.1" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/phone_call_menu.xml" value="0.3421875" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/post_detail_menu.xml" value="0.3692708333333333" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/profile_menu.xml" value="0.1" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/share_post_menu.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/story_menu.xml" value="0.35520833333333335" />
         <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/menu/timeline_menu.xml" value="0.3692708333333333" />
-        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/xml/root_preferences.xml" value="0.16111111111111112" />
+        <entry key="..\:/Users/Makepe/Documents/MyPersonalAndroidProjects/BlackOut - BackUp/BlackOut/app/src/main/res/xml/root_preferences.xml" value="0.1" />
       </map>
     </option>
   </component>

@@ -21,8 +21,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.UserListAdapter;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
@@ -32,7 +30,7 @@ public class MyContactsActivity extends AppCompatActivity {
     private RecyclerView contactsRecycler;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, followingReference, followersReference;
+    private DatabaseReference followingReference;
     private ArrayList<String> idList;
 
     @Override
@@ -46,7 +44,6 @@ public class MyContactsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        userReference = FirebaseDatabase.getInstance().getReference("Users");
         followingReference = FirebaseDatabase.getInstance().getReference("Follow")
                 .child(firebaseUser.getUid()).child("following");
 
@@ -76,7 +73,7 @@ public class MyContactsActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     idList.add(ds.getKey());
                 }
-                contactsRecycler.setAdapter(new UserListAdapter( MyContactsActivity.this, idList, "goToChats"));
+                contactsRecycler.setAdapter(new UserAdapter( MyContactsActivity.this, idList, "goToChats"));
             }
 
             @Override

@@ -41,6 +41,7 @@ import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
@@ -56,7 +57,7 @@ import static com.google.firebase.storage.FirebaseStorage.getInstance;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
-    private String hisid, hisPhoneName;
+    private String hisUserID, hisPhoneName;
 
     private CircleImageView hisProfilePic;
     private ImageView hisCoverPic;
@@ -70,12 +71,11 @@ public class ViewProfileActivity extends AppCompatActivity {
     private Dialog picDialog;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, postReference, followersReference, followingReference;
-
-    private int videoCount = 0, postCount = 0, totalCount = 0; 
+    private DatabaseReference userReference;
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
+    private FollowInteraction followInteraction;
 
     private double latitude, longitude;
 
@@ -108,16 +108,13 @@ public class ViewProfileActivity extends AppCompatActivity {
         ViewPager hisViewPager = findViewById(R.id.hisProfileViewPager);
 
         final Intent intent = getIntent();
-        hisid = intent.getStringExtra("uid");
+        hisUserID = intent.getStringExtra("uid");
 
         Bundle bundle = new Bundle();
-        bundle.putString("hisUserID", hisid);
+        bundle.putString("hisUserID", hisUserID);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        followersReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid).child("followers");
-        followingReference = FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid).child("following");
 
         HisPostsFragment postsFragment = new HisPostsFragment();
         postsFragment.setArguments(bundle);
@@ -126,22 +123,26 @@ public class ViewProfileActivity extends AppCompatActivity {
         videoFragment.setArguments(bundle);
 
         universalFunctions = new UniversalFunctions(this);
-        notifications = new UniversalNotifications(this); 
+        notifications = new UniversalNotifications(this);
+        followInteraction = new FollowInteraction(this);
 
-        iniPicPopUp(hisid);
-        getFollowers();
-        checkFollowing();
+        iniPicPopUp(hisUserID);
         getUserInfo();
-        getNrPosts();
-        universalFunctions.checkActiveStories(hisProfilePic, hisid);
+        followInteraction.updateFollowing(hisUserID, followBTN);
+        followInteraction.checkFollower(hisUserID);
+        followInteraction.getFollowingNo(hisUserID, followingNo);
+        followInteraction.getFollowersNo(hisUserID, followersNo);
+
+        universalFunctions.getNrPosts(hisUserID, postsNo);
+        universalFunctions.checkActiveStories(hisProfilePic, hisUserID);
 
         HisTabAdapter viewPagerAdapter = new HisTabAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new HisPostsFragment(), "Posts [" + postCount + "]", hisid);
-        viewPagerAdapter.addFragment(new HisVideosFragment(), "Videos [" + videoCount + "]", hisid);
+        viewPagerAdapter.addFragment(new HisPostsFragment(), "Posts", hisUserID);
+        viewPagerAdapter.addFragment(new HisVideosFragment(), "Videos", hisUserID);
         hisViewPager.setAdapter(viewPagerAdapter);
         hisTabLayout.setupWithViewPager(hisViewPager);
 
-        if(hisid.equals(firebaseUser.getUid())){
+        if(hisUserID.equals(firebaseUser.getUid())){
             otherUserButtons.setVisibility(View.GONE);
         }
 
@@ -149,9 +150,9 @@ public class ViewProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(!hisid.equals(firebaseUser.getUid())){
+                if(!hisUserID.equals(firebaseUser.getUid())){
                     Intent intent1 = new Intent(ViewProfileActivity.this, ChatActivity.class);
-                    intent1.putExtra("userid", hisid);
+                    intent1.putExtra("userid", hisUserID);
                     startActivity(intent1);
                 }
             }
@@ -160,11 +161,11 @@ public class ViewProfileActivity extends AppCompatActivity {
         hisProfilePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!hisid.equals(firebaseUser.getUid()))
+                if (!hisUserID.equals(firebaseUser.getUid()))
                     picDialog.show();
                 else {
                     Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
-                    intent1.putExtra("itemID", hisid);
+                    intent1.putExtra("itemID", hisUserID);
                     intent1.putExtra("reason", "userImage");
                     startActivity(intent1);
                 }
@@ -175,7 +176,7 @@ public class ViewProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
-                intent1.putExtra("itemID", hisid);
+                intent1.putExtra("itemID", hisUserID);
                 intent1.putExtra("reason", "coverImage");
                 startActivity(intent1);
             }
@@ -184,19 +185,10 @@ public class ViewProfileActivity extends AppCompatActivity {
         followBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(followBTN.getText().toString().equals("Follow")){
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
-                            .child("following").child(hisid).setValue(true);
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid)
-                            .child("followers").child(firebaseUser.getUid()).setValue(true);
-
-                    notifications.addFollowNotifications(hisid);
-                }else{
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
-                            .child("following").child(hisid).removeValue();
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(hisid)
-                            .child("followers").child(firebaseUser.getUid()).removeValue();
-                }
+                if (followInteraction.checkFollowing(hisUserID))
+                    followInteraction.unFollowUser(hisUserID);
+                else
+                    followInteraction.followUser(hisUserID);
             }
         });
 
@@ -204,7 +196,7 @@ public class ViewProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent followersIntent = new Intent(ViewProfileActivity.this, ConnectionsActivity.class);
-                followersIntent.putExtra("UserID", hisid);
+                followersIntent.putExtra("UserID", hisUserID);
                 followersIntent.putExtra("Interaction", "Followers");
                 startActivity(followersIntent);
 
@@ -215,7 +207,7 @@ public class ViewProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent followersIntent = new Intent(ViewProfileActivity.this, ConnectionsActivity.class);
-                followersIntent.putExtra("UserID", hisid);
+                followersIntent.putExtra("UserID", hisUserID);
                 followersIntent.putExtra("Interaction", "Following");
                 startActivity(followersIntent);
 
@@ -234,56 +226,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
     }
 
-    private void checkFollowing(){
-        DatabaseReference referenceFollowing = FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(firebaseUser.getUid()).child("following");
-        referenceFollowing.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(hisid).exists()){
-                    //executes if following user
-                    followBTN.setText("Following");
-                }else{
-                    followBTN.setText("Follow");
-                    //executes if you are not following the user
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    public void getFollowers(){
-
-        followersReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followersNo.setText(dataSnapshot.getChildrenCount() + "");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        followingReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followingNo.setText(dataSnapshot.getChildrenCount() + "");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void iniPicPopUp(String hisid) {
+    private void iniPicPopUp(String hisUserID) {
         picDialog = new Dialog(this);
         picDialog.setContentView(R.layout.profile_pic_pop_up_layout);
         picDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -297,10 +240,9 @@ public class ViewProfileActivity extends AppCompatActivity {
         voiceCallBTN = picDialog.findViewById(R.id.popUP_callUser);
 
         profileBTN.setVisibility(View.GONE);
-        videoCallBTN.setImageResource(R.drawable.ic_video_call_black_24dp);
-        universalFunctions.checkActiveStories(proPicPopUp, hisid);
+        videoCallBTN.setVisibility(View.GONE);
+        universalFunctions.checkActiveStories(proPicPopUp, hisUserID);
 
-        final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -308,7 +250,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(hisid)) {
+                    if (user.getUSER_ID().equals(hisUserID)) {
                         try {
                             //load pro pic into imageView
                             Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(proPicPopUp);
@@ -328,7 +270,9 @@ public class ViewProfileActivity extends AppCompatActivity {
         voiceCallBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(ViewProfileActivity.this, "start call", Toast.LENGTH_SHORT).show();
+                Intent callIntent = new Intent(ViewProfileActivity.this, PhoneCallActivity.class);
+                callIntent.putExtra("userID", hisUserID);
+                startActivity(callIntent);
                 picDialog.dismiss();
             }
         });
@@ -351,7 +295,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
-                                    intent1.putExtra("itemID", hisid);
+                                    intent1.putExtra("itemID", hisUserID);
                                     intent1.putExtra("reason", "userImage");
                                     startActivity(intent1);
                                     dialogInterface.dismiss();
@@ -362,7 +306,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     Intent intent = new Intent(ViewProfileActivity.this, StoryActivity.class);
-                                    intent.putExtra("userid", hisid);
+                                    intent.putExtra("userid", hisUserID);
                                     startActivity(intent);
                                     dialogInterface.dismiss();
                                 }
@@ -370,7 +314,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                     alertDialog.show();
                 }else if (proPicPopUp.getTag().equals("noStories")){
                     Intent intent1 = new Intent(ViewProfileActivity.this, FullScreenImageActivity.class);
-                    intent1.putExtra("itemID", hisid);
+                    intent1.putExtra("itemID", hisUserID);
                     intent1.putExtra("reason", "userImage");
                     startActivity(intent1);
                     picDialog.dismiss();
@@ -395,7 +339,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                         User user = snapshot.getValue(User.class);
 
                         assert user != null;
-                        if (user.getUSER_ID().equals(hisid)){
+                        if (user.getUSER_ID().equals(hisUserID)){
                                 hisUsername.setVisibility(View.VISIBLE);
                                 hisBiography.setVisibility(View.VISIBLE);
 
@@ -404,7 +348,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
                                 for(ContactsModel contactsModel: finalContacts){
 
-                                    if(hisid.equals(FirebaseAuth.getInstance().getCurrentUser())){
+                                    if(hisUserID.equals(FirebaseAuth.getInstance().getCurrentUser())){
                                         hisUsername.setText("Me");
                                     }else if(contactsModel.getNumber().equals(user.getNumber())){
                                         hisPhoneName = contactsModel.getUsername();
@@ -444,32 +388,6 @@ public class ViewProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void getNrPosts(){
-        postReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int totalCount = 0;
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    PostModel post = snapshot.getValue(PostModel.class);
-                    assert post != null;
-
-                    if (post.getUserID().equals(hisid) && post.getPostType().equals("videoPost")) {
-                        videoCount++;
-                    } else if (post.getUserID().equals(hisid) && !post.getPostType().equals("videoPost")){
-                        postCount++;
-                    }
-                }
-                totalCount = videoCount + postCount;
-                postsNo.setText(String.valueOf(totalCount));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -478,7 +396,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!hisid.equals(firebaseUser.getUid()))
+        if (!hisUserID.equals(firebaseUser.getUid()))
             getMenuInflater().inflate(R.menu.his_profile_menu, menu);
         return true;
     }
@@ -496,7 +414,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
             case R.id.report:
                 Intent intent1  = new Intent(ViewProfileActivity.this, ReportActivity.class);
-                intent1.putExtra("reported", hisid);
+                intent1.putExtra("reported", hisUserID);
                 startActivity(intent1);
                 return true;
 

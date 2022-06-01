@@ -3,32 +3,69 @@ package com.makepe.blackout.GettingStarted.Models;
 import java.util.ArrayList;
 
 public class Chat {
-    private String sender, receiver, message, audio, timeStamp, msg_type, media;
-    private ArrayList<String> mediaList;
+    private String sender, receiver, message, audio, timeStamp, message_type, media, chatID;
+    private ArrayList<String> mediaUriList;
     private boolean isSeen;
+    private double latitude, longitude;
 
     public Chat() {
     }
 
-    public Chat(String sender, String receiver, String message, String audio,
-                String timeStamp, String msg_type, String media, ArrayList<String> mediaList, boolean isSeen) {
+    public Chat(String sender, String receiver, String message, String audio, String timeStamp,
+                String message_type, String media, String chatID, ArrayList<String> mediaUriList,
+                boolean isSeen, double latitude, double longitude) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
         this.audio = audio;
         this.timeStamp = timeStamp;
-        this.msg_type = msg_type;
+        this.message_type = message_type;
         this.media = media;
-        this.mediaList = mediaList;
+        this.chatID = chatID;
+        this.mediaUriList = mediaUriList;
         this.isSeen = isSeen;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    public String getMsg_type() {
-        return msg_type;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setMsg_type(String msg_type) {
-        this.msg_type = msg_type;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getChatID() {
+        return chatID;
+    }
+
+    public void setChatID(String chatID) {
+        this.chatID = chatID;
+    }
+
+    public String getMessage_type() {
+        return message_type;
+    }
+
+    public void setMessage_type(String message_type) {
+        this.message_type = message_type;
+    }
+
+    public ArrayList<String> getMediaUriList() {
+        return mediaUriList;
+    }
+
+    public void setMediaUriList(ArrayList<String> mediaUriList) {
+        this.mediaUriList = mediaUriList;
     }
 
     public String getMedia() {
@@ -37,14 +74,6 @@ public class Chat {
 
     public void setMedia(String media) {
         this.media = media;
-    }
-
-    public ArrayList<String> getMediaList() {
-        return mediaList;
-    }
-
-    public void setMediaList(ArrayList<String> mediaList) {
-        this.mediaList = mediaList;
     }
 
     public String getSender() {

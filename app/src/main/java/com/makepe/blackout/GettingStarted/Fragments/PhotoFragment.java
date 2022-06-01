@@ -49,8 +49,8 @@ public class PhotoFragment extends Fragment {
     private RadioButton selectedMediaType;
     private boolean isRecording = false;
 
-    private int[] colorIntArray = {R.color.colorBlack, R.color.colorBlack};
-    private int[] iconIntArray = {R.drawable.ic_camera_black_24dp, R.drawable.ic_baseline_fiber_manual_record_24};
+    private int[] colorIntArray = {R.color.white, R.color.white, R.color.white};
+    private int[] iconIntArray = {R.drawable.ic_camera_black_24dp, R.drawable.ic_baseline_fiber_manual_record_24, R.drawable.ic_baseline_live_tv_24};
 
 
     public PhotoFragment() {
@@ -87,13 +87,15 @@ public class PhotoFragment extends Fragment {
                 switch (i){
                     case R.id.photoMediaBTN:
                         photoButton.setTag("photoSelected");
-                        //photoButton.setImageResource(R.drawable.ic_camera_black_24dp);
                         animatePhotoBTN(0);
                         break;
                     case R.id.videoMediaBTN:
                         photoButton.setTag("videoSelected");
                         animatePhotoBTN(1);
-                        //photoButton.setImageResource(R.drawable.ic_baseline_fiber_manual_record_24);
+                        break;
+                    case R.id.liveBroadcastBTN:
+                        photoButton.setTag("liveSelected");
+                        animatePhotoBTN(2);
                         break;
 
                     default:
@@ -158,6 +160,8 @@ public class PhotoFragment extends Fragment {
                         photoButton.setImageResource(R.drawable.ic_baseline_fiber_manual_record_24);
                     }
 
+                }else if(photoButton.getTag().equals("liveSelected")){
+                    Toast.makeText(getActivity(), "You will be able to broadcast live", Toast.LENGTH_SHORT).show();
                 }
 
             }

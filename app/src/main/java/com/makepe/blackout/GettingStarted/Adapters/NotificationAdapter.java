@@ -1,5 +1,6 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.text.format.DateFormat;
@@ -14,16 +15,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.NotiModel;
+import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.R;
@@ -35,8 +39,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyHolder> {
+
     private Context mContext;
     private List<NotiModel> mNotifications;
+    private DatabaseReference userReference;
+    private FirebaseUser firebaseUser;
 
     private GetTimeAgo getTimeAgo;
 
@@ -57,14 +64,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
         final NotiModel notification = mNotifications.get(position);
         getTimeAgo = new GetTimeAgo();
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         holder.text.setText(notification.getText());
 
-        getUserinfo(holder.image_profile, holder.username, notification.getUserid());
+        getUserInfo(holder, notification);
 
-        try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-            String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(notification.getTimeStamp()), mContext);
-            holder.timeStamp.setText(timeStamp);
+        try{//convert timestamp to x days ago
+            holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(notification.getTimeStamp()), mContext));
         }catch (NumberFormatException n){
             Toast.makeText(mContext, "Could not format time", Toast.LENGTH_SHORT).show();
         }//for converting timestamp
@@ -79,13 +87,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(notification.isIspost()){
+                if(notification.isIspost() || notification.isStory()){
                     Toast.makeText(mContext, "Post Notification", Toast.LENGTH_SHORT).show();
-                    /*Intent intent = new Intent(mContext, PostDetailActivity.class);
+                    Intent intent = new Intent(mContext, CommentsActivity.class);
                     intent.putExtra("postID", notification.getPostid());
-                    mContext.startActivity(intent);*/
-                }else if(notification.isStory()){
-                    Toast.makeText(mContext, "Story Notification", Toast.LENGTH_SHORT).show();
+                    mContext.startActivity(intent);
                 }else{
                     Intent intent = new Intent(mContext, ViewProfileActivity.class);
                     intent.putExtra("uid", notification.getUserid());
@@ -116,34 +122,36 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
-    private void getUserinfo(final ImageView imageView, final TextView username, final String uid){
+    private void getUserInfo(MyHolder holder, NotiModel notification){
         List<ContactsModel> phoneBook = new ArrayList<>();
         ContactsList contactsList = new ContactsList(phoneBook, mContext);
         contactsList.readContacts();
         final List<ContactsModel> phoneContacts = contactsList.getContactsList();
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(uid);
-        query.addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {
                     for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                        String proPic = "" + ds.child("ImageURL").getValue();
-                        String username1 = "" + ds.child("Username").getValue();
-                        String number = "" +ds.child("Number").getValue();
+                        User user = ds.getValue(User.class);
 
-                        try {
-                            Picasso.get().load(proPic).into(imageView);
-                        } catch (NullPointerException ignored) {}
+                        if (user.getUSER_ID().equals(notification.getUserid())) {
 
-                        //username.setText(username1);
+                            try {
+                                Picasso.get().load(user.getImageURL()).into(holder.image_profile);
+                            } catch (NullPointerException ignored) {
+                            }
 
-                        for(ContactsModel contactsModel : phoneContacts){
-                            if(uid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-                                username.setText("Me");
-                            }else if(contactsModel.getNumber().equals(number)){
-                                username.setText(contactsModel.getUsername());
+                            //username.setText(username1);
+
+                            for (ContactsModel contactsModel : phoneContacts) {
+                                if (notification.getUserid().equals(firebaseUser.getUid())) {
+                                    holder.username.setText("Me");
+                                } else if (contactsModel.getNumber().equals(user.getNumber())) {
+                                    holder.username.setText(contactsModel.getUsername());
+                                }else{
+                                    holder.username.setText(user.getUsername());
+                                }
                             }
                         }
                     }

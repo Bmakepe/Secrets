@@ -1,104 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.Fragments.TimelineFragment">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/timelineToolbar"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:background="@null"
-        android:layout_height="wrap_content"
-        android:elevation="5dp">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/timelineToolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:background="@null"
+            android:layout_height="wrap_content"
+            android:elevation="5dp">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:src="@drawable/default_profile_display_pic"
-                android:id="@+id/homePic"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="5dp"
-                app:civ_border_width="1dp"
-                app:civ_border_color="@color/colorPrimaryDark"/>
-
-            <LinearLayout
-                android:orientation="horizontal"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_toStartOf="@+id/newPostBTN"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toEndOf="@+id/homePic">
+                android:layout_height="wrap_content">
 
-                <TextView
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/default_profile_display_pic"
+                    android:id="@+id/homePic"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="5dp"
+                    app:civ_border_width="1dp"
+                    app:civ_border_color="@color/colorPrimaryDark"/>
+
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/app_name"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorBlack"
-                    android:layout_gravity="center_vertical"
-                    android:padding="5dp"
-                    android:id="@+id/dudooLogo"
-                    android:textSize="16sp"/>
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@+id/homePic">
 
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorBlack"
+                        android:layout_gravity="center_vertical"
+                        android:padding="5dp"
+                        android:id="@+id/dudooLogo"
+                        android:textSize="16sp"/>
 
-        </RelativeLayout>
+                </LinearLayout>
 
-    </androidx.appcompat.widget.Toolbar>
+            </RelativeLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/timelineToolbar"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        </androidx.appcompat.widget.Toolbar>
 
-        <RelativeLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:layout_below="@+id/timelineToolbar"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/viewStoryRecycler"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true" />
+                android:layout_height="wrap_content">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/postRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@+id/viewStoryRecycler" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/viewStoryRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true" />
 
-        </RelativeLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/postRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@+id/viewStoryRecycler"
+                    android:layout_marginBottom="70dp" />
 
-    </androidx.core.widget.NestedScrollView>
+            </RelativeLayout>
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:id="@+id/timelineLoader"
-        android:visibility="visible"/>
+        </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/scrollToTheTopBTN"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/timelineToolbar"
-        android:layout_centerHorizontal="true"
-        android:backgroundTint="@color/white_greyish"
-        android:text="Back To Top"
-        android:textColor="@color/colorBlack"
-        android:visibility="gone"
-        app:icon="@drawable/ic_baseline_arrow_circle_up_24"
-        app:iconTint="@color/colorBlack" />
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/timelineLoader"
+            android:visibility="visible"/>
 
-</RelativeLayout>
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/scrollToTheTopBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/timelineToolbar"
+            android:layout_centerHorizontal="true"
+            android:backgroundTint="@color/white_greyish"
+            android:text="Back To Top"
+            android:textColor="@color/colorBlack"
+            android:visibility="gone"
+            app:icon="@drawable/ic_baseline_arrow_circle_up_24"
+            app:iconTint="@color/colorBlack" />
+
+    </RelativeLayout>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

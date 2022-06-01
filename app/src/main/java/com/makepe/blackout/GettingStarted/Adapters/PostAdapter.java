@@ -39,10 +39,10 @@ import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.PhoneCallActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SharePostActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
@@ -61,8 +61,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     private Context context;
     private List<PostModel> postList;
     private FirebaseUser firebaseUser;
-    private DatabaseReference postReference, userReference, movementReference,
-            movementPostReference, followingReference;
+    private DatabaseReference postReference, userReference, followingReference;
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications universalNotifications;
@@ -81,9 +80,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     public static final int SHARED_TEXT_AUDIO_IMAGE_POST = 1000;
     public static final int SHARED_AUDIO_AUDIO_IMAGE_POST = 1100;
     public static final int SHARED_AUDIO_AUDIO_POST = 1200;
-
-    private boolean isFollowing = false;
-    private String followingText;
 
     public PostAdapter(Context context, List<PostModel> postList) {
         this.context = context;
@@ -144,8 +140,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
         followingReference = FirebaseDatabase.getInstance().getReference().child("Follow")
                 .child(firebaseUser.getUid()).child("following");
         universalFunctions = new UniversalFunctions(context);
@@ -622,39 +616,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                     }
 
                     getPostUserDetails(holder, post);
-                }else{
-                    //for retrieving normal movement image posts only
-                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-
-                                PostModel movementPost = snapshot.getValue(PostModel.class);
-                                assert movementPost != null;
-                                holder.postCaption.setText(movementPost.getPostCaption());
-                                try{
-                                    Picasso.get().load(movementPost.getPostImage()).into(holder.postImage);
-                                    holder.imageLoader.setVisibility(View.GONE);
-                                }catch (NullPointerException e){
-                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
-                                }
-
-                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(movementPost.getPostTime()), context));
-                                }catch (NumberFormatException n){
-                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                                }//for converting timestamp
-                                getMovementUserDetails(holder, post);
-                            }else{
-                                Toast.makeText(context, "Could not retrieve post from database", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 
@@ -683,33 +644,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
                     getPostUserDetails(holder, post);
 
-                }else{
-                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                PostModel movementPost = snapshot.getValue(PostModel.class);
-
-                                assert movementPost != null;
-                                holder.postCaption.setText(movementPost.getPostCaption());
-
-                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(movementPost.getPostTime()), context));
-                                }catch (NumberFormatException n){
-                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                                }//for converting timestamp
-
-                                getMovementUserDetails(holder, post);
-                            }else{
-                                Toast.makeText(context, "Could not retrieve post from database", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 
@@ -749,41 +683,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                     getPostUserDetails(holder, model);
                     getNormalPostAudio(holder, model);
 
-                }else{
-                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                PostModel postModel = snapshot.getValue(PostModel.class);
-
-                                assert postModel != null;
-                                try{
-                                    Picasso.get().load(postModel.getPostImage()).into(holder.postImage);
-                                    holder.imageLoader.setVisibility(View.GONE);
-                                }catch (NullPointerException e){
-                                    Picasso.get().load(R.drawable.ic_image_black_24dp).into(holder.postImage);
-                                }
-
-                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context));
-                                }catch (NumberFormatException n){
-                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                                }//for converting timestamp
-
-                                try{
-                                    universalFunctions.findAddress(postModel.getLatitude(), postModel.getLongitude(), holder.rPostLocation, holder.locationArea);
-                                }catch (Exception ignored){}
-
-                                getMovementUserDetails(holder, postModel);
-                                getNormalPostAudio(holder, postModel);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 
@@ -817,35 +716,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                     getPostUserDetails(holder, model);
                     getNormalPostAudio(holder, model);
 
-                }else{
-                    movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                PostModel postModel = snapshot.getValue(PostModel.class);
-
-                                assert postModel != null;
-
-                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                                    holder.postTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(postModel.getPostTime()), context));
-                                }catch (NumberFormatException n){
-                                    Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
-                                }//for converting timestamp
-
-                                try{
-                                    universalFunctions.findAddress(postModel.getLatitude(), postModel.getLongitude(), holder.rPostLocation, holder.locationArea);
-                                }catch (Exception ignored){}
-
-                                getMovementUserDetails(holder, postModel);
-                                getNormalPostAudio(holder, postModel);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 
@@ -873,43 +743,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                     }catch (NullPointerException e){
                         Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.postProPic);
                     }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getMovementUserDetails(MyHolder holder, PostModel post) {
-        movementReference.child(post.getMovementID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()){
-                    Movement movement = snapshot.getValue(Movement.class);
-
-                    userReference.child(post.getUserID()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                User user = snapshot.getValue(User.class);
-                                holder.postUsername.setText(user.getUsername() + " > " + movement.getMovementName());
-
-                                try{
-                                    Picasso.get().load(user.getImageURL()).into(holder.postProPic);
-                                }catch (NullPointerException e){
-                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.postProPic);
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 
@@ -948,9 +781,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     //-----------button onclick listeners
     private void getAdapterFunctions(PostModel post, MyHolder holder) {
-        iniPicPopUp(context, holder, post.getUserID());
+        iniPicPopUp(context, holder, post);
         universalFunctions.getCommentsCount(post.getPostID(), holder.commentCounter);
-        checkFollowing(post);
 
         universalFunctions.isLiked(post.getPostID(), holder.postLikeBTN);
         universalFunctions.nrLikes(holder.likeCounter, post.getPostID());
@@ -1037,24 +869,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                             intent.putExtra("itemID", post.getPostID());
                             intent.putExtra("reason", "postImage");
                             context.startActivity(intent);
-                        }else{
-                            movementPostReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    if (snapshot.exists()){
-
-                                        Intent intent = new Intent(context, FullScreenImageActivity.class);
-                                        intent.putExtra("itemID", post.getPostID());
-                                        intent.putExtra("postImage", "movementPostPic");
-                                        context.startActivity(intent);
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                }
-                            });
                         }
                     }
 
@@ -1084,14 +898,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         holder.postMenuBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                menuOptions(holder.postMenuBTN, post);
+                universalFunctions.postMenuOptions(holder.postMenuBTN, post);
             }
         });
 
         holder.commentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //holder.commentDialog.show();
+
+                universalFunctions.addView(post.getPostID());
+
                 Intent postDetailIntent= new Intent(context, CommentsActivity.class);
                 postDetailIntent.putExtra("postID", post.getPostID());
                 context.startActivity(postDetailIntent);
@@ -1101,17 +917,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         holder.postProPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.postProPic.getTag().equals("storyActive")){
-                    Intent intent = new Intent(context, StoryActivity.class);
-                    intent.putExtra("userid", post.getUserID());
-                    context.startActivity(intent);
-                }else if(holder.postProPic.getTag().equals("noStories")){
-                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
-                    picIntent.putExtra("itemID", post.getUserID());
-                    picIntent.putExtra("reason", "userImage");
-                    context.startActivity(picIntent);
-                }
-                //holder.popAddPost.show();
+                holder.popAddPost.show();
             }
         });//popping up profile picture
 
@@ -1130,13 +936,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             @Override
             public void onClick(View view) {
                 if(holder.postLikeBTN.getTag().equals("like")){
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostID())
-                            .child(firebaseUser.getUid()).setValue(true);
-                    if (!firebaseUser.getUid().equals(post.getUserID()))
-                        universalNotifications.addLikesNotifications(post.getUserID(), post.getPostID());
+                    universalFunctions.likePost(post);
                 }else{
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostID())
-                            .child(firebaseUser.getUid()).removeValue();
+                    universalFunctions.unlikePost(post);
                 }
             }
         });
@@ -1145,11 +947,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             @Override
             public void onClick(View view) {
                 if(holder.savePostBTN.getTag().equals("save")){
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(firebaseUser.getUid())
-                            .child(post.getPostID()).setValue(true);
+                    universalFunctions.savePost(post);
                 }else{
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(firebaseUser.getUid())
-                            .child(post.getPostID()).removeValue();
+                    universalFunctions.removeSavedPost(post);
                 }
             }
         });
@@ -1167,7 +967,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
 
     //other post functions
-    private void iniPicPopUp(final Context context, final MyHolder holder, final String uid) {
+    private void iniPicPopUp(final Context context, final MyHolder holder, final PostModel postModel) {
         holder.popAddPost = new Dialog(context);
         holder.popAddPost.setContentView(R.layout.profile_pic_pop_up_layout);
         holder.popAddPost.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -1176,7 +976,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
         ImageView viewProfile = holder.popAddPost.findViewById(R.id.popUP_ViewProfile);
         ImageView sendMessage = holder.popAddPost.findViewById(R.id.popUP_SendMessage);
-        ImageView superProPic = holder.popAddPost.findViewById(R.id.popUP_ProPic);
+        CircleImageView superProPic = holder.popAddPost.findViewById(R.id.popUP_ProPic);
         ImageView callBTN = holder.popAddPost.findViewById(R.id.popUP_callUser);
         RelativeLayout popButtonsArea = holder.popAddPost.findViewById(R.id.popButtonsArea);
 
@@ -1187,7 +987,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    if (user.getUSER_ID().equals(postModel.getUserID())){
 
                         try{
                             Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(superProPic);
@@ -1204,16 +1004,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
             }
         });
+        universalFunctions.checkActiveStories(superProPic, postModel.getUserID());
 
-        if(uid.equals(firebaseUser.getUid())){
+        if(postModel.getUserID().equals(firebaseUser.getUid())){
             popButtonsArea.setVisibility(View.GONE);
 
         }
+
         callBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "start phone call", Toast.LENGTH_SHORT).show();
-                holder.popAddPost.dismiss();
+                if (!postModel.getUserID().equals(firebaseUser.getUid())){
+                    Intent callIntent = new Intent(context, PhoneCallActivity.class);
+                    callIntent.putExtra("userID", postModel.getUserID());
+                    context.startActivity(callIntent);
+                    holder.popAddPost.dismiss();
+                }
             }
         });
 
@@ -1221,9 +1027,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             @Override
             public void onClick(View v) {
 
-                if(!uid.equals(firebaseUser.getUid())){
+                if(!postModel.getUserID().equals(firebaseUser.getUid())){
                     Intent intent = new Intent(context, ViewProfileActivity.class);
-                    intent.putExtra("uid", uid);
+                    intent.putExtra("uid", postModel.getUserID());
                     context.startActivity(intent);
                     holder.popAddPost.dismiss();
                 }
@@ -1236,7 +1042,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             public void onClick(View v) {
 
                 Intent intent1 = new Intent(context, ChatActivity.class);
-                intent1.putExtra("userid", uid);
+                intent1.putExtra("userid", postModel.getUserID());
                 context.startActivity(intent1);
                 holder.popAddPost.dismiss();
             }
@@ -1245,172 +1051,23 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         superProPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent1 = new Intent(context, FullScreenImageActivity.class);
-                intent1.putExtra("itemID", uid);
-                intent1.putExtra("reason", "userImage");
-                context.startActivity(intent1);
-                Toast.makeText(context, "you will be able to view users story", Toast.LENGTH_SHORT).show();
-            }
-        });
 
-    }
-
-    private void menuOptions(ImageView postMenuBTN, PostModel post) {
-        PopupMenu popupMenu = new PopupMenu(context, postMenuBTN, Gravity.END);
-
-        popupMenu.getMenu().add(Menu.NONE, 0,0,"View Profile");
-
-        if(post.getUserID().equals(firebaseUser.getUid())){
-            popupMenu.getMenu().add(Menu.NONE, 1,0,"Delete Post");
-            popupMenu.getMenu().add(Menu.NONE, 2,0,"Edit Post");
-            popupMenu.getMenu().add(Menu.NONE, 3,0,"Post Views");
-        }
-
-        if (!post.getUserID().equals(firebaseUser.getUid())){
-            if (isFollowing){
-                userReference.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot ds : snapshot.getChildren()){
-                            User user = ds.getValue(User.class);
-
-                            assert user != null;
-                            if (user.getUSER_ID().equals(post.getUserID())){
-                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Unfollow " + user.getUsername());
-                            }else{
-                                movementReference.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        for (DataSnapshot snap : snapshot.getChildren()){
-                                            Movement movement = snap.getValue(Movement.class);
-
-                                            assert movement != null;
-                                            if (movement.getMovementID().equals(post.getMovementID())){
-                                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Unfollow " + movement.getMovementName());
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-            }else{
-                userReference.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot ds : snapshot.getChildren()){
-                            User user = ds.getValue(User.class);
-
-                            assert user != null;
-                            if (user.getUSER_ID().equals(post.getUserID())){
-                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Follow " + user.getUsername());
-                            }else{
-                                movementReference.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        for (DataSnapshot snap : snapshot.getChildren()){
-                                            Movement movement = snap.getValue(Movement.class);
-
-                                            assert movement != null;
-                                            if (movement.getMovementID().equals(post.getUserID())){
-                                                popupMenu.getMenu().add(Menu.NONE, 4, 0, "Follow " + movement.getMovementName());
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-            }
-        }
-
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                switch (item.getItemId()){
-                    case 0:
-                        if(post.getUserID().equals(firebaseUser.getUid())){
-                            FragmentManager fm = ((AppCompatActivity)context).getSupportFragmentManager();
-                            FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                            fragmentTransaction.replace(R.id.content,  new ProfileFragment());
-                            fragmentTransaction.addToBackStack(null);
-                            fragmentTransaction.commit();
-                        }else{
-                            Intent intent = new Intent(context, ViewProfileActivity.class);
-                            intent.putExtra("uid", post.getUserID());
-                            context.startActivity(intent);
-                        }
-                        break;
-
-                    case 1:
-                        universalFunctions.beginDelete(post.getUserID(), post.getPostImage());
-                        break;
-
-                    case 2:
-                        Toast.makeText(context, "Edit Post Details", Toast.LENGTH_SHORT).show();
-                        break;
-
-                    case 3:
-                        Intent intent = new Intent(context, ConnectionsActivity.class);
-                        intent.putExtra("UserID", post.getUserID());
-                        intent.putExtra("Interaction", "Views");
-                        context.startActivity(intent);
-                        break;
-
-                    case 4:
-                        Toast.makeText(context, "You will be able to follow/unfollow this account", Toast.LENGTH_SHORT).show();
-                        break;
-
-                    default:
-                        Toast.makeText(context, "Unknown Selection made", Toast.LENGTH_SHORT).show();
-
+                if (holder.postProPic.getTag().equals("storyActive")){
+                    Intent intent = new Intent(context, StoryActivity.class);
+                    intent.putExtra("userid", postModel.getUserID());
+                    context.startActivity(intent);
+                    holder.popAddPost.dismiss();
+                }else if(holder.postProPic.getTag().equals("noStories")){
+                    Intent picIntent = new Intent(context, FullScreenImageActivity.class);
+                    picIntent.putExtra("itemID", postModel.getUserID());
+                    picIntent.putExtra("reason", "userImage");
+                    context.startActivity(picIntent);
+                    holder.popAddPost.dismiss();
                 }
 
-                return false;
             }
         });
-        popupMenu.show();
-    }
 
-    private void checkFollowing(PostModel post) {
-        followingReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.child(post.getUserID()).exists()){
-                    isFollowing = true;
-                }else{
-                    isFollowing = false;
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 
     private void getSharedAudio(MyHolder holder, PostModel sharedPost) {

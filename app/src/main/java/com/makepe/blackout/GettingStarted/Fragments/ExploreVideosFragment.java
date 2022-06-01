@@ -71,7 +71,9 @@ public class ExploreVideosFragment extends Fragment {
                     PostModel videos = ds.getValue(PostModel.class);
 
                     assert videos != null;
-                    if (videos.getPostType().equals("videoPost"))
+                    if (videos.getPostType().equals("videoPost")
+                            ||videos.getPostType().equals("audioVideoPost")
+                            ||videos.getPostType().equals("sharedVideoPost"))
                         videoList.add(videos);
 
                     Collections.shuffle(videoList);

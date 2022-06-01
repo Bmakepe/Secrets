@@ -34,6 +34,7 @@ import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
+import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
@@ -59,6 +60,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
+    private FollowInteraction followInteraction;
     private AudioPlayer audioPlayer;
 
     public static final int COMMENT_IMAGE_POST = 100;
@@ -106,6 +108,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
         timeAgo = new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
         notifications = new UniversalNotifications(context);
+        followInteraction = new FollowInteraction(context);
 
         switch (getItemViewType(position)){
             case COMMENT_IMAGE_POST:
@@ -275,6 +278,45 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
         
         if (comments.getUserID().equals(firebaseUser.getUid())) {
             popupMenu.getMenu().add(Menu.NONE, 1, 0, "Delete Comment");
+        }else if (!comments.getUserID().equals(firebaseUser.getUid())){
+            if (followInteraction.checkFollowing(comments.getUserID())){
+                userReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            assert user != null;
+                            if (user.getUSER_ID().equals(comments.getUserID()))
+                                popupMenu.getMenu().add(Menu.NONE, 2, 0, "Unfollow " + user.getUsername());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }else{
+                userReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            assert user != null;
+                            if (user.getUSER_ID().equals(comments.getUserID()))
+                                popupMenu.getMenu().add(Menu.NONE, 2, 0, "Follow " + user.getUsername());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+            }
         }
         
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -292,6 +334,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                     case 1:
                         Toast.makeText(context, "You will be able to delete", Toast.LENGTH_SHORT).show();
                         break;
+
+                    case 2:
+                        if (followInteraction.checkFollowing(comments.getUserID()))
+                            followInteraction.unFollowUser(comments.getUserID());
+                        else
+                            followInteraction.followUser(comments.getUserID());
                         
                     default:
                         Toast.makeText(context, "Unknown Selection", Toast.LENGTH_SHORT).show();

@@ -138,6 +138,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
 
                     try{
                         for (String id : followingList){
+                            assert postModel != null;
                             if (postModel.getUserID().equals(id)){
                                 if (postModel.getPostType().equals("videoPost")){
                                     if (postModel.getPostPrivacy().equals("Public")){

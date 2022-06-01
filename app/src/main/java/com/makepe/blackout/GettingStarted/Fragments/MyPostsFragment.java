@@ -125,7 +125,8 @@ public class MyPostsFragment extends Fragment {
                     if(modelPost.getPostImage().equals("noImage")
                             && firebaseUser.getUid().equals(modelPost.getUserID())
                             && !modelPost.getPostType().equals("videoPost")
-                            && !modelPost.getPostType().equals("sharedVideoPost")){
+                            && !modelPost.getPostType().equals("sharedVideoPost")
+                            && !modelPost.getPostType().equals("audioVideoPost")){
 
                         postList.add(modelPost);
                         i++;
@@ -168,7 +169,8 @@ public class MyPostsFragment extends Fragment {
                 mediaCount = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
-                    if(!modelPost.getPostImage().equals("noImage")
+                    assert modelPost != null;
+                    if(modelPost.getPostType().equals("imagePost")
                             && firebaseUser.getUid().equals(modelPost.getUserID())){
                         mediaList.add(modelPost);
                         mediaCount++;

@@ -24,7 +24,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Fragments.LiveFragment;
+import com.makepe.blackout.GettingStarted.Fragments.PodcastFragment;
 import com.makepe.blackout.GettingStarted.Fragments.PhotoFragment;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ViewPagerAdapter;
@@ -59,7 +59,7 @@ public class CameraActivity extends AppCompatActivity {
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new PhotoFragment(), "Media");
-        viewPagerAdapter.addFragment(new LiveFragment(), "Go Live");
+        viewPagerAdapter.addFragment(new PodcastFragment(), "Podcast");
         cameraViewPager.setAdapter(viewPagerAdapter);
         cameraTabLayout.setupWithViewPager(cameraViewPager);
 

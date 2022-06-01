@@ -61,20 +61,21 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="60dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <LinearLayout
+                    android:id="@+id/postProPic"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/postProPic"
-                    android:orientation="vertical"
-                    android:visibility="visible"
                     android:layout_above="@+id/bottom_details_area"
-                    android:padding="5dp">
+                    android:orientation="vertical"
+                    android:padding="5dp"
+                    android:visibility="visible">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -82,88 +83,88 @@
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:orientation="vertical"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp">
+                            android:layout_marginStart="5dp"
+                            android:orientation="vertical">
 
                             <RelativeLayout
+                                android:id="@+id/postHeader"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_gravity="center_vertical"
-                                android:id="@+id/postHeader">
+                                android:layout_gravity="center_vertical">
 
                                 <TextView
                                     android:id="@+id/moment_username"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_centerVertical="true"
-                                    android:layout_toStartOf="@+id/followBTN"
+                                    android:layout_toStartOf="@+id/postDate"
                                     android:singleLine="true"
                                     android:textColor="#D3D1D1"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/postDate"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_toStartOf="@+id/postMenuBTN"
-                                    android:textSize="10sp"
-                                    android:textColor="#D3D1D1"
                                     android:layout_centerVertical="true"
                                     android:layout_marginStart="5dp"
-                                    android:id="@+id/postDate"
+                                    android:layout_toStartOf="@+id/followBTN"
+                                    android:textColor="#D3D1D1"
+                                    android:textSize="10sp"
                                     tools:ignore="SmallSp" />
 
                                 <TextView
+                                    android:id="@+id/followBTN"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:textSize="14sp"
-                                    android:layout_toStartOf="@+id/postDate"
-                                    android:text="Follow"
-                                    android:textAllCaps="true"
-                                    android:textStyle="bold"
-                                    android:textColor="#D3D1D1"
                                     android:layout_centerVertical="true"
                                     android:layout_marginStart="5dp"
-                                    android:id="@+id/followBTN"
+                                    android:layout_toStartOf="@+id/videoMenuBTN"
+                                    android:text="Follow"
+                                    android:textAllCaps="true"
+                                    android:textColor="#D3D1D1"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
                                     tools:ignore="SmallSp" />
 
                                 <ImageView
+                                    android:id="@+id/videoMenuBTN"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:src="@drawable/ic_item_menu_icon"
                                     android:layout_alignParentEnd="true"
                                     android:layout_margin="5dp"
-                                    android:id="@+id/postMenuBTN"
+                                    android:src="@drawable/ic_item_menu_icon"
                                     app:tint="#D3D1D1" />
 
                             </RelativeLayout>
 
                             <LinearLayout
+                                android:id="@+id/videoLocationArea"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
-                                android:id="@+id/videoLocationArea"
                                 android:visibility="gone">
 
                                 <ImageView
                                     android:layout_width="20dp"
                                     android:layout_height="20dp"
-                                    android:src="@drawable/ic_my_location_black_24dp"/>
+                                    android:src="@drawable/ic_my_location_black_24dp" />
 
                                 <TextView
+                                    android:id="@+id/postVideoCheckIn"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:singleLine="true"
-                                    android:id="@+id/postVideoCheckIn"
                                     android:layout_gravity="center_vertical"
-                                    android:textStyle="normal"
-                                    android:visibility="gone"
-                                    android:drawablePadding="5dp"
                                     android:layout_marginStart="2dp"
+                                    android:drawablePadding="5dp"
+                                    android:singleLine="true"
                                     android:textColor="#D3D1D1"
-                                    android:textSize="12sp"/>
+                                    android:textSize="12sp"
+                                    android:textStyle="normal"
+                                    android:visibility="gone" />
 
                             </LinearLayout>
 
@@ -172,32 +173,33 @@
                     </RelativeLayout>
 
                     <RelativeLayout
+                        android:id="@+id/tagsArea"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/tagsArea">
+                        android:visibility="gone">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_alignParentEnd="true">
+                            android:layout_alignParentEnd="true"
+                            android:orientation="horizontal">
 
                             <ImageView
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
-                                android:src="@drawable/ic_person_black_24dp"
-                                android:padding="2dp"/>
+                                android:padding="2dp"
+                                android:src="@drawable/ic_person_black_24dp" />
 
                             <TextView
+                                android:id="@+id/taggedPeopleList"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:singleLine="true"
-                                android:id="@+id/taggedPeopleList"
                                 android:layout_gravity="center_vertical"
+                                android:singleLine="true"
                                 android:text="Chaka, Kamohelo, Mahao, Matli and 3 others"
-                                android:textStyle="normal"
                                 android:textColor="#D3D1D1"
                                 android:textSize="10sp"
+                                android:textStyle="normal"
                                 tools:ignore="SmallSp" />
 
                         </LinearLayout>
@@ -207,26 +209,26 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_alignParentBottom="true"
                     android:id="@+id/bottom_details_area"
-                    android:orientation="vertical"
-                    android:layout_height="wrap_content">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/desc"
+                        android:id="@+id/videoCaption"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         android:layout_margin="5dp"
+                        android:padding="5dp"
                         android:textColor="#D3D1D1"
-                        android:textSize="16sp"/>
+                        android:textSize="16sp" />
 
                     <RelativeLayout
+                        android:id="@+id/shared_video_details_area"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/white_greyish"
-                        android:id="@+id/shared_video_details_area"
                         android:padding="5dp">
 
                         <de.hdodenhof.circleimageview.CircleImageView
@@ -240,9 +242,9 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_toEndOf="@+id/shared_moment_image_user"
-                            android:layout_marginStart="5dp"
                             android:layout_centerVertical="true"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@+id/shared_moment_image_user"
                             android:orientation="vertical">
 
                             <RelativeLayout
@@ -260,24 +262,24 @@
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/shared_video_timestamp"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:textSize="10sp"
-                                    android:singleLine="true"
-                                    android:textStyle="bold"
                                     android:layout_alignParentEnd="true"
-                                    android:id="@+id/shared_video_timestamp"
+                                    android:singleLine="true"
                                     android:textColor="@color/colorBlack"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold"
                                     tools:ignore="SmallSp" />
 
                             </RelativeLayout>
 
                             <TextView
+                                android:id="@+id/shared_video_caption"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/shared_video_caption"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorBlack"/>
+                                android:textColor="@color/colorBlack"
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -286,19 +288,19 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/interactionsArea"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/postProPic"
-                    android:id="@+id/interactionsArea"
-                    android:orientation="vertical"
-                    android:layout_alignParentEnd="true">
+                    android:layout_alignParentEnd="true"
+                    android:orientation="vertical">
 
                     <RelativeLayout
+                        android:id="@+id/proPicArea"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_weight="1"
-                        android:id="@+id/proPicArea"
-                        android:layout_gravity="center_horizontal">
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1">
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/moment_image_user"
@@ -312,164 +314,164 @@
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:layout_width="15dp"
                             android:layout_height="15dp"
-                            android:src="@drawable/ic_add_circle_black_24dp"
                             android:layout_alignParentBottom="true"
-                            app:civ_circle_background_color="@color/white"
+                            android:layout_centerHorizontal="true"
                             android:backgroundTint="@color/white"
-                            android:layout_centerHorizontal="true"/>
+                            android:src="@drawable/ic_add_circle_black_24dp"
+                            app:civ_circle_background_color="@color/white" />
 
                     </RelativeLayout>
 
                     <RelativeLayout
+                        android:id="@+id/viewsArea"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:layout_weight="1"
-                        android:id="@+id/viewsArea"
-                        android:padding="5dp"
-                        android:layout_gravity="center_horizontal">
+                        android:padding="5dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
+                            android:layout_centerHorizontal="true"
                             android:layout_centerVertical="true"
-                            android:layout_centerHorizontal="true">
+                            android:orientation="vertical">
 
                             <ImageView
+                                android:id="@+id/post_views"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:src="@drawable/ic_baseline_play_arrow_24"
-                                app:tint="@color/white"
                                 android:layout_gravity="center"
-                                android:id="@+id/post_views"/>
+                                android:src="@drawable/ic_baseline_play_arrow_24"
+                                app:tint="@color/white" />
 
                             <TextView
+                                android:id="@+id/videoViewsCounter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/white"
-                                android:textStyle="normal"
-                                android:textSize="10sp"
                                 android:layout_gravity="center"
-                                tools:ignore="SmallSp"
-                                android:id="@+id/videoViewsCounter"
-                                android:singleLine="true"/>
+                                android:singleLine="true"
+                                android:textColor="@color/white"
+                                android:textSize="10sp"
+                                android:textStyle="normal"
+                                tools:ignore="SmallSp" />
 
                         </LinearLayout>
 
                     </RelativeLayout>
 
                     <RelativeLayout
+                        android:id="@+id/likesArea"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/likesArea"
-                        android:padding="5dp"
                         android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:padding="5dp"
                         tools:ignore="Suspicious0dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
+                            android:layout_centerHorizontal="true"
                             android:layout_centerVertical="true"
-                            android:layout_centerHorizontal="true">
+                            android:orientation="vertical">
 
                             <ImageView
+                                android:id="@+id/post_likes"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_gravity="center"
                                 android:src="@drawable/ic_favorite_border_black_24dp"
-                                app:tint="@color/white"
-                                android:layout_gravity="center"
-                                android:id="@+id/post_likes"/>
+                                app:tint="@color/white" />
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/white"
-                                android:textStyle="normal"
-                                android:textSize="10sp"
-                                android:layout_gravity="center"
-                                tools:ignore="SmallSp"
                                 android:id="@+id/likes"
-                                android:singleLine="true"/>
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:singleLine="true"
+                                android:textColor="@color/white"
+                                android:textSize="10sp"
+                                android:textStyle="normal"
+                                tools:ignore="SmallSp" />
 
                         </LinearLayout>
 
                     </RelativeLayout>
 
                     <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="5dp"
                         android:id="@+id/commentsArea"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        tools:ignore="Suspicious0dp"  >
+                        android:layout_weight="1"
+                        android:padding="5dp"
+                        tools:ignore="Suspicious0dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true">
+                            android:layout_centerVertical="true"
+                            android:orientation="vertical">
 
                             <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/ic_insert_comment_black_24dp"
-                                app:tint="@color/white"
                                 android:id="@+id/comment"
-                                android:layout_gravity="center" />
-
-                            <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/white"
-                                android:textStyle="normal"
                                 android:layout_gravity="center"
-                                android:textSize="10sp"
+                                android:src="@drawable/ic_insert_comment_black_24dp"
+                                app:tint="@color/white" />
+
+                            <TextView
                                 android:id="@+id/post_comments"
-                                tools:ignore="SmallSp"
-                                android:singleLine="true"/>
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:singleLine="true"
+                                android:textColor="@color/white"
+                                android:textSize="10sp"
+                                android:textStyle="normal"
+                                tools:ignore="SmallSp" />
 
                         </LinearLayout>
 
                     </RelativeLayout>
 
                     <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="5dp"
-                        android:layout_gravity="center_horizontal"
                         android:id="@+id/shareArea"
-                        tools:ignore="Suspicious0dp"  >
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:padding="5dp"
+                        tools:ignore="Suspicious0dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true">
+                            android:layout_centerVertical="true"
+                            android:orientation="vertical">
 
                             <ImageView
+                                android:id="@+id/shareBTN"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_gravity="center"
                                 android:src="@drawable/ic_baseline_share_24"
-                                app:tint="@color/white"
-                                android:id="@+id/shareBTN"
-                                android:layout_gravity="center" />
+                                app:tint="@color/white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/white"
-                                android:textStyle="normal"
-                                android:text="Share"
                                 android:layout_gravity="center"
+                                android:singleLine="true"
+                                android:text="Share"
+                                android:textColor="@color/white"
                                 android:textSize="10sp"
-                                tools:ignore="SmallSp"
-                                android:singleLine="true"/>
+                                android:textStyle="normal"
+                                tools:ignore="SmallSp" />
 
                         </LinearLayout>
 
@@ -478,35 +480,35 @@
                     <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:layout_weight="1"
                         android:padding="5dp"
-                        android:layout_gravity="center_horizontal"
-                        tools:ignore="Suspicious0dp"  >
+                        tools:ignore="Suspicious0dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_centerHorizontal="true">
+                            android:layout_centerHorizontal="true"
+                            android:orientation="vertical">
 
                             <ImageView
+                                android:id="@+id/bookmarkBTN"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_gravity="center"
                                 android:src="@drawable/ic_bookmark_border_black_24dp"
-                                app:tint="@color/white"
-                                android:id="@+id/bookmarkBTN"
-                                android:layout_gravity="center"/>
+                                app:tint="@color/white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/white"
-                                android:textStyle="normal"
-                                android:text="Save"
                                 android:layout_gravity="center"
+                                android:singleLine="true"
+                                android:text="Save"
+                                android:textColor="@color/white"
                                 android:textSize="10sp"
-                                tools:ignore="SmallSp"
-                                android:singleLine="true"/>
+                                android:textStyle="normal"
+                                tools:ignore="SmallSp" />
 
                         </LinearLayout>
 

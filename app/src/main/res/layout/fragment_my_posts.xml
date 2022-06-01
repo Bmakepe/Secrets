@@ -86,6 +86,7 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
+                android:layout_marginBottom="70dp"
                 tools:ignore="UnusedAttribute" />
 
 

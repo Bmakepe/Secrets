@@ -8,6 +8,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.makepe.blackout.GettingStarted.Fragments.CallHistoryFragment;
 import com.makepe.blackout.GettingStarted.Fragments.ChatListFragment;
 import com.makepe.blackout.GettingStarted.Fragments.GroupListFragment;
 import com.makepe.blackout.GettingStarted.OtherClasses.ViewPagerAdapter;
@@ -31,8 +33,8 @@ public class MessagesActivity extends AppCompatActivity {
     private ViewPager messagesPager;
     private FloatingActionButton messagesFAB;
 
-    int[] colorIntArray = {R.color.colorPrimaryDark, R.color.colorPrimary};
-    int[] iconIntArray = {R.drawable.ic_contacts_black_24dp, R.drawable.ic_group_add_black_24dp};
+    int[] colorIntArray = {R.color.colorPrimaryDark, R.color.colorPrimary, R.color.backGroundLeft};
+    int[] iconIntArray = {R.drawable.ic_contacts_black_24dp, R.drawable.ic_group_add_black_24dp, R.drawable.ic_baseline_add_ic_call_24};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +44,14 @@ public class MessagesActivity extends AppCompatActivity {
         messagesPager = findViewById(R.id.messagesPager);
         TabLayout messagesTabs = findViewById(R.id.messageTabs);
         messagesFAB = findViewById(R.id.messagesFAB);
-        Toolbar chatListToolbar = findViewById(R.id.chatListToolbar);
+        Toolbar chatListToolbar = findViewById(R.id.messagesToolbar);
         setSupportActionBar(chatListToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new ChatListFragment(), "Chats");
         viewPagerAdapter.addFragment(new GroupListFragment(), "Groups");
+        viewPagerAdapter.addFragment(new CallHistoryFragment(), "Calls");
         messagesPager.setAdapter(viewPagerAdapter);
         messagesTabs.setupWithViewPager(messagesPager);
 
@@ -80,9 +83,21 @@ public class MessagesActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View view) {
                                 startActivity(new Intent(MessagesActivity.this, CreateGroupActivity.class));
-
                             }
                         });
+                        break;
+
+                    case 2:
+                        messagesFAB.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(MessagesActivity.this, CallUserListActivity.class));
+                            }
+                        });
+                        break;
+
+                    default:
+                        Toast.makeText(MessagesActivity.this, "Unknown error detected", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -103,7 +118,8 @@ public class MessagesActivity extends AppCompatActivity {
         messagesFAB.clearAnimation();
 
         // Scale down animation
-        ScaleAnimation shrink = new ScaleAnimation(1f, 0.1f, 1f, 0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        ScaleAnimation shrink = new ScaleAnimation(1f, 0.1f, 1f, 0.1f, Animation.RELATIVE_TO_SELF,
+                0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         shrink.setDuration(100);     // animation duration in milliseconds
         shrink.setInterpolator(new AccelerateInterpolator());
         shrink.setAnimationListener(new Animation.AnimationListener() {

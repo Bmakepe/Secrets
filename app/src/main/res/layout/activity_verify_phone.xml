@@ -87,21 +87,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:text="Re-enter Number"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack" />
+                android:padding="5dp"
+                android:text="Re-Enter Number"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/countDownTimer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@+id/resendOTP"
-                android:singleLine="true"
                 android:layout_toEndOf="@+id/change_number"
+                android:padding="5dp"
+                android:singleLine="true"
                 android:text="02:00"
                 android:textAlignment="center"
-                android:textSize="12sp"
                 android:textColor="@color/colorBlack"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -111,8 +113,9 @@
                 android:layout_alignParentEnd="true"
                 android:singleLine="true"
                 android:text="Resend Code"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack" />
+                android:padding="5dp"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp" />
 
         </RelativeLayout>
 

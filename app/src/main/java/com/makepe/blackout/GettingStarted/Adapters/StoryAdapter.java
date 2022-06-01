@@ -14,23 +14,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.AddStoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -39,7 +34,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
     private Context context;
     private List<Story> mStory;
 
-    private DatabaseReference userReference, storyReference, movementReference;
+    private DatabaseReference userReference, storyReference;
     private FirebaseUser firebaseUser;
 
     public StoryAdapter(Context context, List<Story> mStory) {
@@ -64,7 +59,6 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
 
         userInfo(holder, position, story);
 
@@ -147,8 +141,6 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                                 Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo_seen);
                             }
                         }
-                    }else{
-                        getMovementDetails(viewHolder, pos, story);
                     }
                 }
             }
@@ -156,43 +148,6 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(context, "" + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void getMovementDetails(MyHolder viewHolder, int pos, Story story) {
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    assert movement != null;
-                    if (movement.getMovementID().equals(story.getUserID())){
-                        viewHolder.story_username.setText(movement.getMovementName());
-
-                        try{
-                            Picasso.get().load(movement.getMovementProPic()).into(viewHolder.story_photo);
-                            Picasso.get().load(movement.getMovementCoverPic()).into(viewHolder.storyCoverPic);
-                        }catch (NullPointerException e){
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo);
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.storyCoverPic);
-                        }
-
-                        if (pos != 0){
-                            try{
-                                Picasso.get().load(movement.getMovementProPic()).into(viewHolder.story_photo_seen);
-                            }catch (NullPointerException e){
-                                Picasso.get().load(R.drawable.default_profile_display_pic).into(viewHolder.story_photo_seen);
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }

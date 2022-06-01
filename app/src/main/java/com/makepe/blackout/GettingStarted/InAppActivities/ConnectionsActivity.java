@@ -5,37 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.FirebaseContactsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.UserListAdapter;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.User;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.R;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class ConnectionsActivity extends AppCompatActivity {
 
@@ -98,7 +83,7 @@ public class ConnectionsActivity extends AppCompatActivity {
                     idList.add(ds.getKey());
                     connectionsToolbar.setTitle("Views");
                 }
-                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
             }
 
             @Override
@@ -118,7 +103,7 @@ public class ConnectionsActivity extends AppCompatActivity {
                     idList.add(ds.getKey());
                     connectionsToolbar.setTitle("Likes");
                 }
-                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
                 //getUserDetails();
             }
 
@@ -141,7 +126,7 @@ public class ConnectionsActivity extends AppCompatActivity {
                     idList.add(ds.getKey());
                     connectionsToolbar.setTitle("Following");
                 }
-                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
             }
 
             @Override
@@ -163,7 +148,7 @@ public class ConnectionsActivity extends AppCompatActivity {
                     connectionsToolbar.setTitle("Followers");
 
                 }
-                connectionsRecycler.setAdapter(new UserListAdapter( ConnectionsActivity.this, idList, "goToProfile"));
+                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
                 //getUserDetails();
             }
 

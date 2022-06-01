@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:background="@drawable/background_gradient"
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
@@ -13,7 +12,7 @@
         android:layout_height="wrap_content"
         android:elevation="5dp"
         app:title="Profile"
-        android:background="@color/colorPrimaryDark"
+        android:background="@null"
         app:contentInsetLeft="0dp"
         app:contentInsetStartWithNavigation="0dp"/>
 

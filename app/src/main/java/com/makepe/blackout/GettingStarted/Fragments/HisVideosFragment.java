@@ -74,7 +74,8 @@ public class HisVideosFragment extends Fragment {
 
                     if (videos.getUserID().equals(hisUserID)){
                         if (videos.getPostType().equals("videoPost")
-                                || videos.getPostType().equals("sharedVideoPost")){
+                                || videos.getPostType().equals("sharedVideoPost")
+                                || videos.getPostType().equals("audioVideoPost")){
                             videoList.add(videos);
                         }
                     }

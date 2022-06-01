@@ -86,8 +86,7 @@ public class SharePostActivity extends AppCompatActivity{
     private RelativeLayout videoArea;
     private ProgressBar sharedVideoLoader;
 
-    private DatabaseReference postRef, userRef, notificationsRef,
-            movementReference, movementPostReference;
+    private DatabaseReference postRef, userRef, notificationsRef;
     private FirebaseUser firebaseUser;
     private StorageReference audioReference;
 
@@ -185,8 +184,6 @@ public class SharePostActivity extends AppCompatActivity{
 
         postRef = FirebaseDatabase.getInstance().getReference("Posts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movement");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
         notificationsRef = FirebaseDatabase.getInstance().getReference("Notifications");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         audioReference = FirebaseStorage.getInstance().getReference();
@@ -419,23 +416,6 @@ public class SharePostActivity extends AppCompatActivity{
                         getPostDetails(postModel);
                     }
 
-                }else{
-                    movementPostReference.child(sharePostID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                PostModel model = snapshot.getValue(PostModel.class);
-
-                                if (model.getPostID().equals(sharePostID))
-                                    getPostDetails(model);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             }
 

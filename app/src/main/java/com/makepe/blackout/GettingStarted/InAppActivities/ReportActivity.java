@@ -23,7 +23,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.GroupsModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
@@ -38,7 +37,7 @@ public class ReportActivity extends AppCompatActivity {
     private Button submitReportBTN;
     private CircleImageView reportPic;
 
-    private DatabaseReference userReference, groupReference, movementReference, reportReference;
+    private DatabaseReference userReference, groupReference, reportReference;
     private FirebaseUser firebaseUser;
 
     private String myName, hisName, reportMessage, reported;
@@ -63,7 +62,6 @@ public class ReportActivity extends AppCompatActivity {
 
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         groupReference = FirebaseDatabase.getInstance().getReference("SecretGroups");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
         reportReference = FirebaseDatabase.getInstance().getReference("Reports");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -142,25 +140,6 @@ public class ReportActivity extends AppCompatActivity {
                                     assert groupsModel != null;
                                     if (groupsModel.getGroupID().equals(reported)){
                                         reportedPersonET.setText(groupsModel.getGroupName());
-                                    }else{
-                                        movementReference.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                for (DataSnapshot ds : snapshot.getChildren()){
-                                                    Movement movement = ds.getValue(Movement.class);
-
-                                                    assert movement != null;
-                                                    if (movement.getMovementID().equals(reported)){
-                                                        reportedPersonET.setText(movement.getMovementName());
-                                                    }
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
-
-                                            }
-                                        });
                                     }
                                 }
                             }

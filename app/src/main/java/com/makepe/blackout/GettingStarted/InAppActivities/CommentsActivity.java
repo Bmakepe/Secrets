@@ -47,7 +47,6 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.CommentsAdapter;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
@@ -81,7 +80,7 @@ public class CommentsActivity extends AppCompatActivity {
     private TextInputLayout commentCaptionArea;
 
     private DatabaseReference commentReference, userReference, postReference,
-            movementPostReference, notificationsReference, storyReference, movementReference;
+            notificationsReference, storyReference;
     private FirebaseUser firebaseUser;
 
     private String itemID, userID, commentID;
@@ -162,11 +161,9 @@ public class CommentsActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         commentReference = FirebaseDatabase.getInstance().getReference("Comments");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts").child(itemID);
         postReference = FirebaseDatabase.getInstance().getReference("Posts").child(itemID);
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movement");
         storageReference = FirebaseStorage.getInstance().getReference("CommentImages");
         audioReference = FirebaseStorage.getInstance().getReference();
 
@@ -567,7 +564,8 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void getPostDetails() {
-        movementPostReference.addValueEventListener(new ValueEventListener() {
+
+        postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
@@ -577,31 +575,13 @@ public class CommentsActivity extends AppCompatActivity {
                     if (model.getPostID().equals(itemID))
                         displayPostDetails(model);
                 }else{
-                    postReference.addValueEventListener(new ValueEventListener() {
+                    storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                PostModel model = snapshot.getValue(PostModel.class);
-
-                                assert model != null;
-                                if (model.getPostID().equals(itemID))
-                                    displayPostDetails(model);
-                            }else{
-                                storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        for (DataSnapshot ds : snapshot.getChildren()){
-                                            if (ds.child(itemID).exists()){
-                                                displayStoryDetails(ds);
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                if (ds.child(itemID).exists()){
+                                    displayStoryDetails(ds);
+                                }
                             }
                         }
 
@@ -670,30 +650,6 @@ public class CommentsActivity extends AppCompatActivity {
                         } catch (NullPointerException e) {
                             Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProPic);
                         }
-                    }else{
-                        movementReference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot snap : snapshot.getChildren()){
-                                    Movement movement = snap.getValue(Movement.class);
-
-                                    if (movement.getMovementID().equals(story.getUserID())){
-                                        hisName.setText(movement.getMovementName());
-
-                                        try{
-                                            Picasso.get().load(movement.getMovementProPic()).into(hisProPic);
-                                        }catch (NullPointerException e){
-                                            Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProPic);
-                                        }
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
                     }
                 }
             }
@@ -710,7 +666,8 @@ public class CommentsActivity extends AppCompatActivity {
         userID = model.getUserID();
 
         if (model.getPostType().equals("audioPost")
-                || model.getPostType().equals("audioImagePost")){
+                || model.getPostType().equals("audioImagePost")
+                || model.getPostType().equals("audioVideoPost")){
 
             postCaption.setVisibility(View.GONE);
             commentMediaPlayer.setVisibility(View.VISIBLE);

@@ -175,20 +175,6 @@ public class PostActivity extends AppCompatActivity{
         postID = postRef.push().getKey();
         timeStamp = String.valueOf(System.currentTimeMillis());
 
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-
-        if (Intent.ACTION_SEND.equals(action) && type != null){
-
-            if ("text/plain".equals(type))
-                handleSendText(intent);
-            else if (type.startsWith("image/*"))
-                handleSendImage(intent);
-            else if (type.startsWith("video/*"))
-                handleSendVideo(intent);
-        }
-
         getUserDetails();
         checkUserStatus();
         iniFriendList();
@@ -392,31 +378,117 @@ public class PostActivity extends AppCompatActivity{
 
     }
 
-    private void handleSendVideo(Intent intent) {
-
-    }
-
-    private void handleSendImage(Intent intent) {
-
-        Uri imageURI = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-
-        if (imageURI != null){
-            imageUri = imageURI;
-
-            picToUpload.setImageURI(imageUri);
-        }
-    }
-
-    private void handleSendText(Intent intent) {
-        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-
-        if (sharedText != null){
-            captionArea.setText(sharedText);
-        }
-    }
-
     private void uploadVideoAudioPost() {
-        Toast.makeText(PostActivity.this, "You will be able to upload video audio file", Toast.LENGTH_SHORT).show();
+        uploadDialog.show();
+
+        long systemMillis = System.currentTimeMillis();
+
+        StorageReference ref = FirebaseStorage.getInstance().getReference()
+                .child("videos")
+                .child(systemMillis + "." + getFileExtension(videoURI));
+
+        UploadTask uploadTask = ref.putFile(videoURI);
+
+        uploadTask.addOnProgressListener(taskSnapshot ->{
+            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+            Log.d("PROGRESS", "Upload is " + progress + "% done");
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(PostActivity.this, "Upload Failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Task<Uri> urlTask = uploadTask.continueWithTask(task ->{
+            if (!task.isSuccessful()){
+                throw task.getException();
+            }
+            return ref.getDownloadUrl();
+        }).addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                Uri downloadUri = task.getResult();
+                mediaUrl = downloadUri.toString();
+                Log.i("downloadTag", mediaUrl);
+
+                StorageReference filePath = audioReference.child("AudioPosts").child(postID + ".3gp");
+
+                Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+                StorageTask<UploadTask.TaskSnapshot> audioTask = filePath.putFile(audioUri);
+
+                audioTask.continueWithTask(new Continuation() {
+                    @Override
+                    public Object then(@NonNull Task task) throws Exception {
+                        if (!task.isSuccessful())
+                            throw task.getException();
+                        return filePath.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()){
+                            Uri downloadUri = task.getResult();
+                            String audioLink = downloadUri.toString();
+
+                            HashMap<String, Object> audioMap = new HashMap<>();
+
+                            //put the post info
+                            audioMap.put("userID", firebaseUser.getUid());//usersID
+                            audioMap.put("postID", postID); //the id of the post is the time at which the post has been added
+                            audioMap.put("postCaption", ""); // the post caption
+                            audioMap.put("postImage", "noImage"); //the post image which has been send to firebase storage and only the uri is stored
+                            audioMap.put("postTime", timeStamp);// the time at which the post has been posted
+                            audioMap.put("postType", "audioVideoPost");
+                            audioMap.put("videoURL", mediaUrl);
+                            audioMap.put("postPrivacy", privacyProtection);
+                            audioMap.put("audioURL", audioLink);
+
+                            if (!tagLocation.getText().toString().equals("No Location")) {
+                                audioMap.put("latitude", locationServices.getLatitude());
+                                audioMap.put("longitude", locationServices.getLongitude());
+                            }
+
+                            if (commentSwitch.isChecked())
+                                audioMap.put("commentsAllowed", false);
+                            else
+                                audioMap.put("commentsAllowed", true);
+
+                            postRef.child(postID).setValue(audioMap)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            uploadDialog.dismiss();
+
+                                            if (!tagLocation.getText().toString().equals("No Location")) {
+                                                tagLocation.setText("No Location");
+                                            }
+
+                                            audioRecorder.resetRecorder();
+
+                                            finish();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(PostActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(PostActivity.this, "Uploading Audio Failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 
     private void uploadAudioImagePost() {
@@ -524,9 +596,9 @@ public class PostActivity extends AppCompatActivity{
         uploadDialog.show();
         StorageReference filePath = audioReference.child("AudioPosts").child(postID + ".3gp");
 
-        Uri audiUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
 
-        StorageTask<UploadTask.TaskSnapshot> audioTask = filePath.putFile(audiUri);
+        StorageTask<UploadTask.TaskSnapshot> audioTask = filePath.putFile(audioUri);
 
         audioTask.continueWithTask(new Continuation() {
             @Override

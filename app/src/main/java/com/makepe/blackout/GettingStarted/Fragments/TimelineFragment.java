@@ -11,19 +11,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -33,11 +30,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.StoryAdapter;
-import com.makepe.blackout.GettingStarted.InAppActivities.CreateGroupActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.CameraActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.MessagesActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.NewMovementActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PostActivity;
-import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
@@ -54,7 +48,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class TimelineFragment extends Fragment {
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userRef, followReference, storyReference, postReference, movementPostReference;
+    private DatabaseReference userRef, followReference, storyReference, postReference;
 
     private CircleImageView homeProPic;
     private Toolbar homeToolbar;
@@ -104,7 +98,6 @@ public class TimelineFragment extends Fragment {
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
         followReference = FirebaseDatabase.getInstance().getReference("Follow")
                 .child(firebaseUser.getUid()).child("following");
 
@@ -212,30 +205,6 @@ public class TimelineFragment extends Fragment {
         });
     }
 
-    private void getMovementPosts() {
-        movementPostReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    PostModel model = snap.getValue(PostModel.class);
-
-                    for (String id : followingList){
-                        assert model != null;
-                        if (model.getUserID().equals(id))
-                            postList.add(model);
-                    }
-                }
-
-                Collections.shuffle(postList);
-                postRecycler.setAdapter(new PostAdapter(getActivity(), postList));
-                timelineLoader.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
-        });
-    }
-
     private void readAppropriatePosts() {
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -247,16 +216,23 @@ public class TimelineFragment extends Fragment {
                     assert postModel != null;
                     for (String ID : followingList){
                         if (postModel.getUserID().equals(ID))
-                            if (!postModel.getPostType().equals("videoPost") && !postModel.getPostType().equals("sharedVideoPost"))
+                            if (!postModel.getPostType().equals("videoPost")
+                                    && !postModel.getPostType().equals("sharedVideoPost")
+                                    && !postModel.getPostType().equals("audioVideoPost"))
                                 postList.add(postModel);
                     }
 
                     if (postModel.getUserID().equals(firebaseUser.getUid()))
-                        if (!postModel.getPostType().equals("videoPost") && !postModel.getPostType().equals("sharedVideoPost"))
+                        if (!postModel.getPostType().equals("videoPost")
+                                && !postModel.getPostType().equals("sharedVideoPost")
+                                && !postModel.getPostType().equals("audioVideoPost"))
                             postList.add(postModel);
 
                 }
-                getMovementPosts();
+
+                Collections.shuffle(postList);
+                postRecycler.setAdapter(new PostAdapter(getActivity(), postList));
+                timelineLoader.setVisibility(View.GONE);
             }
 
             @Override
@@ -303,12 +279,8 @@ public class TimelineFragment extends Fragment {
             case R.id.inbox:
                 startActivity(new Intent(getActivity(), MessagesActivity.class));
                 break;
-            case R.id.createMovementBTN:
-                startActivity(new Intent(getActivity(), NewMovementActivity.class));
-
-                break;
-            case R.id.createGroupBTN:
-                startActivity(new Intent(getActivity(), CreateGroupActivity.class));
+            case R.id.newPostBTN:
+                startActivity(new Intent(getActivity(), CameraActivity.class));
                 break;
 
             default:

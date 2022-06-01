@@ -1,45 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.Fragments.ExploreImagesFragment">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/exploreImageToolbar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="5dp"
-        app:title="Explore"
-        android:background="@null"
-        app:contentInsetLeft="0dp"
-        app:contentInsetStartWithNavigation="0dp"
-        app:menu="@menu/explore_menu"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/exploreImageToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:elevation="5dp"
+            app:title="Explore"
+            android:background="@null"
+            app:contentInsetLeft="0dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:menu="@menu/explore_menu"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/exploreRecycler"
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:stackFromEnd="false"
-                app:reverseLayout="true"
-                android:scrollbars="vertical"
-                android:scrollbarSize="2dp"
-                android:scrollbarStyle="insideOverlay"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/exploreRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:stackFromEnd="false"
+                    app:reverseLayout="true"
+                    android:scrollbars="vertical"
+                    android:scrollbarSize="2dp"
+                    android:layout_marginBottom="70dp"
+                    android:scrollbarStyle="insideOverlay"/>
 
-    </androidx.core.widget.NestedScrollView>
+            </LinearLayout>
 
-</LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -60,6 +60,8 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
 
         switch(post.getPostType()){
             case "videoPost":
+
+            case "audioVideoPost":
                 getVideoOwnerDetails(post, holder);
                 getVideoDetails(post, holder);
                 universalFunctions.checkVideoViewCount(holder.videoViews, post);
@@ -77,7 +79,6 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "You will be able to view this video", Toast.LENGTH_SHORT).show();
 
                 Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
                 videoIntent.putExtra("videoID", post.getPostID());
@@ -96,6 +97,7 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
+                    assert postModel != null;
                     if (post.getSharedPost().equals(postModel.getPostID())){
                         getVideoDetails(postModel, holder);
                         getVideoOwnerDetails(postModel, holder);

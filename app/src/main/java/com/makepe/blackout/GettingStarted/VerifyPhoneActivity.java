@@ -52,10 +52,10 @@ public class VerifyPhoneActivity extends AppCompatActivity {
         resendOTP = findViewById(R.id.resendOTP);
 
         Intent intent = getIntent();
-        final String number = intent.getExtras().getString("number");//retrive number from previous activity
+        final String number = intent.getExtras().getString("number");//retrieve number from previous activity
 
         verifyDialog = new ProgressDialog(this);
-        subHeading.setText("We are automatically detecting a SMS send to your mobile number " + number);
+        subHeading.setText("We are automatically detecting a verification SMS send to your mobile number " + number);
         mAuth = FirebaseAuth.getInstance();
         sendVerificationCode(number);//send the verification code to number which has been entered
 

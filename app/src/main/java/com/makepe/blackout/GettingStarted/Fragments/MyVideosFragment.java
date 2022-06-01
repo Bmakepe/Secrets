@@ -70,9 +70,11 @@ public class MyVideosFragment extends Fragment {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
+                    assert postModel != null;
                     if (postModel.getUserID().equals(firebaseUser.getUid())){
                         if (postModel.getPostType().equals("videoPost")
-                                || postModel.getPostType().equals("sharedVideoPost"))
+                                || postModel.getPostType().equals("sharedVideoPost")
+                                || postModel.getPostType().equals("audioVideoPost"))
                             videoList.add(postModel);
                     }
                 }

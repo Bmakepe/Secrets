@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,7 +20,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.NotificationAdapter;
-import com.makepe.blackout.GettingStarted.InAppActivities.NotificationsActivity;
 import com.makepe.blackout.GettingStarted.Models.NotiModel;
 import com.makepe.blackout.R;
 
@@ -31,7 +31,7 @@ public class NotificationsFragment extends Fragment {
 
     private RecyclerView notiRecycler;
     private List<NotiModel> notificationList;
-    private NotificationAdapter notificationAdapter;
+    private ProgressBar notificationsLoader;
 
     private FirebaseUser firebaseUser;
     private DatabaseReference notificationsReference;
@@ -48,6 +48,7 @@ public class NotificationsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_notifications, container, false);
 
         notiRecycler = view.findViewById(R.id.notificationsRecycler);
+        notificationsLoader = view.findViewById(R.id.notificationsLoader);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
@@ -55,11 +56,7 @@ public class NotificationsFragment extends Fragment {
         notificationList = new ArrayList<>();
 
         notiRecycler.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        notiRecycler.setLayoutManager(linearLayoutManager);
-
-        notificationAdapter = new NotificationAdapter(getActivity(), notificationList);
-        notiRecycler.setAdapter(notificationAdapter);
+        notiRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         getNotifications();
 
@@ -77,7 +74,8 @@ public class NotificationsFragment extends Fragment {
                 }
 
                 Collections.reverse(notificationList);
-                notificationAdapter.notifyDataSetChanged();
+                notiRecycler.setAdapter(new NotificationAdapter(getActivity(), notificationList));
+                notificationsLoader.setVisibility(View.GONE);
             }
 
             @Override

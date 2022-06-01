@@ -23,6 +23,7 @@ import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivit
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
@@ -42,6 +43,7 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
+    private FollowInteraction followInteraction;
 
     public UserInteractionAdapter(ArrayList<User> userList, Context context) {
         this.userList = userList;
@@ -61,6 +63,7 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         universalFunctions = new UniversalFunctions(context);
         notifications = new UniversalNotifications(context);
+        followInteraction = new FollowInteraction(context);
 
         getUserDetails(user, holder);
         checkFollow(user, holder);
@@ -69,21 +72,10 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
         holder.followBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (holder.followBTN.getText().equals("Follow")){
-
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
-                            .child("following").child(user.getUSER_ID()).setValue(true);
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(user.getUSER_ID())
-                            .child("followers").child(firebaseUser.getUid()).setValue(true);
-                    Toast.makeText(context, "Following", Toast.LENGTH_SHORT).show();
-                    notifications.addFollowNotifications(user.getUSER_ID());
-                }else{
-
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
-                            .child("following").child(user.getUSER_ID()).removeValue();
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(user.getUSER_ID())
-                            .child("followers").child(firebaseUser.getUid()).removeValue();
-                }
+                if (followInteraction.checkFollowing(user.getUSER_ID()))
+                    followInteraction.unFollowUser(user.getUSER_ID());
+                else
+                    followInteraction.followUser(user.getUSER_ID());
             }
         });
 

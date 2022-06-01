@@ -3,8 +3,10 @@ package com.makepe.blackout.GettingStarted.Adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -14,8 +16,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -23,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,12 +40,15 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.Chat;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
+import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
+import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -53,16 +61,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
     private static final int MSG_TYPE_LEFT = 0;
     private static final int MSG_TYPE_RIGHT = 1;
+    private static final int MSG_MEDIA_RIGHT = 2;
+    private static final int MSG_MEDIA_LEFT = 3;
+    private static final int MSG_TYPE_LOCATION_LEFT = 4;
+    private static final int MSG_TYPE_LOCATION_RIGHT = 5;
 
     private final Context context;
     private final List<Chat> mChats;
     private final String imageurl;
 
     private MediaPlayer myMediaPlayer;
+    private UniversalFunctions universalFunctions;
 
     private FirebaseUser firebaseUser;
+    private DatabaseReference chatReference;
 
     private GetTimeAgo getTimeAgo;
+    private ArrayList<String> mediaList;
 
     public MessageAdapter(Context context, List<Chat> mChats, String imageurl) {
         this.context = context;
@@ -74,16 +89,24 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     @Override
     public MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View view;
-
         switch (viewType){
             case MSG_TYPE_RIGHT:
-                view = LayoutInflater.from(context).inflate(R.layout.chat_item_right, parent, false);
-                return new MessageAdapter.MyHolder(view);
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_right, parent, false));
 
             case MSG_TYPE_LEFT:
-                view = LayoutInflater.from(context).inflate(R.layout.chat_item_left, parent, false);
-                return new MessageAdapter.MyHolder(view);
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_left, parent, false));
+
+            case MSG_MEDIA_RIGHT:
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_right_item, parent, false));
+
+            case MSG_MEDIA_LEFT:
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_left_item, parent, false));
+
+            case MSG_TYPE_LOCATION_RIGHT:
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_right, parent, false));
+
+            case MSG_TYPE_LOCATION_LEFT:
+                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_left, parent, false));
 
             default:
                 throw new IllegalStateException("Unexpected value: " + viewType);
@@ -93,9 +116,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, final int position) {
 
+        chatReference = FirebaseDatabase.getInstance().getReference("Chats");
         Chat chat = mChats.get(position);
-        final String uid = chat.getSender();
         getTimeAgo = new GetTimeAgo();
+        universalFunctions = new UniversalFunctions(context);
+        mediaList = new ArrayList<>();
 
         getChatDetails(chat, holder);
 
@@ -109,7 +134,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             }
         }catch (NullPointerException ignored){}
 
-        holder.itemView.setOnClickListener(v -> showChatOptions(holder.itemView, uid, position));
+        if (chat.getMessage_type().equals("location")){
+            holder.viewLocationBTN.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String address = "https://maps.google.com/maps?saddr=" + chat.getLatitude() + "," + chat.getLongitude();
+                    Intent locationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
+                    context.startActivity(locationIntent);
+                }
+            });
+        }
+
+
+        holder.itemView.setOnClickListener(v -> showChatOptions(holder.itemView, chat, position));
     }
 
     private void getChatDetails(Chat chat, MyHolder holder) {
@@ -129,30 +166,71 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatPic);
         }
 
-        try{
-            if(textMessage.equals("noMessage")){
-                //used for audio messages
-
-                holder.showMessages.setVisibility(View.GONE);
-                holder.playBTN.setTag("Play");
-
-                holder.playBTN.setOnClickListener(view -> {
-                    if(holder.playBTN.getTag().equals("Play")){
-                        holder.playBTN.setImageResource(R.drawable.ic_baseline_pause_circle_outline_24);
-                        holder.playBTN.setTag("Pause");
-                        playVoiceNote(voiceNote, holder);
-                    }else{
-                        holder.playBTN.setImageResource(R.drawable.ic_baseline_play_circle_outline_24);
-                        holder.playBTN.setTag("Play");
-                        pause();
-                    }
-                });
-            }else{
-                //used for text messages
+        switch (chat.getMessage_type()){
+            case "text":
                 holder.showMessages.setVisibility(View.VISIBLE);
                 holder.showMessages.setText(textMessage);
+                break;
+
+            case "mediaTextMessage":
+
+                holder.mediaRecycler.hasFixedSize();
+                holder.mediaRecycler.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+
+                getMediaList(chat, holder);
+                break;
+
+            case "location":
+                universalFunctions.findAddress(chat.getLatitude(), chat.getLongitude(), holder.messageLocationTV, holder.locationTextArea);
+
+
+            default:
+                Toast.makeText(context, "unknown message type detected", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void getMediaList(Chat chat, MyHolder holder) {
+        chatReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    mediaList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        Chat myChat = ds.getValue(Chat.class);
+
+                        assert myChat != null;
+                        if (myChat.getChatID().equals(chat.getChatID())){
+                            holder.showMessages.setText(myChat.getMessage());
+
+                            chatReference.child(myChat.getChatID()).child("images")
+                                    .addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()){
+                                        for (DataSnapshot ds : snapshot.getChildren()){
+                                            mediaList.add(ds.getValue().toString());
+
+                                        }
+                                        holder.mediaRecycler.setAdapter(new ChatMediaAdapter(context, mediaList));
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                        }
+                    }
+                }
             }
-        }catch (NullPointerException ignored){}
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void pause() {
@@ -249,15 +327,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         }
     }
 
-    private void showChatOptions(final View itemView, String uid, final int position) {
+    private void showChatOptions(final View itemView, Chat chat, final int position) {
         final PopupMenu popupMenu = new PopupMenu(context, itemView, Gravity.END);
 
         popupMenu.getMenu().add(Menu.NONE, 0,0,"Reply");
         popupMenu.getMenu().add(Menu.NONE, 1,0,"Copy");
         popupMenu.getMenu().add(Menu.NONE, 2,0,"Forward");
-        if(uid.equals(firebaseUser.getUid())){
+        if(chat.getSender().equals(firebaseUser.getUid())){
             popupMenu.getMenu().add(Menu.NONE, 3,0,"Delete");
         }
+
+        if(chat.getMessage_type().equals("location"))
+            popupMenu.getMenu().add(Menu.NONE, 4, 0, "View Location");
 
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
@@ -275,7 +356,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                         Toast.makeText(context, "Forward Chat", Toast.LENGTH_SHORT).show();
                         break;
                     case 3:
-                        Toast.makeText(context, "Delete Chat", Toast.LENGTH_SHORT).show();
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Delete");
                         builder.setMessage("Are you sure to delete this message");
@@ -284,11 +364,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                deleteMessage(position);
+                                switch(chat.getMessage_type()){
+                                    case "text":
+                                    case "location":
+                                        deleteMessage(position);
+                                        break;
+                                    case"mediaTextMessage":
+                                        deleteMediaMessage(position);
+                                        break;
+                                }
                             }
                         });
                         //cancel delete btn
-                        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 //dismiss dialog
@@ -297,6 +385,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                         });
                         builder.create().show();
                         break;
+
+                    case 4:
+                        String address = "https://maps.google.com/maps?saddr=" + chat.getLatitude() + "," + chat.getLongitude();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
+                        context.startActivity(intent);
+                        break;
+
                     default:
                         throw new IllegalStateException("Unexpected value: " + id);
                 }
@@ -307,15 +402,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         popupMenu.show();
     }
 
+    private void deleteMediaMessage(int position) {
+        Toast.makeText(context, "You will be able to delete the media message", Toast.LENGTH_SHORT).show();
+    }
+
     private void deleteMessage(int position) {
         String msgTimeStamp = mChats.get(position).getTimeStamp();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
-        Query query = reference.orderByChild("timeStamp").equalTo(msgTimeStamp);
+        Query query = chatReference.orderByChild("timeStamp").equalTo(msgTimeStamp);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
-                   if(ds.child("sender").getValue().equals(firebaseUser.getUid())) {
+                    Chat chat = ds.getValue(Chat.class);
+                    assert chat != null;
+                    if(chat.getSender().equals(firebaseUser.getUid())) {
                        ds.getRef().removeValue();
                    }
                 }
@@ -336,14 +436,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     class MyHolder extends RecyclerView.ViewHolder {
 
         //for text chat views
-        CircleImageView chatPic;
-        TextView showMessages, timeStamp;
-        ImageView ticks;
+        private CircleImageView chatPic;
+        private TextView showMessages, timeStamp, viewLocationBTN, messageLocationTV;
+        private ImageView ticks;
+
+        private RecyclerView mediaRecycler;
+        private LinearLayout locationTextArea;
 
         //for voice chat views
-        ImageButton playBTN;
-        TextView voiceTimeText, voiceTimeDuration;
-        SeekBar voiceNoteSeekbar;
+        private ImageButton playBTN;
+        private TextView voiceTimeText, voiceTimeDuration;
+        private SeekBar voiceNoteSeekbar;
 
         MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -352,6 +455,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             showMessages = itemView.findViewById(R.id.showMessages);
             timeStamp = itemView.findViewById(R.id.chatTimeStamp);
             ticks = itemView.findViewById(R.id.greyTick);
+            mediaRecycler = itemView.findViewById(R.id.chat_media_recycler);
+            viewLocationBTN = itemView.findViewById(R.id.viewLocationBTN);
+            messageLocationTV = itemView.findViewById(R.id.messageLocationText);
+            locationTextArea = itemView.findViewById(R.id.locationTextArea);
 
             playBTN = itemView.findViewById(R.id.playVoiceBTN);
             voiceTimeText = itemView.findViewById(R.id.postTimeText);
@@ -365,12 +472,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if(mChats.get(position).getSender().equals(firebaseUser.getUid())){
 
-            return MSG_TYPE_RIGHT;
+            if (mChats.get(position).getMessage_type().equals("text"))
+                return MSG_TYPE_RIGHT;
+            else if (mChats.get(position).getMessage_type().equals("mediaTextMessage"))
+                return MSG_MEDIA_RIGHT;
+            else if (mChats.get(position).getMessage_type().equals("location"))
+                return MSG_TYPE_LOCATION_RIGHT;
 
         }else{
 
-            return MSG_TYPE_LEFT;
+            if (mChats.get(position).getMessage_type().equals("text"))
+                return MSG_TYPE_LEFT;
+            else if (mChats.get(position).getMessage_type().equals("mediaTextMessage"))
+                return MSG_MEDIA_LEFT;
+            else if (mChats.get(position).getMessage_type().equals("location"))
+                return MSG_TYPE_LOCATION_LEFT;
 
         }
+        return position;
     }
 }

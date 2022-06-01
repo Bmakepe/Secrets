@@ -30,7 +30,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.ExploreAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.SearchActivity;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -44,7 +43,7 @@ public class ExploreImagesFragment extends Fragment {
     private RecyclerView exploreRecycler;
     private ExploreAdapter exploreAdapter;
 
-    private DatabaseReference postRef, userRef, movementReference, movementPostReference;
+    private DatabaseReference postRef, userRef;
     private FirebaseUser firebaseUser;
 
     private ProgressDialog pd;
@@ -75,8 +74,6 @@ public class ExploreImagesFragment extends Fragment {
 
         postRef = FirebaseDatabase.getInstance().getReference("Posts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         pd = new ProgressDialog(getActivity());
@@ -94,47 +91,8 @@ public class ExploreImagesFragment extends Fragment {
     private void getAllExploreItems() {
         getNormalPostsItems();
         getExploreUsers();
-        getPublicMovements();
-        getMovementPosts();
 
         pd.dismiss();
-    }
-
-    private void getMovementPosts() {
-        movementPostReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
-
-                    movementReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                Movement movement = ds.getValue(Movement.class);
-
-                                assert movement != null;
-                                assert postModel != null;
-                                if (movement.getMovementID().equals(postModel.getMovementID()))
-                                    if (!movement.getMovementPrivacy().equals("Private"))
-                                        if (!postModel.getPostType().equals("textPost"))
-                                            exploreItems.add(postModel.getPostID());
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 
     private void declareRecycler() {
@@ -145,27 +103,6 @@ public class ExploreImagesFragment extends Fragment {
         exploreRecycler.setLayoutManager(new GridLayoutManager(getContext(), 3,
                 GridLayoutManager.VERTICAL, false));
 
-    }
-
-    private void getPublicMovements() {
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    assert movement != null;
-                    if (!movement.getMovementPrivacy().equals("Private"))
-                        exploreItems.add(movement.getMovementID());
-                }
-                updateRecycler();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 
     private void getExploreUsers() {
@@ -242,8 +179,7 @@ public class ExploreImagesFragment extends Fragment {
                 PopupMenu popupMenu = new PopupMenu(getActivity(), menuView);
                 popupMenu.getMenu().add(0, 0, Menu.NONE, "All");
                 popupMenu.getMenu().add(0, 1, Menu.NONE, "Posts");
-                popupMenu.getMenu().add(0, 2, Menu.NONE, "Movements");
-                popupMenu.getMenu().add(0, 3, Menu.NONE, "Users");
+                popupMenu.getMenu().add(0, 2, Menu.NONE, "Users");
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -264,23 +200,12 @@ public class ExploreImagesFragment extends Fragment {
                                 pd.show();
 
                                 declareRecycler();
-                                getMovementPosts();
                                 getNormalPostsItems();
                                 pd.dismiss();
 
                                 break;
 
                             case 2:
-                                pd.setMessage("Loading Movements");
-                                pd.show();
-
-                                declareRecycler();
-                                getPublicMovements();
-                                pd.dismiss();
-
-                                break;
-
-                            case 3:
                                 pd.setMessage("Loading Users");
                                 pd.show();
 

@@ -3,16 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/createGroupBTN"
-        android:icon="@drawable/ic_group_add_black_24dp"
+        android:id="@+id/newPostBTN"
+        android:icon="@drawable/ic_add_circle_black_24dp"
         app:showAsAction="always"
-        android:title="Create Group" />
-
-    <item
-        android:id="@+id/createMovementBTN"
-        android:icon="@drawable/ic_baseline_campaign_24"
-        app:showAsAction="always"
-        android:title="Create Movements" />
+        android:title="New Post" />
 
     <item
         android:id="@+id/inbox"

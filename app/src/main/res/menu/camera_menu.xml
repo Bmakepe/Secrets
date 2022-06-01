@@ -5,6 +5,5 @@
     <item
         android:id="@+id/skipSearch"
         android:title="Skip"
-        android:icon="@drawable/ic_baseline_arrow_forward_24"
-        app:showAsAction="always|withText"/>
+        app:showAsAction="always"/>
 </menu>

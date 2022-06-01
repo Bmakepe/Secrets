@@ -102,115 +102,84 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/bottomBar">
+        android:orientation="vertical"
+        android:id="@+id/bottomBar"
+        android:layout_alignParentBottom="true">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/ic_image_black_24dp"
-            android:id="@+id/replyMessageImage"
-            android:scaleType="centerCrop"
-            android:visibility="gone"/>
-
-        <RelativeLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/replyMessageImage"
-            android:id="@+id/replyTextArea"
-            android:layout_centerVertical="true">
+            android:id="@+id/messageMediaRecycler"/>
 
-            <TextView
-                android:layout_width="match_parent"
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <ImageButton
+                android:id="@+id/attachFiles"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/replyMessageText"
-                android:textSize="12sp"
-                android:visibility="gone"
-                android:textStyle="normal"/>
+                android:layout_centerVertical="true"
+                android:background="@drawable/attach_msg"
+                android:src="@drawable/ic_add_black_24dp"
+                android:visibility="visible"
+                app:tint="@color/colorPrimary" />
 
             <RelativeLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/replyMessageAudioArea"
-                android:visibility="gone">
+                android:layout_toEndOf="@id/attachFiles"
+                android:background="@drawable/rounded_edittext"
+                android:layout_toStartOf="@+id/confirmationArea"
+                android:layout_margin="2dp">
 
-                <include
-                    layout="@layout/audio_media_player" />
+                <EditText
+                    android:id="@+id/messageEt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@null"
+                    android:hint="@string/message_hint"
+                    android:inputType="textMultiLine"
+                    android:maxLines="4"
+                    android:minHeight="40dp"
+                    android:padding="2dp"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/confirmationArea"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true">
+
+                <ImageButton
+                    android:id="@+id/voiceBTN"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/attach_msg"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_mic_black_24dp"
+                    android:visibility="visible"
+                    app:tint="@color/colorPrimary" />
 
             </RelativeLayout>
 
         </RelativeLayout>
 
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="2dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/bottomBar"
-        android:visibility="visible">
-
-        <ImageButton
-            android:id="@+id/attachFiles"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:background="@drawable/attach_msg"
-            android:src="@drawable/ic_add_black_24dp"
-            android:visibility="visible"
-            app:tint="@color/colorPrimary" />
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/attachFiles"
-            android:background="@drawable/rounded_edittext"
-            android:layout_toStartOf="@+id/confirmationArea"
-            android:layout_margin="2dp">
-
-            <EditText
-                android:id="@+id/messageEt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="2dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="@null"
-                android:hint="@string/message_hint"
-                android:inputType="textMultiLine"
-                android:maxLines="4"
-                android:minHeight="40dp"
-                android:padding="2dp"
-                android:visibility="visible" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/confirmationArea"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true">
-
-            <ImageButton
-                android:id="@+id/voiceBTN"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/attach_msg"
-                android:padding="5dp"
-                android:src="@drawable/ic_mic_black_24dp"
-                android:visibility="visible"
-                app:tint="@color/colorPrimary" />
-
-        </RelativeLayout>
-
-    </RelativeLayout>
+    </LinearLayout>
 
 </RelativeLayout>

@@ -4,14 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,9 +18,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.MovementInteractionAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserInteractionAdapter;
-import com.makepe.blackout.GettingStarted.Models.Movement;
+import com.makepe.blackout.GettingStarted.Adapters.VideoItemAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -45,11 +40,10 @@ public class InteractionsActivity extends AppCompatActivity {
     private List<String> savedList;
 
     //for movements & Users
-    private ArrayList<Movement> movementsList;
     private ArrayList<User> userList;
 
-    private DatabaseReference postReference, userReference, movementPostReference,
-            savedMediaRef, movementReference;
+    private DatabaseReference postReference, userReference,
+            savedMediaRef;
     private FirebaseUser firebaseUser;
 
     @Override
@@ -69,8 +63,6 @@ public class InteractionsActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("Movements");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
         savedMediaRef = FirebaseDatabase.getInstance().getReference("Saves")
                 .child(firebaseUser.getUid());
 
@@ -86,18 +78,67 @@ public class InteractionsActivity extends AppCompatActivity {
                 getSavedMedia();
                 break;
 
-            case "seeMoreMovements":
-                getAllMovements();
-                break;
-
             case "seeMoreUsers":
                 getAllUsers();
+                break;
+
+            case "seeSavedVideos":
+                getSavedVideos();
                 break;
 
             default:
                 Toast.makeText(this, "Illegal Selection", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private void getSavedVideos() {
+        savedList = new ArrayList<>();
+        savedMediaRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                savedList.clear();
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        savedList.add(ds.getKey());
+                    }
+                    getVideos();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getVideos() {
+        mediaList = new ArrayList<>();
+        postReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mediaList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel videos = ds.getValue(PostModel.class);
+
+                    for (String id : savedList){
+                        assert videos != null;
+                        if (videos.getPostID().equals(id)){
+                            if (videos.getPostType().equals("videoPost")
+                                    || videos.getPostType().equals("sharedVideoPost"))
+                            mediaList.add(videos);
+                        }
+                    }
+                }
+                connectionsRecycler.setAdapter(new VideoItemAdapter(mediaList, InteractionsActivity.this));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getAllUsers() {
@@ -109,34 +150,12 @@ public class InteractionsActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
+                    assert user != null;
                     if (!user.getUSER_ID().equals(firebaseUser.getUid())){
                         userList.add(user);
                     }
                 }
                 connectionsRecycler.setAdapter(new UserInteractionAdapter(userList, InteractionsActivity.this));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getAllMovements() {
-        movementsList = new ArrayList<>();
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                movementsList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    if (!movement.getMovementAdmin().equals(firebaseUser.getUid())){
-                        movementsList.add(movement);
-                    }
-                }
-                connectionsRecycler.setAdapter(new MovementInteractionAdapter(movementsList, InteractionsActivity.this));
             }
 
             @Override
@@ -181,35 +200,10 @@ public class InteractionsActivity extends AppCompatActivity {
 
                     for (String id : savedList) {
                         assert post != null;
-                        if (post.getPostID().equals(id)
-                                &&post.getPostType().equals("imagePost")) {
-                            mediaList.add(post);
-                        }
-                    }
-                }
-                getSavedMovements();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getSavedMovements() {
-
-        movementPostReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    PostModel postModel = snap.getValue(PostModel.class);
-
-                    for (String id : savedList){
-                        assert postModel != null;
-                        if (postModel.getPostID().equals(id)
-                                && postModel.getPostType().equals("imagePost")){
-                            mediaList.add(postModel);
+                        if (post.getPostID().equals(id)) {
+                            if (post.getPostType().equals("imagePost")
+                                    || post.getPostType().equals("audioImagePost"))
+                                mediaList.add(post);
                         }
                     }
                 }

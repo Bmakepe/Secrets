@@ -22,84 +22,139 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:id="@+id/mediaHeading">
+                android:visibility="gone"
+                android:orientation="vertical"
+                android:id="@+id/imagesArea">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto_regular"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentStart="true"
-                    android:id="@+id/savedMediaHeading"/>
+                    android:padding="5dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentStart="true"
+                        android:id="@+id/savedMediaHeading"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="@string/see_more"
+                        android:textColor="@color/colorBlack"
+                        android:padding="8dp"
+                        android:layout_gravity="center_vertical"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_alignParentEnd="true"
+                        android:id="@+id/viewSavedMedia"/>
+
+                </RelativeLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/savedMediaRecycler"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="@string/see_more"
-                    android:textColor="@color/colorBlack"
-                    android:padding="8dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_centerVertical="true"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_alignParentEnd="true"
-                    android:id="@+id/viewSavedMedia"/>
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:scrollbars="horizontal"
+                    android:nestedScrollingEnabled="false"
+                    tools:ignore="RtlSymmetry,UnusedAttribute" />
 
-            </RelativeLayout>
+            </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/savedMediaRecycler"
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:scrollbars="horizontal"
-                android:nestedScrollingEnabled="false"
-                android:layout_below="@+id/mediaHeading"
-                tools:ignore="RtlSymmetry,UnusedAttribute" />
+                android:visibility="gone"
+                android:id="@+id/videosArea">
 
-            <RelativeLayout
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentStart="true"
+                        android:id="@+id/savedVideosHeader"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="@string/see_more"
+                        android:textColor="@color/colorBlack"
+                        android:padding="8dp"
+                        android:layout_gravity="center_vertical"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_alignParentEnd="true"
+                        android:id="@+id/viewSavedVideos"/>
+
+                </RelativeLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/savedVideosRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:scrollbars="horizontal"
+                    android:nestedScrollingEnabled="false"
+                    tools:ignore="RtlSymmetry,UnusedAttribute" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:layout_below="@+id/savedMediaRecycler"
-                android:id="@+id/postsHeading"
-                android:orientation="horizontal">
+                android:id="@+id/postsArea"
+                android:visibility="gone"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/savedPostsHead"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:fontFamily="@font/roboto_regular"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
+                    android:padding="5dp"
                     android:textStyle="bold" />
 
-            </RelativeLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/savedPostsRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    tools:ignore="UnusedAttribute" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/savedPostsRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/postsHeading"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                tools:ignore="UnusedAttribute" />
+            </LinearLayout>
 
-        </RelativeLayout>
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 

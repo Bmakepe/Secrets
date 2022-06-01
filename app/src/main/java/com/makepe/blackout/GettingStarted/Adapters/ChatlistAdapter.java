@@ -18,10 +18,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.ChatList;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
@@ -46,7 +44,7 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
     private GetTimeAgo getTimeAgo;
     private UniversalFunctions universalFunctions;
 
-    private DatabaseReference userReference, movementReference;
+    private DatabaseReference userReference;
 
     public ChatlistAdapter(Context context, List<ChatList> chatList) {
         this.context = context;
@@ -70,8 +68,6 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
         getTimeAgo= new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
-
 
         String lastmessage = lastMessageMap.get(chats.getId());
         String lastTime = lastTimeStampMap.get(chats.getId());
@@ -148,31 +144,6 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
                             } catch (NullPointerException e) {
                                 Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatlistProPic);
                             }
-                        }else{
-                            movementReference.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    for (DataSnapshot ds : snapshot.getChildren()){
-                                        Movement movement = ds.getValue(Movement.class);
-
-                                        assert movement != null;
-                                        if (movement.getMovementID().equals(hisUid)){
-                                            holder.chatListUser.setText(movement.getMovementName());
-
-                                            try{
-                                                Picasso.get().load(movement.getMovementProPic()).into(holder.chatlistProPic);
-                                            }catch (NullPointerException e){
-                                                Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatlistProPic);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                }
-                            });
                         }
                     }
                 }

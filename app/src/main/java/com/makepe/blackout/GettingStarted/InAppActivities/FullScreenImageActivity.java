@@ -6,7 +6,6 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -17,20 +16,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.GroupsModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
-import java.util.Objects;
-
 public class FullScreenImageActivity extends AppCompatActivity {
 
     private ImageView fullScreenImage;
     private Toolbar toolbar;
-    private DatabaseReference userRef, postRef, groupRef, movementReference,
-            movementPostReference, commentReference;
+    private DatabaseReference userRef, postRef, groupRef, commentReference;
 
     private String itemID, reason;
 
@@ -48,8 +43,6 @@ public class FullScreenImageActivity extends AppCompatActivity {
         itemID = intent.getStringExtra("itemID");
         reason = intent.getStringExtra("reason");
 
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         postRef = FirebaseDatabase.getInstance().getReference("Posts");
         groupRef = FirebaseDatabase.getInstance().getReference("SecretGroups");
@@ -76,18 +69,6 @@ public class FullScreenImageActivity extends AppCompatActivity {
                 getGroupCoverPic();
                 break;
 
-            case "movementProPic":
-                getMovementProPic();
-                break;
-
-            case "movementCoverPic":
-                getMovementCoverPic();
-                break;
-
-            case "movementPostPic":
-                getMovementPostPic();
-                break;
-
             case "commentImage":
                 getCommentImage();
                 break;
@@ -110,77 +91,6 @@ public class FullScreenImageActivity extends AppCompatActivity {
                             assert model != null;
                             Picasso.get().load(model.getCommentImage()).into(fullScreenImage);
                         }catch (NullPointerException ignored){}
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getMovementPostPic() {
-        movementPostReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot data : snapshot.getChildren()){
-                    PostModel model = data.getValue(PostModel.class);
-
-                    assert model != null;
-                    if (model.getPostID().equals(itemID)){
-                        try{
-                            Picasso.get().load(model.getPostImage()).into(fullScreenImage);
-                        }catch (NullPointerException ignored){}
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getMovementCoverPic() {
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    if (movement.getMovementID().equals(itemID)){
-                        try{
-                            Picasso.get().load(movement.getMovementCoverPic()).into(fullScreenImage);
-                        }catch (NullPointerException e){
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(fullScreenImage);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getMovementProPic() {
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    if (movement.getMovementID().equals(itemID)){
-                        try{
-                            Picasso.get().load(movement.getMovementProPic()).into(fullScreenImage);
-                        }catch (NullPointerException e){
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(fullScreenImage);
-                        }
                     }
                 }
             }

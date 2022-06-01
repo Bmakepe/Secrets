@@ -6,15 +6,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/chatProPic"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/default_profile_display_pic"
-        app:civ_border_color="@color/colorBlack"
-        app:civ_border_overlay="true"
-        android:layout_alignParentEnd="true"
-        android:visibility="gone"
-        app:civ_border_width="1dp" />
+        android:visibility="gone"/>
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -23,6 +18,7 @@
         android:visibility="visible"
         android:layout_alignParentEnd="true"
         android:padding="5dp"
+        android:layout_below="@+id/chat_media_recycler"
         android:id="@+id/textArea">
 
         <LinearLayout
@@ -105,5 +101,11 @@
         </androidx.cardview.widget.CardView>
 
     </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chat_media_recycler"
+        android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>

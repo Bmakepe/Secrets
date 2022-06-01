@@ -16,6 +16,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.VideoItemAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -36,18 +39,17 @@ import java.util.List;
 
 public class SavedPostsActivity extends AppCompatActivity {
 
-    private TextView seeMore, savedMediaHeader, savedPostsHead;
+    private TextView seeMore, savedMediaHeader, savedPostsHead, savedVideosHeader, moreVideos;
+    private LinearLayout imagesArea, videosArea, postsArea;
 
     //for saved posts
     private List<String> savedPostsList;
-    private List<PostModel> mediaPostList;
-    private List<PostModel> postListSaves;
-    private RecyclerView savedPostsRecycler;
-    private RecyclerView savedMediaRecycler;
+    private List<PostModel> mediaPostList, postListSaves, savedVideosList;
+    private RecyclerView savedPostsRecycler, savedMediaRecycler, savedVideosRecycler;
 
     //for firebase
     private FirebaseUser firebaseUser;
-    private DatabaseReference savedReference, postsReference, movementPostReference;
+    private DatabaseReference savedReference, postsReference;
 
     private ProgressDialog pd;
 
@@ -63,18 +65,26 @@ public class SavedPostsActivity extends AppCompatActivity {
         seeMore = findViewById(R.id.viewSavedMedia);
         savedMediaHeader = findViewById(R.id.savedMediaHeading);
         savedPostsHead = findViewById(R.id.savedPostsHead);
+        savedVideosHeader = findViewById(R.id.savedVideosHeader);
+        moreVideos = findViewById(R.id.viewSavedVideos);
         savedMediaRecycler = findViewById(R.id.savedMediaRecycler);
         savedPostsRecycler = findViewById(R.id.savedPostsRecycler);
+        savedVideosRecycler = findViewById(R.id.savedVideosRecycler);
+        imagesArea = findViewById(R.id.imagesArea);
+        videosArea = findViewById(R.id.videosArea);
+        postsArea = findViewById(R.id.postsArea);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         savedReference = FirebaseDatabase.getInstance().getReference("Saves")
                 .child(firebaseUser.getUid());
         postsReference = FirebaseDatabase.getInstance().getReference("Posts");
-        movementPostReference = FirebaseDatabase.getInstance().getReference("MovementPosts");
 
         savedMediaRecycler.hasFixedSize();
         savedMediaRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         savedMediaRecycler.setItemAnimator(new DefaultItemAnimator());
+
+        savedVideosRecycler.hasFixedSize();
+        savedVideosRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         savedPostsRecycler.hasFixedSize();
         savedPostsRecycler.setLayoutManager(new LinearLayoutManager(this));
@@ -82,19 +92,36 @@ public class SavedPostsActivity extends AppCompatActivity {
         savedPostsList = new ArrayList<>();
         postListSaves = new ArrayList<>();
         mediaPostList = new ArrayList<>();
+        savedVideosList = new ArrayList<>();
 
         pd = new ProgressDialog(this);
         pd.setMessage("Loading...");
 
         getMySavedPosts();
 
+        moreVideos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!savedVideosList.isEmpty()) {
+                    Intent seeMoreIntent = new Intent(SavedPostsActivity.this, InteractionsActivity.class);
+                    seeMoreIntent.putExtra("userID", firebaseUser.getUid());
+                    seeMoreIntent.putExtra("interactionType", "seeSavedVideos");
+                    startActivity(seeMoreIntent);
+                }else
+                    Toast.makeText(SavedPostsActivity.this, "You have not saved any media", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         seeMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent seeMoreIntent = new Intent(SavedPostsActivity.this, InteractionsActivity.class);
-                seeMoreIntent.putExtra("userID", firebaseUser.getUid());
-                seeMoreIntent.putExtra("interactionType", "seeSavedMedia");
-                startActivity(seeMoreIntent);
+                if (!mediaPostList.isEmpty()) {
+                    Intent seeMoreIntent = new Intent(SavedPostsActivity.this, InteractionsActivity.class);
+                    seeMoreIntent.putExtra("userID", firebaseUser.getUid());
+                    seeMoreIntent.putExtra("interactionType", "seeSavedMedia");
+                    startActivity(seeMoreIntent);
+                }else
+                    Toast.makeText(SavedPostsActivity.this, "You have not saved any media", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -113,6 +140,13 @@ public class SavedPostsActivity extends AppCompatActivity {
                     }
 
                     getSavedTextPosts();
+                }else{
+
+                    savedMediaHeader.setText("Saved Media [" + mediaPostList.size() +  "]");
+                    savedPostsHead.setText("Saved Posts [" + postListSaves.size() +  "]");
+                    savedVideosHeader.setText("Saved Videos [" + savedVideosList.size() + "]");
+
+                    pd.dismiss();
                 }
             }
 
@@ -129,6 +163,7 @@ public class SavedPostsActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postListSaves.clear();
                 mediaPostList.clear();
+                savedVideosList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
@@ -136,55 +171,49 @@ public class SavedPostsActivity extends AppCompatActivity {
                         assert postModel != null;
                         if (postModel.getPostID().equals(id)) {
 
-                            if (postModel.getPostType().equals("textPost")) {
+                            if (postModel.getPostType().equals("textPost")
+                                    || postModel.getPostType().equals("audioPost")
+                                    || postModel.getPostType().equals("sharedTextPost")
+                                    || postModel.getPostType().equals("sharedAudioTextPost")
+                                    || postModel.getPostType().equals("sharedTextAudioPost")
+                                    || postModel.getPostType().equals("sharedAudioAudioPost")) {
                                 postListSaves.add(postModel);
-                            }else if (postModel.getPostType().equals("imagePost")){
+                            }else if (postModel.getPostType().equals("imagePost")
+                                    || postModel.getPostType().equals("audioImagePost")
+                                    || postModel.getPostType().equals("sharedImagePost")
+                                    || postModel.getPostType().equals("sharedAudioImagePost")
+                                    || postModel.getPostType().equals("sharedTextAudioImagePost")
+                                    || postModel.getPostType().equals("sharedAudioAudioImagePost")){
                                 mediaPostList.add(postModel);
+                            }else if (postModel.getPostType().equals("videoPost")
+                                    || postModel.getPostType().equals("sharedVideoPost")){
+                                savedVideosList.add(postModel);
                             }
 
                         }
                     }
-                }
-                getSavedMovementPosts();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-
-    }
-
-    private void getSavedMovementPosts() {
-
-        movementPostReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel pm = ds.getValue(PostModel.class);
-
-                    for (String id : savedPostsList){
-                        assert pm != null;
-                        if (pm.getPostID().equals(id)){
-                            if (pm.getPostType().equals("textPost")){
-                                postListSaves.add(pm);
-                            }else if (pm.getPostType().equals("imagePost")){
-                                mediaPostList.add(pm);
-                            }
-                        }
-
+                    if (!postListSaves.isEmpty()){
+                        postsArea.setVisibility(View.VISIBLE);
+                        savedPostsHead.setText("Saved Posts [" + postListSaves.size() +  "]");
                         savedPostsRecycler.setAdapter(new PostAdapter(SavedPostsActivity.this, postListSaves));
-                        savedMediaRecycler.setAdapter(new MediaAdapter(SavedPostsActivity.this, mediaPostList));
-
                     }
-                    savedMediaHeader.setText("Saved Media [" + mediaPostList.size() +  "]");
-                    savedPostsHead.setText("Saved Posts [" + postListSaves.size() +  "]");
 
-                    pd.dismiss();
+                    if (!mediaPostList.isEmpty()){
+                        imagesArea.setVisibility(View.VISIBLE);
+                        savedMediaHeader.setText("Saved Media [" + mediaPostList.size() +  "]");
+                        savedMediaRecycler.setAdapter(new MediaAdapter(SavedPostsActivity.this, mediaPostList));
+                    }
+
+                    if (!savedVideosList.isEmpty()){
+                        videosArea.setVisibility(View.VISIBLE);
+                        savedVideosHeader.setText("Saved Videos [" + savedVideosList.size() + "]");
+                        savedVideosRecycler.setAdapter(new VideoItemAdapter(savedVideosList, SavedPostsActivity.this));
+                    }
 
                 }
+
+                pd.dismiss();
             }
 
             @Override
@@ -192,183 +221,9 @@ public class SavedPostsActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
-
-/*
-    //--------------------start of function for media saved posts
-    private void getMedia() {
-
-        mediaPostList = new ArrayList<>();
-
-        savedMediaAdapter = new MediaAdapter(SavedPostsActivity.this, mediaPostList);
-        savedMediaRecycler.setAdapter(savedMediaAdapter);
-
-        mediaSavedPosts();
-    }
-
-    private void mediaSavedPosts() {
-        mediaSaves = new ArrayList<>();
-
-        savedReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    mediaSaves.add(ds.getKey());
-                }
-
-                readMediaSaves();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void readMediaSaves() {
-        postsReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                mediaPostList.clear();
-
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    PostModel post = snapshot.getValue(PostModel.class);
-
-                    for(String id : mediaSaves){
-                        assert post != null;
-                        if(post.getPostType().equals("imagePost")
-                                || post.getPostType().equals("sharedImagePost")
-                                && post.getPostID().equals(id)){
-                            mediaPostList.add(post);
-                        }
-                    }
-
-                    movementPostReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                PostModel model = ds.getValue(PostModel.class);
-
-                                for (String id : mediaSaves){
-                                    assert model != null;
-                                    assert post != null;
-                                    if(post.getPostType().equals("imagePost")
-                                            || post.getPostType().equals("sharedImagePost")
-                                            && model.getPostID().equals(id)){
-                                        mediaPostList.add(post);
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
-                }
-                savedMediaNo.setText("[" + mediaPostList.size() + "]");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    //----------------------end of function for saved media posts
-
-
-    //---------------------start of functions for saved posts with no media
-
-    private void getPosts() {
-        savedPostsRecycler.setHasFixedSize(true);
-        savedPostsRecycler.setNestedScrollingEnabled(false);
-        savedPostsRecycler.hasFixedSize();
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        savedPostsRecycler.setLayoutManager(linearLayoutManager);
-
-        postListSaves = new ArrayList<>();
-
-        postAdapter = new PostAdapter(SavedPostsActivity.this, postListSaves);
-        savedPostsRecycler.setAdapter(postAdapter);
-
-        getSavedPosts();
-    }
-
-    private void getSavedPosts() {
-        postSaves = new ArrayList<>();
-
-        savedReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    postSaves.add(ds.getKey());
-                }
-                readPostSaves();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void readPostSaves() {
-        postsReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                postListSaves.clear();
-
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    PostModel post = snapshot.getValue(PostModel.class);
-
-                    for(String id : postSaves){
-                        assert post != null;
-                        if(post.getPostID().equals(id)
-                                && post.getPostType().equals("textPost")
-                                || post.getPostType().equals("sharedTextPost")){
-                            postListSaves.add(post);
-                        }
-                    }
-                    movementPostReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                PostModel postModel = ds.getValue(PostModel.class);
-
-                                for (String id : postSaves){
-                                    assert postModel != null;
-                                    if(postModel.getPostID().equals(id)
-                                            && postModel.getPostType().equals("textPost")
-                                            || postModel.getPostType().equals("sharedTextPost")){
-                                        postListSaves.add(postModel);
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
-                }
-                savedPostsNo.setText("[" + postListSaves.size() + "]");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    //-------------------end of function for saved posts with no media
-    */
 
     @Override
     public boolean onSupportNavigateUp() {

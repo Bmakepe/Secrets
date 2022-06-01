@@ -5,8 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.ChangeNumberActivity">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/background_gradient"
+        android:alpha=".7"/>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/changeNumberToolbar"
@@ -101,7 +106,7 @@
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone Number"
+                        android:hint="Old Phone Number"
                         android:textColorHint="#fff"
                         android:textColor="#000"
                         android:id="@+id/oldNumber"
@@ -162,7 +167,7 @@
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone Number"
+                        android:hint="New Phone Number"
                         android:textColorHint="#fff"
                         android:textColor="#000"
                         android:id="@+id/new_phone_Number"

@@ -35,7 +35,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.Movement;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
@@ -71,7 +70,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
     private String userID, storyID;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, storyReference, movementReference;
+    private DatabaseReference userReference, storyReference;
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
@@ -145,7 +144,6 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story").child(userID);
-        movementReference = FirebaseDatabase.getInstance().getReference("Movements");
         universalFunctions = new UniversalFunctions(this);
         notifications = new UniversalNotifications(this);
         getTimeAgo = new GetTimeAgo();
@@ -378,40 +376,12 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                             Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
 
                         }
-                    }else{
-                        getMovementDetails();
                     }
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void getMovementDetails() {
-        movementReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Movement movement = ds.getValue(Movement.class);
-
-                    if (movement.getMovementID().equals(userID)){
-                        storyUsername.setText(movement.getMovementName());
-
-                        try{
-                            Picasso.get().load(movement.getMovementProPic()).into(storyProPic);
-                        }catch (NullPointerException e){
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(storyProPic);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
@@ -425,15 +395,6 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
         getStoryDetails(position);
 
-        /*Glide.with(getApplicationContext()).load(storyList.get(position).getStoryImage()).into(storyPhoto);
-        storyCap.setText(storyList.get(position).getStoryCaption());
-        storyTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(storyList.get(position).getStoryTimeStamp()), StoryActivity.this));
-
-        checkInteractions(storyList.get(position));
-        universalFunctions.addView(storyList.get(position).getStoryID());
-        universalFunctions.seenNumber(storyList.get(position).getStoryID(), seen_number);*/
-
-
     }
 
     @Override
@@ -444,13 +405,6 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         storyID = storyList.get(position).getStoryID();
 
         getStoryDetails(position);
-
-        /*Glide.with(getApplicationContext()).load(storyList.get(position).getStoryImage()).into(storyPhoto);
-        storyCap.setText(storyList.get(position).getStoryCaption());
-        storyTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(storyList.get(position).getStoryTimeStamp()), StoryActivity.this));
-
-        checkInteractions(storyList.get(position));
-        universalFunctions.seenNumber(storyList.get(position).getStoryID(), seen_number);*/
     }
 
     @Override

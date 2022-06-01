@@ -6,6 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".GettingStarted.MainActivity">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha=".7"
+        android:src="@drawable/background_gradient" />
+
     <fragment
         android:id="@+id/homeFragmentContainerView"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -13,68 +19,28 @@
         android:layout_height="match_parent"
         app:defaultNavHost="true"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_above="@+id/bottomNavigationView"
         app:layout_constraintStart_toStartOf="parent"
         app:navGraph="@navigation/bottom_nav_graph" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/bottomNavigationView"
-        android:background="#0052d4"
-        app:itemIconTint="@color/white"
         android:layout_alignParentBottom="true"
-        app:labelVisibilityMode="unlabeled"
-        app:menu="@menu/navigation_menu" />
+        android:id="@+id/navigationArea">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/bottomNavigationView"
-        android:layout_alignParentEnd="true"
-        android:padding="5dp">
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/startFAB"
-            android:layout_width="wrap_content"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:backgroundTint="@color/colorPrimaryDark"
-            android:src="@drawable/ic_add_black_24dp"
-            app:tint="@color/white" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/newPostFAB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="60dp"
-            android:visibility="invisible"
-            android:backgroundTint="@color/colorPrimaryDark"
-            android:src="@drawable/ic_add_circle_black_24dp"
-            app:tint="@color/white" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/viewMovementsFAB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="120dp"
-            android:visibility="invisible"
-            android:backgroundTint="@color/colorPrimaryDark"
-            android:src="@drawable/ic_baseline_movement_24"
-            app:tint="@color/white" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/openContactsFAB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="180dp"
-            android:visibility="invisible"
-            android:backgroundTint="@color/colorPrimaryDark"
-            android:src="@drawable/ic_contacts_black_24dp"
-            app:tint="@color/white" />
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="5dp"
+            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+            android:background="@drawable/btm_nav_bg"
+            app:itemIconTint="@drawable/item_selector"
+            app:labelVisibilityMode="unlabeled"
+            app:menu="@menu/navigation_menu" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
