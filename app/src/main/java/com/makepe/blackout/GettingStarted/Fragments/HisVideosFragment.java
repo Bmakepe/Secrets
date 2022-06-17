@@ -36,7 +36,6 @@ public class HisVideosFragment extends Fragment {
 
     private DatabaseReference videoReference;
 
-
     public HisVideosFragment() {
         // Required empty public constructor
     }

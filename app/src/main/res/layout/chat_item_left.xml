@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    android:orientation="horizontal"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:maxWidth="240dp"
     android:padding="5dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -19,7 +22,6 @@
         android:id="@+id/textArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@+id/chatProPic"
         android:orientation="vertical"
         android:visibility="visible">
 
@@ -34,10 +36,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/chat_in"
-                android:maxWidth="240dp"
                 android:padding="8dp"
                 android:paddingStart="20dp"
                 android:paddingTop="4dp"
+                android:maxWidth="250dp"
                 android:paddingEnd="10dp"
                 android:paddingBottom="10dp"
                 android:textColor="@color/white"
@@ -76,23 +78,6 @@
 
         </LinearLayout>
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/imageCard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            app:cardElevation="1dp"
-            app:cardUseCompatPadding="true"
-            tools:ignore="UnusedAttribute">
-
-            <ImageView
-                android:id="@+id/chatImage"
-                android:layout_width="200dp"
-                android:layout_height="200dp" />
-
-        </androidx.cardview.widget.CardView>
-
     </RelativeLayout>
 
     <ImageView
@@ -106,4 +91,4 @@
         android:visibility="gone"
         app:tint="@color/colorPrimary" />
 
-</RelativeLayout>
+</LinearLayout>

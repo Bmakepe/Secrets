@@ -1,5 +1,7 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
+import static com.makepe.blackout.GettingStarted.OtherClasses.PaginationListener.PAGE_START;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -50,6 +52,11 @@ public class HisPostsFragment extends Fragment {
 
     //firebase dependencies
     private DatabaseReference postReference, userRef;
+
+    private int currentPage = PAGE_START;
+    private final boolean isLastPage = false;
+    private final int totalPage = 10;
+    private boolean isLoading = false;
 
     public HisPostsFragment() {
         // Required empty public constructor
@@ -121,6 +128,16 @@ public class HisPostsFragment extends Fragment {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     assert modelPost != null;
+
+                    /*if (modelPost.getUserID().equals(hisUserID)){
+                        if (!modelPost.getPostType().equals("imagePost")
+                                || !modelPost.getPostType().equals("audioImagePost")
+                                || !modelPost.getPostType().equals("videoPost")
+                                || !modelPost.getPostType().equals("audioVideoPost") ){
+                            postList.add(modelPost);
+                            i++;
+                        }
+                    }*/
                     if(modelPost.getPostImage().equals("noImage")
                             && hisUserID.equals(modelPost.getUserID())
                             && !modelPost.getPostType().equals("videoPost")
@@ -169,10 +186,13 @@ public class HisPostsFragment extends Fragment {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     assert modelPost != null;
-                    if(modelPost.getPostType().equals("imagePost")
-                            && hisUserID.equals(modelPost.getUserID())){
-                        mediaList.add(modelPost);
-                        mediaCount++;
+
+                    if (modelPost.getUserID().equals(hisUserID)){
+                        if (modelPost.getPostType().equals("imagePost")
+                                || modelPost.getPostType().equals("audioImagePost")){
+                            mediaList.add(modelPost);
+                            mediaCount++;
+                        }
                     }
 
                 }

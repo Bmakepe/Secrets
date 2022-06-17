@@ -125,8 +125,6 @@ public class CameraActivity extends AppCompatActivity {
                 startActivity(new Intent(CameraActivity.this, PostActivity.class));
                 return true;
 
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
         }
         return false;
     }

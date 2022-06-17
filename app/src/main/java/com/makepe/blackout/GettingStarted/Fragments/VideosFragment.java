@@ -105,8 +105,6 @@ public class VideosFragment extends Fragment {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     PostModel modelPost = ds.getValue(PostModel.class);
 
-                    // if(!modelPost.getPostType().equals("videoPost")){
-
                     for(String id : followingList){
                         assert modelPost != null;
                         if(modelPost.getUserID().equals(id)) {

@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenPictureActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
@@ -208,6 +209,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                     intent.putExtra("userid", comments.getUserID());
                     context.startActivity(intent);
                 }else{
+
                     Intent picIntent = new Intent(context, FullScreenImageActivity.class);
                     picIntent.putExtra("itemID", comments.getUserID());
                     picIntent.putExtra("reason", "userImage");
@@ -245,9 +247,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
         holder.commentImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent imageIntent = new Intent(context, FullScreenImageActivity.class);
-                imageIntent.putExtra("itemID", comments.getCommentID());
-                imageIntent.putExtra("reason", "commentImage");
+                Intent imageIntent = new Intent(context, FullScreenPictureActivity.class);
+                imageIntent.putExtra("imageURL", comments.getCommentImage());
                 context.startActivity(imageIntent);
             }
         });

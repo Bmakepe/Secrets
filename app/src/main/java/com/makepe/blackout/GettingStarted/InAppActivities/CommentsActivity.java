@@ -80,7 +80,7 @@ public class CommentsActivity extends AppCompatActivity {
     private TextInputLayout commentCaptionArea;
 
     private DatabaseReference commentReference, userReference, postReference,
-            notificationsReference, storyReference;
+            storyReference;
     private FirebaseUser firebaseUser;
 
     private String itemID, userID, commentID;
@@ -163,7 +163,6 @@ public class CommentsActivity extends AppCompatActivity {
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts").child(itemID);
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
-        notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
         storageReference = FirebaseStorage.getInstance().getReference("CommentImages");
         audioReference = FirebaseStorage.getInstance().getReference();
 
@@ -377,7 +376,6 @@ public class CommentsActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Uri> task) {
                 if (task.isSuccessful()){
                     Uri audioDownloadLink = task.getResult();
-                    String audioLink = audioDownloadLink.toString();
 
                     if (imageUri != null){
                         final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
@@ -396,7 +394,6 @@ public class CommentsActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<Uri> task) {
                                 if (task.isSuccessful()){
                                     Uri imageDownloadLink = task.getResult();
-                                    String imageLink = imageDownloadLink.toString();
 
                                     HashMap<String, Object> audioImageMap = new HashMap<>();
 
@@ -404,10 +401,10 @@ public class CommentsActivity extends AppCompatActivity {
                                     audioImageMap.put("comment", "");
                                     audioImageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
                                     audioImageMap.put("userID", firebaseUser.getUid());
-                                    audioImageMap.put("commentImage", imageLink);
+                                    audioImageMap.put("commentImage", imageDownloadLink.toString());
                                     audioImageMap.put("postID", itemID);
                                     audioImageMap.put("commentType", "audioImageComment");
-                                    audioImageMap.put("audioUrl", audioLink);
+                                    audioImageMap.put("audioUrl", audioDownloadLink.toString());
 
                                     if(!commentsLocationTV.getText().toString().equals("No Location")){
                                         audioImageMap.put("latitude", locationServices.getLatitude());
@@ -439,7 +436,7 @@ public class CommentsActivity extends AppCompatActivity {
                         audioMap.put("commentImage", "noImage");
                         audioMap.put("postID", itemID);
                         audioMap.put("commentType", "audioComment");
-                        audioMap.put("audioUrl", audioLink);
+                        audioMap.put("audioUrl", audioDownloadLink.toString());
 
                         if(!commentsLocationTV.getText().toString().equals("No Location")){
                             audioMap.put("latitude", locationServices.getLatitude());
@@ -806,11 +803,11 @@ public class CommentsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.storyViewProfileItem:
-                Toast.makeText(this, "You will be able to view profile", Toast.LENGTH_SHORT).show();
+                Intent profileIntent = new Intent(CommentsActivity.this, ViewProfileActivity.class);
+                profileIntent.putExtra("uid", userID);
+                startActivity(profileIntent);
                 return true;
 
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
         }
         return false;
     }

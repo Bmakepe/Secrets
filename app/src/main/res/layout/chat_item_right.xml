@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_gravity="end"
+    android:maxWidth="240dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -12,7 +15,6 @@
         android:src="@drawable/default_profile_display_pic"
         app:civ_border_color="@color/colorBlack"
         app:civ_border_overlay="true"
-        android:layout_alignParentEnd="true"
         android:visibility="gone"
         app:civ_border_width="1dp" />
 
@@ -36,15 +38,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/showMessages"
-                android:maxWidth="240dp"
                 android:visibility="visible"
                 android:layout_gravity="end"
                 android:padding="8dp"
+                android:maxWidth="250dp"
                 android:textColor="@color/white"
                 android:paddingStart="10dp"
                 android:paddingTop="4dp"
                 android:paddingEnd="20dp"
-                android:textSize="16sp"/>
+                android:textSize="14sp"/>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -85,24 +87,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/imageCard"
-            app:cardElevation="1dp"
-            android:visibility="gone"
-            android:layout_alignParentEnd="true"
-            app:cardUseCompatPadding="true"
-            tools:ignore="UnusedAttribute">
-
-            <ImageView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:id="@+id/chatImage"/>
-
-        </androidx.cardview.widget.CardView>
 
     </RelativeLayout>
 

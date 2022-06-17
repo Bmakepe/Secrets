@@ -173,8 +173,6 @@ public class MessagesActivity extends AppCompatActivity {
             case R.id.chatlistSearch:
                 break;
 
-            default:
-                Toast.makeText(this, "Unknown Menu Selection", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

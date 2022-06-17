@@ -57,6 +57,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.FriendsAdapter;
+import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.RegisterActivity;
@@ -470,7 +471,7 @@ public class PostActivity extends AppCompatActivity{
 
                                             audioRecorder.resetRecorder();
 
-                                            finish();
+                                            startActivity(new Intent(PostActivity.this, MainActivity.class));
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                         @Override
@@ -570,7 +571,7 @@ public class PostActivity extends AppCompatActivity{
                                                 picToUpload.setImageURI(null);
                                                 imageUri = null;
 
-                                                finish();
+                                                startActivity(new Intent(PostActivity.this, MainActivity.class));
                                             }
                                         }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -649,7 +650,7 @@ public class PostActivity extends AppCompatActivity{
 
                                     audioRecorder.resetRecorder();
 
-                                    finish();
+                                    startActivity(new Intent(PostActivity.this, MainActivity.class));
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -704,7 +705,7 @@ public class PostActivity extends AppCompatActivity{
                             tagLocation.setText("No Location");
                         }
 
-                        finish();
+                        startActivity(new Intent(PostActivity.this, MainActivity.class));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -780,7 +781,6 @@ public class PostActivity extends AppCompatActivity{
                             public void onSuccess(Void aVoid) {
                                 captionArea.setText("");
                                 videoView.setVideoURI(null);
-                                Toast.makeText(PostActivity.this, "Video Posted Successfully", Toast.LENGTH_SHORT).show();
                                 uploadDialog.dismiss();
 
 
@@ -789,7 +789,7 @@ public class PostActivity extends AppCompatActivity{
                                     tagLocation.setText("No Location");
                                 }
 
-                                finish();
+                                startActivity(new Intent(PostActivity.this, MainActivity.class));
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -861,7 +861,7 @@ public class PostActivity extends AppCompatActivity{
                                     picToUpload.setImageURI(null);
                                     imageUri = null;
 
-                                    finish();
+                                    startActivity(new Intent(PostActivity.this, MainActivity.class));
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -1032,7 +1032,8 @@ public class PostActivity extends AppCompatActivity{
             imageCardView.setVisibility(View.VISIBLE);
             picToUpload.setImageURI(imageUri);
 
-        }else if (requestCode == PICK_VIDEO_REQUEST && resultCode == -1 && data != null & data.getData() != null){
+        }else if (requestCode == PICK_VIDEO_REQUEST && resultCode == -1
+                && data != null & data.getData() != null){
             videoURI = data.getData();
 
             if (videoURI != null){
@@ -1119,8 +1120,6 @@ public class PostActivity extends AppCompatActivity{
                 friendListDialog.show();
                 break;
 
-            default:
-                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

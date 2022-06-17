@@ -20,8 +20,15 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 
 import java.util.concurrent.TimeUnit;
@@ -35,6 +42,8 @@ public class VerifyPhoneActivity extends AppCompatActivity {
     private TextView resendOTP, changeNum, subHeading;
     private Button verifyBTN;
     private ProgressDialog verifyDialog;
+    private DatabaseReference userReference;
+    private FirebaseUser firebaseUser;
 
     private PhoneAuthProvider.ForceResendingToken mResendToken;
 
@@ -53,6 +62,8 @@ public class VerifyPhoneActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         final String number = intent.getExtras().getString("number");//retrieve number from previous activity
+
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
 
         verifyDialog = new ProgressDialog(this);
         subHeading.setText("We are automatically detecting a verification SMS send to your mobile number " + number);
@@ -153,9 +164,28 @@ public class VerifyPhoneActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
                         if(task.isSuccessful()){//executes when the verification code is correct
-                            Intent intent = new Intent(VerifyPhoneActivity.this, UserDetailsActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
+
+                            userReference.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                                    assert firebaseUser != null;
+                                    if (snapshot.child(firebaseUser.getUid()).exists()){
+                                        Intent intent = new Intent(VerifyPhoneActivity.this, MainActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(intent);
+                                    }else{
+                                        Intent detailsIntent = new Intent(VerifyPhoneActivity.this, UserDetailsActivity.class);
+                                        detailsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(detailsIntent);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
                         }else{
                             String message = "Something is wrong, we will fix it soon...";
 

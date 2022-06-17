@@ -1,5 +1,7 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
+import static com.makepe.blackout.GettingStarted.OtherClasses.PaginationListener.PAGE_START;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -10,13 +12,17 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.os.Handler;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -27,6 +33,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.StoryAdapter;
@@ -35,6 +42,8 @@ import com.makepe.blackout.GettingStarted.InAppActivities.MessagesActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.Data;
+import com.makepe.blackout.GettingStarted.OtherClasses.PaginationListener;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -42,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
@@ -64,10 +74,18 @@ public class TimelineFragment extends Fragment {
     //for posts
     private RecyclerView postRecycler;
     private ArrayList<PostModel> postList;
+    private PostAdapter postAdapter;
 
     private ProgressBar timelineLoader;
 
     private ExtendedFloatingActionButton scrollFAB;
+
+    private SwipeRefreshLayout refreshLayout;
+
+    private String last_key = "", last_node = "";
+    private boolean isMaxData = false, isScrolling = false;
+    private final int ITEM_LOAD_COUNT = 10;
+    private int currentItems, totalItems, scrolledOutItems;
 
     public TimelineFragment() {
         // Required empty public constructor
@@ -85,12 +103,15 @@ public class TimelineFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_timeline, container, false);
 
+        ButterKnife.bind(getActivity());
+
         homeProPic = view.findViewById(R.id.homePic);
         postRecycler = view.findViewById(R.id.postRecycler);
         storyRecycler = view.findViewById(R.id.viewStoryRecycler);
         homeToolbar = view.findViewById(R.id.timelineToolbar);
         timelineLoader = view.findViewById(R.id.timelineLoader);
         scrollFAB = view.findViewById(R.id.scrollToTheTopBTN);
+        refreshLayout = view.findViewById(R.id.timelineRefresher);
 
         ((AppCompatActivity)getActivity()).setSupportActionBar(homeToolbar);
 
@@ -110,6 +131,8 @@ public class TimelineFragment extends Fragment {
         layoutManager.setStackFromEnd(false);
         layoutManager.setReverseLayout(true);
         postRecycler.setLayoutManager(layoutManager);
+        postAdapter = new PostAdapter(getActivity());
+        postRecycler.setAdapter(postAdapter);
 
         //for stories recycler view
         storyRecycler.setHasFixedSize(true);
@@ -118,24 +141,61 @@ public class TimelineFragment extends Fragment {
 
         getUserDetails();
         checkFollowing();
+        getLastKeyFromFirebase();
 
         storyAdapter = new StoryAdapter(getContext(), storyList);
         storyRecycler.setAdapter(storyAdapter);
 
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        readAppropriatePosts();
+                    }
+                }, 5000);
+            }
+        });
+
+        refreshLayout.setColorSchemeResources(
+                android.R.color.holo_green_dark,
+                android.R.color.holo_red_light,
+                android.R.color.holo_green_light,
+                android.R.color.holo_red_dark
+        );
+
         postRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
 
-                if (dy > 0) { // scrolling down
-
-                    scrollFAB.setVisibility(View.GONE);
-
-                } else if (dy < 0) { // scrolling up
-
-                    scrollFAB.setVisibility(View.VISIBLE);
+                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
+                    isScrolling = true;
                 }
             }
 
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy > 0) { // scrolling down
+                    scrollFAB.setVisibility(View.GONE);
+                } else if (dy < 0) { // scrolling up
+                    scrollFAB.setVisibility(View.VISIBLE);
+                }
+
+                currentItems = layoutManager.getChildCount();
+                totalItems = layoutManager.getItemCount();
+
+                scrolledOutItems = layoutManager.findFirstVisibleItemPosition();
+
+                if (isScrolling && currentItems + scrolledOutItems == totalItems){
+                    isScrolling = false;
+                    timelineLoader.setVisibility(View.VISIBLE);
+                    readAppropriatePosts();
+                }
+            }
         });
 
         scrollFAB.setOnClickListener(new View.OnClickListener() {
@@ -159,6 +219,7 @@ public class TimelineFragment extends Fragment {
                     followingList.add(snapshot.getKey());
                 }
                 readAppropriatePosts();
+                //doApiCall();
                 readStory();
             }
 
@@ -206,6 +267,67 @@ public class TimelineFragment extends Fragment {
     }
 
     private void readAppropriatePosts() {
+
+        /*if (!isMaxData){
+            Query query;
+
+            if (TextUtils.isEmpty(last_node)){
+                query = postReference.orderByKey().limitToFirst(ITEM_LOAD_COUNT);
+            }else{
+                query = postReference.orderByKey().startAt(last_node).limitToFirst(ITEM_LOAD_COUNT);
+            }
+
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.hasChildren()){
+                        postList.clear();
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            PostModel postModel = ds.getValue(PostModel.class);
+
+                            assert postModel != null;
+                            for (String ID : followingList){
+                                if (postModel.getUserID().equals(ID))
+                                    if (!postModel.getPostType().equals("videoPost")
+                                            && !postModel.getPostType().equals("sharedVideoPost")
+                                            && !postModel.getPostType().equals("audioVideoPost"))
+                                        postList.add(postModel);
+                            }
+
+                            if (postModel.getUserID().equals(firebaseUser.getUid()))
+                                if (!postModel.getPostType().equals("videoPost")
+                                        && !postModel.getPostType().equals("sharedVideoPost")
+                                        && !postModel.getPostType().equals("audioVideoPost"))
+                                    postList.add(postModel);
+                        }
+
+                        last_node = postList.get(postList.size() - 1).getPostID();
+
+                        if(!last_node.equals(last_key))
+                            postList.remove(postList.size() - 1);
+                        else
+                            last_node = "end";
+
+                        Collections.shuffle(postList);
+                        postAdapter.addAll(postList);
+                        postAdapter.notifyDataSetChanged();
+
+                    }else{
+                        isMaxData = true;
+                    }
+
+                    timelineLoader.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }else{
+            timelineLoader.setVisibility(View.GONE);
+        }*/
+
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -231,12 +353,31 @@ public class TimelineFragment extends Fragment {
                 }
 
                 Collections.shuffle(postList);
-                postRecycler.setAdapter(new PostAdapter(getActivity(), postList));
+                postAdapter = new PostAdapter(getActivity(), postList);
+                postRecycler.setAdapter(postAdapter);
                 timelineLoader.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
+        });
+    }
+
+    private void getLastKeyFromFirebase(){
+        Query getLastKey = postReference.orderByKey().limitToLast(1);
+
+        getLastKey.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot lastKey : snapshot.getChildren()){
+                    last_key = lastKey.getKey();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
     }
 

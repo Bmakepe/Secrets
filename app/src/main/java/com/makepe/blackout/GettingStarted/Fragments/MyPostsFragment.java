@@ -132,6 +132,17 @@ public class MyPostsFragment extends Fragment {
                         i++;
                     }
 
+
+                    /*if (modelPost.getUserID().equals(firebaseUser.getUid())){
+                        if (!modelPost.getPostType().equals("imagePost")
+                                || !modelPost.getPostType().equals("audioImagePost")
+                                || !modelPost.getPostType().equals("videoPost")
+                                || !modelPost.getPostType().equals("audioVideoPost") ){
+
+                            postList.add(modelPost);
+                            i++;
+                        }
+                    }*/
                 }
                 postsCounter.setText("Posts [" + i + "]");
                 Collections.reverse(postList);
@@ -170,10 +181,13 @@ public class MyPostsFragment extends Fragment {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     assert modelPost != null;
-                    if(modelPost.getPostType().equals("imagePost")
-                            && firebaseUser.getUid().equals(modelPost.getUserID())){
-                        mediaList.add(modelPost);
-                        mediaCount++;
+
+                    if (modelPost.getUserID().equals(firebaseUser.getUid())){
+                        if (modelPost.getPostType().equals("imagePost")
+                                || modelPost.getPostType().equals("audioImagePost")){
+                            mediaList.add(modelPost);
+                            mediaCount++;
+                        }
                     }
 
                 }

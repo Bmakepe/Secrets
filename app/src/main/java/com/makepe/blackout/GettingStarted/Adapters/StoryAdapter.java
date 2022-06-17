@@ -23,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.AddStoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.ViewStoryActivity;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
@@ -78,6 +79,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                 }else{
                     //TODO: go to story
                     Intent intent = new Intent(context, StoryActivity.class);
+                    //Intent intent = new Intent(context, ViewStoryActivity.class);
                     intent.putExtra("userid", story.getUserID());
                     context.startActivity(intent);
                 }

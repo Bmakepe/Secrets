@@ -18,7 +18,7 @@ import com.google.firebase.database.ValueEventListener;
 public class FollowInteraction {
 
     private Context context;
-    private DatabaseReference followReference = FirebaseDatabase.getInstance().getReference().child("Follow");
+    private DatabaseReference followReference = FirebaseDatabase.getInstance().getReference("Follow");
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
     private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -61,12 +61,7 @@ public class FollowInteraction {
                         if (snapshot.exists()) {
                             if (snapshot.child(firebaseUser.getUid()).exists()) {
                                 isFollower = true;
-                                Toast.makeText(context, "This user follows you", Toast.LENGTH_SHORT).show();
-                            }else{
-                                Toast.makeText(context, "This user does not follow you", Toast.LENGTH_SHORT).show();
                             }
-                        }else{
-                            Toast.makeText(context, "This user does not follow anyone", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -86,14 +81,11 @@ public class FollowInteraction {
                         if (snapshot.exists()){
                             if (snapshot.child(hisUserID).exists()){
                                 followTV.setText("Following");
-                                Toast.makeText(context, "You are following this user", Toast.LENGTH_SHORT).show();
                             }else{
                                 followTV.setText("Follow");
-                                Toast.makeText(context, "You are not following this user", Toast.LENGTH_SHORT).show();
                             }
                         }else{
                             followTV.setText("Follow");
-                            Toast.makeText(context, "This user has no one following them", Toast.LENGTH_SHORT).show();
                         }
                     }
 

@@ -78,10 +78,6 @@ public class InteractionsActivity extends AppCompatActivity {
                 getSavedMedia();
                 break;
 
-            case "seeMoreUsers":
-                getAllUsers();
-                break;
-
             case "seeSavedVideos":
                 getSavedVideos();
                 break;
@@ -132,30 +128,6 @@ public class InteractionsActivity extends AppCompatActivity {
                     }
                 }
                 connectionsRecycler.setAdapter(new VideoItemAdapter(mediaList, InteractionsActivity.this));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getAllUsers() {
-        userList = new ArrayList<>();
-        userReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    User user = ds.getValue(User.class);
-
-                    assert user != null;
-                    if (!user.getUSER_ID().equals(firebaseUser.getUid())){
-                        userList.add(user);
-                    }
-                }
-                connectionsRecycler.setAdapter(new UserInteractionAdapter(userList, InteractionsActivity.this));
             }
 
             @Override

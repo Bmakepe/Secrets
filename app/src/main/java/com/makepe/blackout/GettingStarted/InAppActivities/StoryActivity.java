@@ -455,20 +455,20 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                 Intent proIntent = new Intent(StoryActivity.this, ViewProfileActivity.class);
                 proIntent.putExtra("uid", storyList.get(counter).getUserID());
                 startActivity(proIntent);
-                return true;
+                break;
 
             case R.id.storyViewItem:
                 Intent viewsIntent = new Intent(StoryActivity.this, ConnectionsActivity.class);
                 viewsIntent.putExtra("UserID", storyList.get(counter).getStoryID());
                 viewsIntent.putExtra("Interaction", "Views");
                 startActivity(viewsIntent);
-                return true;
+                break;
 
             case R.id.storyReportItem:
                 Intent reportIntent = new Intent(StoryActivity.this, ReportActivity.class);
                 reportIntent.putExtra("reported", storyList.get(counter).getStoryID());
                 startActivity(reportIntent);
-                return true;
+                break;
 
             case R.id.storyDeleteItem:
                 AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this);
@@ -501,11 +501,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                         dialogInterface.dismiss();
                     }
                 }).show();
-
-                return true;
-
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
+                break;
         }
         return false;
     }

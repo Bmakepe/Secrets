@@ -736,8 +736,6 @@ public class SharePostActivity extends AppCompatActivity{
                 Toast.makeText(this, "You will be able to tag friends", Toast.LENGTH_SHORT).show();
                 break;
 
-            default:
-                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

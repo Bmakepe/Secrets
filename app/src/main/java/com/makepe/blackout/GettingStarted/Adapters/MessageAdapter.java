@@ -21,15 +21,18 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -39,6 +42,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.Chat;
+import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
@@ -65,24 +70,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     private static final int MSG_MEDIA_LEFT = 3;
     private static final int MSG_TYPE_LOCATION_LEFT = 4;
     private static final int MSG_TYPE_LOCATION_RIGHT = 5;
+    private static final int MSG_TYPE_AUDIO_LEFT = 6;
+    private static final int MSG_TYPE_AUDIO_RIGHT = 7;
+    private static final int MSG_TYPE_VIDEO_LEFT = 8;
+    private static final int MSG_TYPE_VIDEO_RIGHT = 9;
 
     private final Context context;
     private final List<Chat> mChats;
-    private final String imageurl;
 
-    private MediaPlayer myMediaPlayer;
+    private AudioPlayer audioPlayer;
     private UniversalFunctions universalFunctions;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference chatReference;
+    private DatabaseReference chatReference, userReference;
 
     private GetTimeAgo getTimeAgo;
-    private ArrayList<String> mediaList;
 
-    public MessageAdapter(Context context, List<Chat> mChats, String imageurl) {
+    private boolean videoIsPlaying = false;
+
+    public MessageAdapter(Context context, List<Chat> mChats) {
         this.context = context;
         this.mChats = mChats;
-        this.imageurl = imageurl;
     }
 
     @NonNull
@@ -91,22 +99,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
         switch (viewType){
             case MSG_TYPE_RIGHT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_right, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_right, parent, false));
 
             case MSG_TYPE_LEFT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_left, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_left, parent, false));
 
             case MSG_MEDIA_RIGHT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_right_item, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_right_item, parent, false));
 
             case MSG_MEDIA_LEFT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_left_item, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_media_left_item, parent, false));
 
             case MSG_TYPE_LOCATION_RIGHT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_right, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_right, parent, false));
 
             case MSG_TYPE_LOCATION_LEFT:
-                return new MessageAdapter.MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_left, parent, false));
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.chat_item_location_left, parent, false));
+
+            case MSG_TYPE_AUDIO_RIGHT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_audio_right, parent, false));
+
+            case MSG_TYPE_AUDIO_LEFT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_audio_left, parent, false));
+
+            case MSG_TYPE_VIDEO_RIGHT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_video_right, parent, false));
+
+            case MSG_TYPE_VIDEO_LEFT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_video_left, parent, false));
 
             default:
                 throw new IllegalStateException("Unexpected value: " + viewType);
@@ -117,12 +137,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     public void onBindViewHolder(@NonNull final MyHolder holder, final int position) {
 
         chatReference = FirebaseDatabase.getInstance().getReference("Chats");
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
         Chat chat = mChats.get(position);
         getTimeAgo = new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
-        mediaList = new ArrayList<>();
 
         getChatDetails(chat, holder);
+
+        if (!chat.getSender().equals(firebaseUser.getUid()))
+            getHisDetails(chat, holder);
 
         try{
             if(position == mChats.size()-1){
@@ -145,14 +168,33 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             });
         }
 
+        //holder.itemView.setOnClickListener(v -> showChatOptions(holder.itemView, chat, position));
+    }
 
-        holder.itemView.setOnClickListener(v -> showChatOptions(holder.itemView, chat, position));
+    private void getHisDetails(Chat chat, MyHolder holder) {
+        userReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    User user = ds.getValue(User.class);
+
+                    if (user.getUSER_ID().equals(chat.getSender()))
+                        try{
+                            Picasso.get().load(user.getImageURL()).into(holder.chatPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatPic);
+                        }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getChatDetails(Chat chat, MyHolder holder) {
-
-        String textMessage = chat.getMessage();
-        String voiceNote = chat.getAudio();
 
         try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
             holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(chat.getTimeStamp()), context));
@@ -160,57 +202,120 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
         }
 
-        try{
-            Picasso.get().load(imageurl).into(holder.chatPic);
-        }catch (NullPointerException e){
-            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.chatPic);
-        }
-
         switch (chat.getMessage_type()){
             case "text":
-                holder.showMessages.setVisibility(View.VISIBLE);
-                holder.showMessages.setText(textMessage);
+                holder.showMessages.setText(chat.getMessage());
                 break;
 
-            case "mediaTextMessage":
+            case "imageMessage":
 
                 holder.mediaRecycler.hasFixedSize();
                 holder.mediaRecycler.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
                 getMediaList(chat, holder);
+
+                holder.messageMediaSeeMoreBTN.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(context, "You will be able to view all the media in this message", Toast.LENGTH_SHORT).show();
+                    }
+                });
                 break;
 
             case "location":
-                universalFunctions.findAddress(chat.getLatitude(), chat.getLongitude(), holder.messageLocationTV, holder.locationTextArea);
+                universalFunctions.findAddress(chat.getLatitude(), chat.getLongitude(), holder.showMessages, holder.locationTextArea);
+                break;
 
+            case "audioMessage":
+                getAudioMessageDetails(chat, holder);
+                break;
+
+            case "videoMessage":
+                getMessageVideoDetails(chat, holder);
+                break;
 
             default:
-                Toast.makeText(context, "unknown message type detected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "unknown message type detected: " + chat.getMessage_type(), Toast.LENGTH_SHORT).show();
         }
 
     }
 
+    private void getMessageVideoDetails(Chat chat, MyHolder holder) {
+
+        holder.messagesVideoView.setVideoURI(Uri.parse(chat.getVideoURL()));
+        holder.messagesVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                holder.messageVideoLoader.setVisibility(View.GONE);
+
+                mediaPlayer.setVolume(0f, 0f);
+                mediaPlayer.setLooping(false);
+
+            }
+        });
+
+        holder.messageVideoPlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (videoIsPlaying){
+                    holder.messagesVideoView.pause();
+                    videoIsPlaying = false;
+                    holder.messageVideoPlayBTN.setImageResource(R.drawable.ic_baseline_play_circle_outline_24);
+                }else{
+                    holder.messagesVideoView.start();
+                    videoIsPlaying = true;
+                    holder.messageVideoPlayBTN.setImageResource(R.drawable.ic_baseline_pause_circle_outline_24);
+                }
+            }
+        });
+    }
+
+    private void getAudioMessageDetails(Chat chat, MyHolder holder) {
+
+        audioPlayer = new AudioPlayer(context, holder.playBTN,
+                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
+
+        try{//convert timestamp
+            holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(chat.getTimeStamp()), context));
+        }catch (NumberFormatException n){
+            Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
+        }
+
+        holder.playBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!audioPlayer.isPlaying()){
+                    audioPlayer.startPlayingAudio(chat.getAudio());
+                }else{
+                    audioPlayer.stopPlayingAudio();
+                }
+            }
+        });
+
+    }
+
     private void getMediaList(Chat chat, MyHolder holder) {
+
+        ArrayList<String> mediaList = new ArrayList<>();
+
         chatReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
-                    mediaList.clear();
                     for (DataSnapshot ds : snapshot.getChildren()){
                         Chat myChat = ds.getValue(Chat.class);
 
                         assert myChat != null;
                         if (myChat.getChatID().equals(chat.getChatID())){
-                            holder.showMessages.setText(myChat.getMessage());
 
                             chatReference.child(myChat.getChatID()).child("images")
                                     .addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     if (snapshot.exists()){
+                                        mediaList.clear();
                                         for (DataSnapshot ds : snapshot.getChildren()){
                                             mediaList.add(ds.getValue().toString());
-
                                         }
                                         holder.mediaRecycler.setAdapter(new ChatMediaAdapter(context, mediaList));
                                     }
@@ -231,100 +336,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
             }
         });
-    }
-
-    private void pause() {
-        if(myMediaPlayer != null){
-            if(myMediaPlayer.isPlaying()){
-                myMediaPlayer.pause();
-            }
-        }
-    }
-
-    private void playVoiceNote(String voiceStatus, MyHolder holder) {
-        if(myMediaPlayer == null){
-            myMediaPlayer = new MediaPlayer();
-            setAudioUrlToMediaPlayer(voiceStatus);
-        }else{
-            if(myMediaPlayer.isPlaying()){
-                myMediaPlayer.pause();
-            }else{
-                setAudioUrlToMediaPlayer(voiceStatus);
-            }
-        }
-
-        myMediaPlayer.setOnPreparedListener(mp -> {
-            if(myMediaPlayer != null){
-                myMediaPlayer.start();
-                String totalTime = String.valueOf(myMediaPlayer.getDuration());
-                holder.voiceTimeText.setText(totalTime);
-                holder.voiceNoteSeekbar.setProgress(0);
-                holder.voiceNoteSeekbar.setMax(Integer.parseInt(totalTime));
-                holder.voiceNoteSeekbar.setClickable(true);
-
-                new Timer().scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        holder.voiceNoteSeekbar.setProgress(myMediaPlayer.getCurrentPosition());
-                    }
-                }, 0 , 200);
-
-                holder.voiceNoteSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        if(fromUser){
-                            myMediaPlayer.seekTo(progress);
-                        }
-                        final long mMinutes = (progress/1000) / 60;//converting into minutes
-                        final int mSeconds = ((progress/1000) % 60);//converting to seconds
-                        holder.voiceTimeText.setText(mMinutes + ":" + mSeconds);
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        int CurrentLevel = holder.voiceNoteSeekbar.getProgress();
-                        if(CurrentLevel < 30)
-                            CurrentLevel = 30;
-                        holder.voiceNoteSeekbar.setProgress(CurrentLevel);
-                    }
-                });
-
-                myMediaPlayer.setOnCompletionListener(mp1 -> {
-                    final Handler handler;
-                    handler = new Handler();
-                    handler.postDelayed(new Runnable(){
-                        @Override
-                        public void run(){
-                            holder.playBTN.setImageResource(R.drawable.ic_play_circle_outline_black_24dp);
-                            myMediaPlayer.stop();
-                        }
-                    }, 200);
-                });
-            }
-        });
-    }
-
-    private void setAudioUrlToMediaPlayer(String voiceStatus) {
-        if(voiceStatus != null){
-            Log.d("audio file", "available" + voiceStatus);
-            try{
-                Log.d("setAudioUrl", ""+voiceStatus);
-                myMediaPlayer.reset();
-                myMediaPlayer.setDataSource(voiceStatus);
-                myMediaPlayer.prepare();
-                myMediaPlayer.setVolume(1.0f, 1.0f);
-                myMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }else{
-            Log.d("Audio", "available" + voiceStatus);
-        }
     }
 
     private void showChatOptions(final View itemView, Chat chat, final int position) {
@@ -437,16 +448,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
         //for text chat views
         private CircleImageView chatPic;
-        private TextView showMessages, timeStamp, viewLocationBTN, messageLocationTV;
+        private TextView showMessages, timeStamp, messageMediaSeeMoreBTN, viewLocationBTN;
         private ImageView ticks;
 
         private RecyclerView mediaRecycler;
         private LinearLayout locationTextArea;
 
-        //for voice chat views
-        private ImageButton playBTN;
-        private TextView voiceTimeText, voiceTimeDuration;
-        private SeekBar voiceNoteSeekbar;
+        //--------------for audio post buttons
+        public CircleImageView playBTN;
+        public LottieAnimationView audioAnimation;
+        public TextView seekTimer, postTotalTime;
+
+        //------------for videos
+        public VideoView messagesVideoView;
+        public ImageView messageVideoPlayBTN;
+        public ProgressBar messageVideoLoader;
 
         MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -457,13 +473,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             ticks = itemView.findViewById(R.id.greyTick);
             mediaRecycler = itemView.findViewById(R.id.chat_media_recycler);
             viewLocationBTN = itemView.findViewById(R.id.viewLocationBTN);
-            messageLocationTV = itemView.findViewById(R.id.messageLocationText);
             locationTextArea = itemView.findViewById(R.id.locationTextArea);
+            messageMediaSeeMoreBTN = itemView.findViewById(R.id.messageMediaSeeMoreBTN);
 
-            playBTN = itemView.findViewById(R.id.playVoiceBTN);
-            voiceTimeText = itemView.findViewById(R.id.postTimeText);
-            voiceTimeDuration = itemView.findViewById(R.id.postTimeDuration);
-            voiceNoteSeekbar = itemView.findViewById(R.id.voiceNoteSeekbar);
+            //for audio buttons
+            playBTN = itemView.findViewById(R.id.postItem_playVoiceIcon);
+            audioAnimation = itemView.findViewById(R.id.postItem_lav_playing);
+            seekTimer = itemView.findViewById(R.id.postItemSeekTimer);
+            postTotalTime = itemView.findViewById(R.id.postTotalTime);
+
+            messagesVideoView = itemView.findViewById(R.id.messagesVideoView);
+            messageVideoPlayBTN = itemView.findViewById(R.id.messageVideoPlayBTN);
+            messageVideoLoader = itemView.findViewById(R.id.messageVideoLoader);
+
         }
     }
 
@@ -472,21 +494,33 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if(mChats.get(position).getSender().equals(firebaseUser.getUid())){
 
-            if (mChats.get(position).getMessage_type().equals("text"))
-                return MSG_TYPE_RIGHT;
-            else if (mChats.get(position).getMessage_type().equals("mediaTextMessage"))
-                return MSG_MEDIA_RIGHT;
-            else if (mChats.get(position).getMessage_type().equals("location"))
-                return MSG_TYPE_LOCATION_RIGHT;
+            switch (mChats.get(position).getMessage_type()) {
+                case "text":
+                    return MSG_TYPE_RIGHT;
+                case "imageMessage":
+                    return MSG_MEDIA_RIGHT;
+                case "location":
+                    return MSG_TYPE_LOCATION_RIGHT;
+                case "audioMessage":
+                    return MSG_TYPE_AUDIO_RIGHT;
+                case "videoMessage":
+                    return MSG_TYPE_VIDEO_RIGHT;
+            }
 
         }else{
 
-            if (mChats.get(position).getMessage_type().equals("text"))
-                return MSG_TYPE_LEFT;
-            else if (mChats.get(position).getMessage_type().equals("mediaTextMessage"))
-                return MSG_MEDIA_LEFT;
-            else if (mChats.get(position).getMessage_type().equals("location"))
-                return MSG_TYPE_LOCATION_LEFT;
+            switch (mChats.get(position).getMessage_type()) {
+                case "text":
+                    return MSG_TYPE_LEFT;
+                case "imageMessage":
+                    return MSG_MEDIA_LEFT;
+                case "location":
+                    return MSG_TYPE_LOCATION_LEFT;
+                case "audioMessage":
+                    return MSG_TYPE_AUDIO_LEFT;
+                case "videoMessage":
+                    return MSG_TYPE_VIDEO_LEFT;
+            }
 
         }
         return position;

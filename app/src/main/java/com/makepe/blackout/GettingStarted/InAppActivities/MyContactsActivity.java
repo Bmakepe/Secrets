@@ -95,8 +95,6 @@ public class MyContactsActivity extends AppCompatActivity {
             case R.id.contactSearch:
                 Toast.makeText(this, "Search Contacts", Toast.LENGTH_SHORT).show();
 
-            default:
-                Toast.makeText(this, "unknown menu selection", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

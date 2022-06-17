@@ -103,5 +103,6 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="skip">Skip</string>
+    <string name="location_text">Click Here To Retrieve Your Address</string>
 
 </resources>

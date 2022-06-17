@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,101 +12,82 @@
         android:id="@+id/chatProPic"
         android:visibility="gone"/>
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="visible"
-        android:layout_alignParentEnd="true"
         android:padding="5dp"
-        android:layout_below="@+id/chat_media_recycler"
+        android:layout_alignParentEnd="true"
         android:id="@+id/textArea">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/chat_out"
+            android:paddingEnd="10dp"
+            android:layout_gravity="end"
             android:id="@+id/messageArea">
 
             <TextView
-                android:background="@drawable/chat_out"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/showMessages"
-                android:maxWidth="240dp"
-                android:visibility="visible"
-                android:layout_gravity="end"
-                android:padding="8dp"
+                android:text="See More"
+                android:id="@+id/messageMediaSeeMoreBTN"
                 android:textColor="@color/white"
-                android:paddingStart="10dp"
-                android:paddingTop="4dp"
-                android:paddingEnd="20dp"
-                android:textSize="16sp"/>
+                android:textStyle="bold"
+                android:padding="5dp"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
 
-            <LinearLayout
-                android:orientation="horizontal"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chat_media_recycler"
                 android:layout_width="wrap_content"
-                android:layout_gravity="end"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chatUsername"
-                    android:textColor="@color/colorPrimary"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:visibility="invisible"
-                    tools:ignore="SmallSp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="10sp"
-                    android:layout_gravity="start"
-                    android:textStyle="normal"
-                    android:layout_marginStart="5dp"
-                    android:id="@+id/chatTimeStamp"
-                    android:textColor="@color/colorBlack"
-                    tools:ignore="SmallSp" />
-
-                <ImageView
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:src="@drawable/ic_done_black_24dp"
-                    android:id="@+id/greyTick"
-                    android:layout_marginStart="5dp"
-                    android:visibility="visible"
-                    app:tint="@color/colorPrimary" />
-
-            </LinearLayout>
+                android:padding="5dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 
-        <androidx.cardview.widget.CardView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/imageCard"
-            app:cardElevation="1dp"
-            android:visibility="gone"
-            android:layout_alignParentEnd="true"
-            app:cardUseCompatPadding="true"
-            tools:ignore="UnusedAttribute">
+            android:layout_gravity="end"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/chatUsername"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                android:textSize="10sp"
+                android:visibility="invisible"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:layout_gravity="start"
+                android:textStyle="normal"
+                android:layout_marginStart="5dp"
+                android:id="@+id/chatTimeStamp"
+                android:textColor="@color/colorBlack"
+                tools:ignore="SmallSp" />
 
             <ImageView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:id="@+id/chatImage"/>
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:src="@drawable/ic_done_black_24dp"
+                android:id="@+id/greyTick"
+                android:layout_marginStart="5dp"
+                android:visibility="visible"
+                app:tint="@color/colorPrimary" />
 
-        </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
-    </RelativeLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/chat_media_recycler"
-        android:layout_alignParentEnd="true"/>
+    </LinearLayout>
 
 </RelativeLayout>

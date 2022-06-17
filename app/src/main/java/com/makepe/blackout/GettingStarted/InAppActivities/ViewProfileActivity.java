@@ -406,20 +406,17 @@ public class ViewProfileActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.postNotifications:
                 Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
-                return true;
+                break;
 
             case R.id.blockUser:
                 Toast.makeText(this, "you will be able to block this user", Toast.LENGTH_SHORT).show();
-                return true;
+                break;
 
             case R.id.report:
                 Intent intent1  = new Intent(ViewProfileActivity.this, ReportActivity.class);
                 intent1.putExtra("reported", hisUserID);
                 startActivity(intent1);
-                return true;
-
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
+                break;
         }
         return false;
     }

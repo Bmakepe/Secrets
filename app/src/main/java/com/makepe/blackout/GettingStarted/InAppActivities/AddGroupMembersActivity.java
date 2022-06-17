@@ -144,9 +144,6 @@ public class AddGroupMembersActivity extends AppCompatActivity {
             case R.id.contactSearch:
                 Toast.makeText(this, "Search", Toast.LENGTH_SHORT).show();
                 break;
-
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
         }
         return false;
     }

@@ -56,15 +56,13 @@ public class UserDetailsActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private EditText dateOfBirth, locationET;
     private ImageView addCoverPic, coverPic;
-    private String choice, Name, Bio, boy = "Male", girl = "Female", terms = "Accepted", DOB;
-    private boolean maleChecked, femaleChecked;
+    private String choice, boy = "Male", girl = "Female", terms = "Accepted";
 
     private Uri imageUri, coverPicUri;
-    private String myUri = "", coverUri = "";
     private StorageTask uploadTask, coverUploadTask;
     private FirebaseUser firebaseUser;
     private DatabaseReference userReference;
-    private StorageReference storageReference;
+    private StorageReference imageStorageReference, coverStorageReference;
 
     private LocationServices locationServices;
 
@@ -100,10 +98,12 @@ public class UserDetailsActivity extends AppCompatActivity {
         };
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        storageReference = FirebaseStorage.getInstance().getReference("pro_pics");
+        imageStorageReference = FirebaseStorage.getInstance().getReference("user_profile_pictures");
+        coverStorageReference = FirebaseStorage.getInstance().getReference("user_cover_images");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
 
         progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Setting Up Your Profile");
         locationServices = new LocationServices(locationET, UserDetailsActivity.this);
 
         selectGender();
@@ -165,50 +165,46 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     private void confirmUserInfo() {
-        Name = Objects.requireNonNull(setupUsername.getText()).toString();
-        Bio = Objects.requireNonNull(setupBiography.getText()).toString();
-        DOB = dateOfBirth.getText().toString();
-        maleChecked = maleCheck.isChecked();
-        femaleChecked = femaleCheck.isChecked();
 
-        if(Name.isEmpty()){
+        if(TextUtils.isEmpty(setupUsername.getText().toString())){
             setupUsername.setError("Enter Your Username");
             setupUsername.requestFocus();
-        }else if(Bio.isEmpty()){
+        }else if(TextUtils.isEmpty(setupBiography.getText().toString())){
             setupBiography.setError("Tell Us Something About Yourself");
             setupBiography.requestFocus();
-        }else if(!maleChecked && !femaleChecked){
+        }else if(!maleCheck.isChecked() && !femaleCheck.isChecked()){
             Toast.makeText(UserDetailsActivity.this, "Please Select Your Gender", Toast.LENGTH_SHORT).show();
-        }else if(DOB.isEmpty()){
-                Toast.makeText(UserDetailsActivity.this, "Please Pick Date of Birth", Toast.LENGTH_SHORT).show();
-        }else if(imageUri == null || coverPicUri == null){
-            Toast.makeText(this, "Please select pic", Toast.LENGTH_SHORT).show();
+        }else if(TextUtils.isEmpty(dateOfBirth.getText().toString())){
+            dateOfBirth.setError("Please Pick Date of Birth");
+            dateOfBirth.requestFocus();
+        }else if(imageUri == null && coverPicUri == null){
+            Toast.makeText(this, "Please select both the profile and cover pictures", Toast.LENGTH_SHORT).show();
         }else{
-            progressDialog.setMessage("Setting Up Your Profile");
-            progressDialog.show();
-
             uploadUserCredentials();
         }
+
     }
 
     private void uploadUserCredentials() {
+        progressDialog.show();
+
         HashMap<String, Object> credentialsMap = new HashMap<>();
 
         credentialsMap.put("USER_ID", firebaseUser.getUid());
-        credentialsMap.put("Username", setupUsername.getText().toString());
-        credentialsMap.put("Bio", setupBiography.getText().toString());
-        credentialsMap.put("DOB", DOB);
+        credentialsMap.put("Username", Objects.requireNonNull(setupUsername.getText()).toString());
+        credentialsMap.put("Bio", Objects.requireNonNull(setupBiography.getText()).toString());
+        credentialsMap.put("DOB", dateOfBirth.getText().toString());
         credentialsMap.put("onlineStatus", "online");
         credentialsMap.put("Number", firebaseUser.getPhoneNumber());
         credentialsMap.put("Terms", terms);
 
-        if(maleChecked){
+        if(maleCheck.isChecked()){
             credentialsMap.put("Gender", boy);
-        }else if(femaleChecked){
+        }else if(femaleCheck.isChecked()){
             credentialsMap.put("Gender", girl);
         }
 
-        if (!TextUtils.isEmpty(locationET.getText().toString())) {
+        if (!locationET.getText().toString().equals(R.string.location_text)) {
             credentialsMap.put("latitude", locationServices.getLatitude());
             credentialsMap.put("longitude", locationServices.getLongitude());
         }
@@ -218,102 +214,98 @@ public class UserDetailsActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
-                        uploadProfilePicOnly();
+                        if (imageUri != null)
+                            uploadProfilePicOnly();
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(UserDetailsActivity.this, "Updating user details unsuccessful", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void uploadProfilePicOnly() {
+
+        final StorageReference picFileReference = imageStorageReference.child(System.currentTimeMillis()
+                + "." + getFileExtension(imageUri));
+        uploadTask = picFileReference.putFile(imageUri);
+        uploadTask.continueWithTask(new Continuation() {
             @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(UserDetailsActivity.this, "Updating user details unsuccessful", Toast.LENGTH_SHORT).show();
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful()){
+                    throw task.getException();
+                }
+                return picFileReference.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri picDownloadUri = task.getResult();
+
+                    HashMap<String, Object> picMap = new HashMap<>();
+                    picMap.put("ImageURL", picDownloadUri.toString());
+
+                    userReference.child(firebaseUser.getUid()).updateChildren(picMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (coverPicUri != null)
+                                        uploadCoverPicOnly();
+
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(UserDetailsActivity.this, "Could not upload profile picture", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                }
             }
         });
     }
 
     private void uploadCoverPicOnly() {
-        if (coverUri != null){
-            final StorageReference coverFileReference = storageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(coverPicUri));
-            coverUploadTask = coverFileReference.putFile(coverPicUri);
-            coverUploadTask.continueWithTask(new Continuation() {
-                @Override
-                public Object then(@NonNull Task task) throws Exception {
-                    if (!task.isSuccessful()){
-                        throw task.getException();
-                    }
-                    return coverFileReference.getDownloadUrl();
+        final StorageReference coverFileReference = coverStorageReference.child(System.currentTimeMillis()
+                + "." + getFileExtension(coverPicUri));
+        coverUploadTask = coverFileReference.putFile(coverPicUri);
+        coverUploadTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful()){
+                    throw task.getException();
                 }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()){
-                        Uri coverDownloadUri = task.getResult();
-                        coverUri = coverDownloadUri.toString();
+                return coverFileReference.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri coverDownloadUri = task.getResult();
 
-                        HashMap<String, Object> coverMap = new HashMap<>();
-                        coverMap.put("CoverURL", coverUri);
+                    HashMap<String, Object> coverMap = new HashMap<>();
+                    coverMap.put("CoverURL", coverDownloadUri.toString());
 
-                        userReference.child(firebaseUser.getUid()).updateChildren(coverMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        startActivity(new Intent(UserDetailsActivity.this, TimelineSetupActivity.class));
-                                        progressDialog.dismiss();
-                                        Toast.makeText(UserDetailsActivity.this, "Welcome!!! :)", Toast.LENGTH_SHORT).show();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(UserDetailsActivity.this, "Could not upload cover picture", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
+                    userReference.child(firebaseUser.getUid()).updateChildren(coverMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    progressDialog.dismiss();
+                                    startActivity(new Intent(UserDetailsActivity.this, TimelineSetupActivity.class));
+                                    Toast.makeText(UserDetailsActivity.this, "Welcome To Secrets!!! :)", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(UserDetailsActivity.this, "Could not upload cover picture", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                 }
-            });
-        }else{
-            Toast.makeText(this, "Something went wrong with updating cover picture", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void uploadProfilePicOnly() {
-        if (myUri != null){
-            final StorageReference picFileReference = storageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(imageUri));
-            uploadTask = picFileReference.putFile(imageUri);
-            uploadTask.continueWithTask(new Continuation() {
-                @Override
-                public Object then(@NonNull Task task) throws Exception {
-                    if (!task.isSuccessful()){
-                        throw task.getException();
-                    }
-                    return picFileReference.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()){
-                        Uri picDownloadUri = task.getResult();
-                        myUri = picDownloadUri.toString();
-
-                        HashMap<String, Object> picMap = new HashMap<>();
-                        picMap.put("ImageURL", myUri);
-
-                        userReference.child(firebaseUser.getUid()).updateChildren(picMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        uploadCoverPicOnly();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(UserDetailsActivity.this, "Could not upload profile picture", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }
-            });
-        }else{
-            Toast.makeText(this, "something went wrong with uploading profile pic", Toast.LENGTH_SHORT).show();
-        }
+            }
+        });
     }
 
     private void selectGender() {
@@ -371,4 +363,5 @@ public class UserDetailsActivity extends AppCompatActivity {
             finish();
         }
     }
+
 }

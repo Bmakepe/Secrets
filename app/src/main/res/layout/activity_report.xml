@@ -109,7 +109,7 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
-                        app:counterMaxLength="15"
+                        app:counterMaxLength="30"
                         app:counterOverflowTextAppearance="@color/colorRed">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -118,9 +118,12 @@
                             android:hint="@string/username"
                             android:textColorHint="#fff"
                             android:textColor="#000"
+                            android:focusable="false"
                             android:drawableStart="@drawable/ic_person_black_24dp"
                             android:drawablePadding="8dp"
                             android:id="@+id/reportName"
+                            android:editable="false"
+                            android:enabled="false"
                             android:layout_gravity="center"
                             android:drawableTint="@color/colorBlack"
                             android:inputType="text"
@@ -141,7 +144,7 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
-                        app:counterMaxLength="15"
+                        app:counterMaxLength="25"
                         app:counterOverflowTextAppearance="@color/colorRed">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -150,6 +153,8 @@
                             android:hint="Reported User"
                             android:textColorHint="#fff"
                             android:textColor="#000"
+                            android:enabled="false"
+                            android:focusable="false"
                             android:editable="false"
                             android:drawableStart="@drawable/ic_person_black_24dp"
                             android:drawablePadding="8dp"
@@ -174,7 +179,7 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
-                        app:counterMaxLength="15"
+                        app:counterMaxLength="200"
                         app:counterOverflowTextAppearance="@color/colorRed">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -182,7 +187,6 @@
                             android:layout_height="wrap_content"
                             android:textColorHint="#fff"
                             android:textColor="#000"
-                            android:editable="false"
                             android:drawableStart="@drawable/ic_info"
                             android:drawablePadding="8dp"
                             android:hint="Message"

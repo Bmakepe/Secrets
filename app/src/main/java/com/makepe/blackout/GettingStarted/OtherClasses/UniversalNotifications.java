@@ -48,6 +48,7 @@ public class UniversalNotifications {
                 for (DataSnapshot snap : snapshot.getChildren()){
                     PostModel post = snap.getValue(PostModel.class);
 
+                    assert post != null;
                     if (post.getPostID().equals(postid)){
                         if (post.getPostType().equals("videoPost")
                                 || post.getPostType().equals("sharedVideoPost")){
@@ -56,44 +57,25 @@ public class UniversalNotifications {
                             sendAppropriateLikesNotification(postid, userID, "liked your post");
                         }
                     }else{
-                        movementPostReference.addValueEventListener(new ValueEventListener() {
+                        storyReference.child(userID).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 for (DataSnapshot ds : snapshot.getChildren()){
-                                    PostModel postModel = ds.getValue(PostModel.class);
+                                    Story story = ds.getValue(Story.class);
 
-                                    assert postModel != null;
-                                    if (postModel.getPostID().equals(postid)){
-                                        sendAppropriateLikesNotification(postid, userID, "Liked your movement post");
+                                    assert story != null;
+                                    if (story.getStoryID().equals(postid)){
+                                        sendAppropriateLikesNotification(postid, userID, "Liked your story");
                                     }else{
-                                        storyReference.child(userID).addValueEventListener(new ValueEventListener() {
+                                        commentsReference.addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                                 for (DataSnapshot ds : snapshot.getChildren()){
-                                                    Story story = ds.getValue(Story.class);
+                                                    CommentModel commentModel = ds.getValue(CommentModel.class);
 
-                                                    assert story != null;
-                                                    if (story.getStoryID().equals(postid)){
-                                                        sendAppropriateLikesNotification(postid, userID, "Liked your story");
-                                                    }else{
-                                                        commentsReference.addValueEventListener(new ValueEventListener() {
-                                                            @Override
-                                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                                for (DataSnapshot ds : snapshot.getChildren()){
-                                                                    CommentModel commentModel = ds.getValue(CommentModel.class);
-
-                                                                    assert commentModel != null;
-                                                                    if (ds.child(commentModel.getCommentID()).exists()){
-                                                                        sendAppropriateLikesNotification(commentModel.getPostID(), commentModel.getUserID(), "Liked your comment");
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            @Override
-                                                            public void onCancelled(@NonNull DatabaseError error) {
-
-                                                            }
-                                                        });
+                                                    assert commentModel != null;
+                                                    if (ds.child(commentModel.getCommentID()).exists()){
+                                                        sendAppropriateLikesNotification(commentModel.getPostID(), commentModel.getUserID(), "Liked your comment");
                                                     }
                                                 }
                                             }

@@ -121,7 +121,7 @@
                     android:id="@+id/usernameTIL"
                     android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
-                    app:counterMaxLength="15"
+                    app:counterMaxLength="30"
                     android:padding="5dp"
                     app:counterOverflowTextAppearance="@color/colorRed">
 
@@ -154,7 +154,7 @@
                     android:id="@+id/biographyTIL"
                     android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
-                    app:counterMaxLength="100"
+                    app:counterMaxLength="150"
                     android:padding="5dp"
                     app:counterOverflowTextAppearance="@color/colorRed"
                     android:layout_marginTop="5dp">
@@ -228,7 +228,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/userLocation"
                         android:clickable="true"
-                        android:hint="Click here to retrieve your address"
+                        android:hint="@string/location_text"
                         android:textSize="14sp"
                         android:drawableStart="@drawable/ic_my_location_black_24dp"
                         android:drawablePadding="8dp"

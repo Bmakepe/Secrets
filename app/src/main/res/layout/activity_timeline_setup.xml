@@ -53,20 +53,7 @@
                         android:textStyle="bold"
                         android:textSize="12sp"
                         android:textColor="@color/colorBlack"
-                        android:layout_toStartOf="@+id/proSetup_seeMoreBTN"
                         android:padding="5dp"/>
-
-                    <TextView
-                        android:id="@+id/proSetup_seeMoreBTN"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:padding="5dp"
-                        android:text="See More"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="normal" />
 
                 </RelativeLayout>
 

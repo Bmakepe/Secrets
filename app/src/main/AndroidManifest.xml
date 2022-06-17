@@ -38,13 +38,20 @@
     <application
         android:name=".GettingStarted.OtherClasses.BlackOut"
         android:allowBackup="true"
-        android:icon="@drawable/dudoo_logo"
+        android:icon="@drawable/secrets_logo"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/dudoo_logo"
+        android:roundIcon="@drawable/secrets_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator">
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator"
+        tools:targetApi="m">
+        <activity
+            android:name=".GettingStarted.InAppActivities.ViewStoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.FullScreenPictureActivity"
+            android:exported="false" />
         <activity
             android:name=".GettingStarted.InAppActivities.CallUserListActivity"
             android:exported="false" />

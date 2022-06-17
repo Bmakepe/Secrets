@@ -5,27 +5,23 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,11 +33,17 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
+import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -51,31 +53,33 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
-import com.makepe.blackout.GettingStarted.Adapters.ImageAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.MessageAdapter;
 import com.makepe.blackout.GettingStarted.Models.Chat;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
+import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class  ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity {
 
     private CircleImageView profileImage;
     private TextView username, onlineStatusTV;
     private ImageButton voiceBTN, attachFiles;
-    private RecyclerView chatRecycler, messageMediaRecycler;
+    private RecyclerView chatRecycler;
     private LinearLayout chatNameLayout; 
     private Toolbar messageToolbar;
 
@@ -86,13 +90,13 @@ public class  ChatActivity extends AppCompatActivity {
 
     private FirebaseUser firebaseUser;
     private DatabaseReference userReference, chatReference;
-    private StorageReference chatImageReference;
+    private StorageReference chatImageReference, audioReference;
 
     private List<Chat> mChat;
     private ArrayList<String> mediaUriList, mediaIdList;
 
     private Intent intent;
-    private String hisImage, receiverID, textMessage, chatID;
+    private String hisImage, receiverID, chatID;
 
     private ContactsList contactsList;
     private List<ContactsModel> phoneBook;
@@ -102,13 +106,25 @@ public class  ChatActivity extends AppCompatActivity {
     private DatabaseReference userRefForSeen;
 
     public int PICK_IMAGE_INTENT = 100, totalMediaUploaded = 0;
-    private ImageAdapter imageAdapter;
+    public static final int PICK_VIDEO_REQUEST = 200;
 
     private ProgressDialog messageDialog;
 
     //for sending my location
     private LocationServices locationServices;
 
+    private UploadFunctions uploadFunctions;
+
+    //for sending video messages
+    private Uri videoURI;
+    private String videoURL;
+
+    //for sending voice notes
+    private AudioRecorder audioRecorder;
+    private LottieAnimationView lavPlaying;
+    private ImageView voicePlayBTN, deleteAudioBTN;
+    private TextView seekTimer;
+    private RelativeLayout playAudioArea;
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -131,42 +147,50 @@ public class  ChatActivity extends AppCompatActivity {
         rootView = findViewById(R.id.root_view);
         voiceBTN = findViewById(R.id.voiceBTN);
         attachFiles = findViewById(R.id.attachFiles);
-        messageMediaRecycler = findViewById(R.id.messageMediaRecycler);
+
+        //for recording the audio
+        playAudioArea = findViewById(R.id.playAudioArea);
+        voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
+        seekTimer = findViewById(R.id.seekTimer);
+        lavPlaying = findViewById(R.id.lav_playing);
+        deleteAudioBTN = findViewById(R.id.recordingDeleteBTN);
 
         intent = getIntent();
         receiverID = intent.getStringExtra("userid");
         getTimeAgo = new GetTimeAgo();
+        uploadFunctions = new UploadFunctions(ChatActivity.this);
 
         mChat = new ArrayList<>();
         mediaUriList = new ArrayList<>();
         mediaIdList = new ArrayList<>();
+
+        audioRecorder = new AudioRecorder(lavPlaying, ChatActivity.this,
+                ChatActivity.this, playAudioArea, voicePlayBTN, seekTimer);
+
         phoneBook = new ArrayList<>();
         contactsList = new ContactsList(phoneBook, ChatActivity.this);
 
         locationServices = new LocationServices(ChatActivity.this, receiverID);
         messageDialog = new ProgressDialog(this);
-        messageDialog.setMessage("Loading");
+        messageDialog.setMessage("Loading...");
 
+        chatRecycler.hasFixedSize();
         chatRecycler.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         chatRecycler.setLayoutManager(layoutManager);
 
-        messageMediaRecycler.setHasFixedSize(true);
-        messageMediaRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        imageAdapter = new ImageAdapter(ChatActivity.this, mediaUriList);
-        messageMediaRecycler.setAdapter(imageAdapter);
-
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         chatReference = FirebaseDatabase.getInstance().getReference("Chats");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         chatImageReference = FirebaseStorage.getInstance().getReference().child("chatImages");
+        audioReference = FirebaseStorage.getInstance().getReference("voice_notes");
+
+        voiceBTN.setTag("notRecording");
 
         myMessage.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
             public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
@@ -178,9 +202,7 @@ public class  ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            public void afterTextChanged(Editable editable) { }
         });
 
         getUserDetails();
@@ -191,8 +213,9 @@ public class  ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final PopupMenu popupMenu = new PopupMenu(ChatActivity.this, attachFiles, Gravity.END);
-                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Send Media");
-                popupMenu.getMenu().add(Menu.NONE, 1, 0, "Send Location");
+                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Send Images");
+                popupMenu.getMenu().add(Menu.NONE, 1, 0, "Send Videos");
+                popupMenu.getMenu().add(Menu.NONE, 2, 0, "Send Location");
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -200,10 +223,14 @@ public class  ChatActivity extends AppCompatActivity {
 
                         switch (menuItem.getItemId()){
                             case 0:
-                                openGallery();
+                                openImagesGallery();
                                 break;
 
                             case 1:
+                                openVideoGallery();
+                                break;
+
+                            case 2:
                                 locationServices.sendMyLocation();
                                 break;
 
@@ -219,10 +246,27 @@ public class  ChatActivity extends AppCompatActivity {
         });
 
         voiceBTN.setOnClickListener(v -> {
-            textMessage = myMessage.getText().toString();
 
-            if (TextUtils.isEmpty(textMessage)){
-                Toast.makeText(this, "You will be able to record a voice note", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(myMessage.getText().toString()) && voiceBTN.getTag().equals("notRecording")){
+
+                if (audioRecorder.checkRecordingPermission()){
+                    myMessage.setVisibility(View.GONE);
+                    voiceBTN.setImageResource(R.drawable.ic_send_black_24dp);
+
+                    if (!audioRecorder.isRecording){
+                        audioRecorder.startRecording();
+                        voiceBTN.setTag("Recording");
+                    }
+
+                }else{
+                    audioRecorder.requestRecordingPermission();
+                }
+            }else if (voiceBTN.getTag().equals("Recording")){
+                audioRecorder.stopRecording();
+
+                if (audioRecorder.getRecordingFilePath() != null)
+                    sendAudioMessage();
+
             }else{
                 sendMessage("noAudio");
             }
@@ -237,8 +281,15 @@ public class  ChatActivity extends AppCompatActivity {
 
     }
 
+    private void openVideoGallery() {
+        Intent intent = new Intent();
+        intent.setType("video/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent, PICK_VIDEO_REQUEST);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
-    private void openGallery() {
+    private void openImagesGallery() {
         Intent galleryIntent = new Intent();
         galleryIntent.setType("image/*");
         galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -323,7 +374,7 @@ public class  ChatActivity extends AppCompatActivity {
         });
     }
 
-    public void sendMessage(String choice) {
+    private void sendMessage(String choice) {
 
         chatID = chatReference.push().getKey();
 
@@ -342,13 +393,8 @@ public class  ChatActivity extends AppCompatActivity {
                 break;
 
             case "noAudio":
-                if (mediaUriList.isEmpty()) {
-                    messageMap.put("message", textMessage);
-                    messageMap.put("message_type", "text");
-                }else{
-                    messageMap.put("message", textMessage);
-                    messageMap.put("message_type", "mediaTextMessage");
-                }
+                messageMap.put("message", myMessage.getText().toString());
+                messageMap.put("message_type", "text");
                 break;
 
             default:
@@ -356,20 +402,12 @@ public class  ChatActivity extends AppCompatActivity {
 
         }
 
-        updateDatabase(messageMap);
-    }
-
-    private void updateDatabase(HashMap<String, Object> messageMap) {
-
         chatReference.child(chatID).setValue(messageMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
                         myMessage.setText("");
                         myMessage.setHint("Write Your Message");
-
-                        if (!mediaUriList.isEmpty())
-                            uploadImages();
 
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -379,6 +417,66 @@ public class  ChatActivity extends AppCompatActivity {
                     }
                 });
 
+        updateChatList();
+    }
+
+    private void sendAudioMessage() {
+        messageDialog.show();
+
+        StorageReference audioPath = audioReference.child(firebaseUser.getUid()).child(chatID + ".3gp");
+        Uri audioUrl = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUrl);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+
+                    chatID = chatReference.push().getKey();
+
+                    HashMap<String, Object> messageMap = new HashMap<>();
+
+                    messageMap.put("chatID", chatID);
+                    messageMap.put("sender", firebaseUser.getUid());
+                    messageMap.put("receiver", receiverID);
+                    messageMap.put("isSeen", false);
+                    messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    messageMap.put("audio", audioDownloadLink.toString());
+                    messageMap.put("message_type", "audioMessage");
+
+                    chatReference.child(chatID).setValue(messageMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+
+                                    voiceBTN.setTag("notRecording");
+                                    messageDialog.dismiss();
+                                    voiceBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+
+                                }
+                            });
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ChatActivity.this, "Can not upload your voice note at this moment", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        updateChatList();
+    }
+
+    private void updateChatList() {
         //create chatlist node/child in firebase database
         final DatabaseReference senderReference = FirebaseDatabase.getInstance()
                 .getReference("ChatList")
@@ -422,60 +520,142 @@ public class  ChatActivity extends AppCompatActivity {
     private void uploadImages() {
 
         messageDialog.show();
+
+        chatID = chatReference.push().getKey();
+
         HashMap<String, Object> imageMap = new HashMap<>();
 
-        for(String mediaUri : mediaUriList){
+        imageMap.put("chatID", chatID);
+        imageMap.put("sender", firebaseUser.getUid());
+        imageMap.put("receiver", receiverID);
+        imageMap.put("isSeen", false);
+        imageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        imageMap.put("message_type", "imageMessage");
 
-            String mediaId = chatReference.child("media").push().getKey();
-            mediaIdList.add(mediaId);
+        chatReference.child(chatID).setValue(imageMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
 
-            final StorageReference filePath = chatImageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(Uri.parse(mediaUri)));
+                HashMap<String, Object> mediaMap = new HashMap<>();
 
-            UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
+                for(String mediaUri : mediaUriList){
 
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    String mediaId = chatReference.child("images").push().getKey();
+                    mediaIdList.add(mediaId);
+
+                    final StorageReference filePath = chatImageReference.child(System.currentTimeMillis()
+                            + "." + uploadFunctions.getFileExtension(Uri.parse(mediaUri)));
+
+                    UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
+
+                    uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onSuccess(Uri uri) {
-                            imageMap.put("image" + totalMediaUploaded, uri.toString());
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    mediaMap.put("image" + totalMediaUploaded, uri.toString());
 
-                            totalMediaUploaded++;
+                                    totalMediaUploaded++;
 
-                            if (totalMediaUploaded == mediaUriList.size()){
-                                chatReference.child(chatID).child("images").updateChildren(imageMap)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
-                                                if (!mediaUriList.isEmpty() && !mediaIdList.isEmpty()){
-                                                    mediaUriList.clear();
-                                                    mediaIdList.clear();
-                                                    totalMediaUploaded = 0;
-                                                    messageDialog.dismiss();
-                                                    imageAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
+                                    if (totalMediaUploaded == mediaUriList.size()){
+                                        chatReference.child(chatID).child("images").updateChildren(mediaMap)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        if (!mediaUriList.isEmpty() && !mediaIdList.isEmpty()){
+                                                            mediaUriList.clear();
+                                                            mediaIdList.clear();
+                                                            totalMediaUploaded = 0;
+                                                            messageDialog.dismiss();
+                                                        }
+                                                    }
+                                                }).addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
 
-                                            }
-                                        });
-                            }
+                                                    }
+                                                });
+                                    }
+                                }
+                            });
                         }
                     });
                 }
-            });
-        }
+            }
+        });
+
+        updateChatList();
 
     }
 
-    private String getFileExtension(Uri uri){
-        ContentResolver contentResolver = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return  mime.getExtensionFromMimeType(contentResolver.getType(uri));
+    private void sendVideoMessage() {
+        messageDialog.show();
+
+        long systemMillis = System.currentTimeMillis();
+
+        StorageReference videoReference = FirebaseStorage.getInstance().getReference()
+                .child("Chat_Videos")
+                .child(systemMillis + "." + uploadFunctions.getFileExtension(videoURI));
+
+        UploadTask uploadTask = videoReference.putFile(videoURI);
+
+        uploadTask.addOnProgressListener(taskSnapshot ->{
+            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+            Log.d("PROGRESS", "Upload is " + progress + "% done");
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ChatActivity.this, "Upload Failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Task<Uri> urlTask = uploadTask.continueWithTask(task ->{
+            if (!task.isSuccessful()){
+                throw task.getException();
+            }
+            return videoReference.getDownloadUrl();
+        }).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Uri videoDownloadLink = task.getResult();
+                videoURL = videoDownloadLink.toString();
+                Log.i("downloadTag", videoURL);
+
+                chatID = chatReference.push().getKey();
+
+                HashMap<String, Object> videoMap = new HashMap<>();
+
+                videoMap.put("chatID", chatID);
+                videoMap.put("sender", firebaseUser.getUid());
+                videoMap.put("receiver", receiverID);
+                videoMap.put("isSeen", false);
+                videoMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                videoMap.put("message_type", "videoMessage");
+                videoMap.put("videoURL", videoURL);
+
+                chatReference.child(chatID).setValue(videoMap)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                messageDialog.dismiss();
+                                videoURI = null;
+                                videoURL = "";
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        });
+
+        updateChatList();
     }
 
     private void readMessages(){
@@ -492,7 +672,7 @@ public class  ChatActivity extends AppCompatActivity {
                         mChat.add(chat);
                     }
                 }
-                chatRecycler.setAdapter(new MessageAdapter(ChatActivity.this, mChat, hisImage));
+                chatRecycler.setAdapter(new MessageAdapter(ChatActivity.this, mChat));
             }
 
             @Override
@@ -506,19 +686,26 @@ public class  ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK){
-            if (requestCode == PICK_IMAGE_INTENT){
-                if (data.getClipData() == null){
-                    mediaUriList.add(data.getData().toString());
-                }else{
-                    for (int i = 0; i < data.getClipData().getItemCount(); i++){
-                        mediaUriList.add(data.getClipData().getItemAt(i).getUri().toString());
-                    }
-                }
-                voiceBTN.setImageResource(R.drawable.ic_send_black_24dp);
+        if (requestCode == PICK_IMAGE_INTENT && resultCode == RESULT_OK){
 
-                imageAdapter.notifyDataSetChanged();
+            if (data.getClipData() == null){
+                mediaUriList.add(data.getData().toString());
+            }else{
+                for (int i = 0; i < data.getClipData().getItemCount(); i++){
+                    mediaUriList.add(data.getClipData().getItemAt(i).getUri().toString());
+                }
             }
+
+            if(mediaUriList != null)
+                uploadImages();
+
+        }else if (requestCode == PICK_VIDEO_REQUEST && resultCode == -1
+                && data != null & data.getData() != null){
+
+            videoURI = data.getData();
+
+            if (videoURI != null)
+                sendVideoMessage();
         }
     }
 
@@ -567,8 +754,6 @@ public class  ChatActivity extends AppCompatActivity {
                 Toast.makeText(ChatActivity.this, "Search the chat", Toast.LENGTH_SHORT).show();
                 break;
 
-            default:
-                Toast.makeText(this, "Unknown Menu Selection", Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -579,4 +764,5 @@ public class  ChatActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
 }

@@ -27,7 +27,6 @@ import java.util.Collections;
 
 public class TimelineSetupActivity extends AppCompatActivity {
 
-    private TextView moreUsers;
     private RecyclerView usersRecycler;
 
     private ArrayList<User> userList;
@@ -40,7 +39,6 @@ public class TimelineSetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline_setup);
 
-        moreUsers = findViewById(R.id.proSetup_seeMoreBTN);
         usersRecycler = findViewById(R.id.proSetup_usersRecycler);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -52,17 +50,6 @@ public class TimelineSetupActivity extends AppCompatActivity {
 
         getUsers();
 
-        moreUsers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent movementIntent = new Intent(TimelineSetupActivity.this, InteractionsActivity.class);
-                movementIntent.putExtra("userID", firebaseUser.getUid());
-                movementIntent.putExtra("interactionType", "seeMoreUsers");
-                startActivity(movementIntent);
-
-            }
-        });
-
         findViewById(R.id.goToTimeline).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -73,7 +60,7 @@ public class TimelineSetupActivity extends AppCompatActivity {
     }
 
     private void getUsers() {
-        userReference.limitToFirst(6).addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 userList.clear();

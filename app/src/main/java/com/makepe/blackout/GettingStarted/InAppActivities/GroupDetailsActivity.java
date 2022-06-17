@@ -369,6 +369,9 @@ public class GroupDetailsActivity extends AppCompatActivity {
             menu.findItem(R.id.editGroup).setVisible(false);
         }
 
+        if (myGroupRole.equals("creator") || myGroupRole.equals("admin"))
+            menu.findItem(R.id.reportGroup).setVisible(false);
+
         return true;
     }
 
@@ -392,8 +395,6 @@ public class GroupDetailsActivity extends AppCompatActivity {
                 startActivity(intent1);
                 return true;
 
-            default:
-                Toast.makeText(this, "Unknown Selection", Toast.LENGTH_SHORT).show();
         }
         return false;
     }

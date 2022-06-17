@@ -52,6 +52,7 @@ import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -68,6 +69,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     private GetTimeAgo getTimeAgo;
     private AudioPlayer audioPlayer;
 
+    private boolean isLoaderVisible = false;
+
     public static final int TEXT_POST_ITEM = 100;
     public static final int IMAGE_POST_ITEM = 200;
     public static final int SHARED_TEXT_POST_ITEM = 300;
@@ -80,10 +83,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     public static final int SHARED_TEXT_AUDIO_IMAGE_POST = 1000;
     public static final int SHARED_AUDIO_AUDIO_IMAGE_POST = 1100;
     public static final int SHARED_AUDIO_AUDIO_POST = 1200;
+    public static final int SHARED_TEXT_VIDEO_POST = 1300;
+    public static final int SHARED_AUDIO_VIDEO_POST = 1400;
+    public static final int SHARED_TEXT_AUDIO_VIDEO_POST = 1500;
+    public static final int SHARED_AUDIO_AUDIO_VIDEO_POST = 1600;
 
     public PostAdapter(Context context, List<PostModel> postList) {
         this.context = context;
         this.postList = postList;
+    }
+
+    public PostAdapter(Context context){
+        this.context = context;
+        this.postList = new ArrayList<>();
     }
 
     @NonNull
@@ -127,6 +139,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
             case SHARED_AUDIO_AUDIO_IMAGE_POST:
                 return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_audio_image_item, parent, false));
+
+            case SHARED_AUDIO_VIDEO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_video_item, parent, false));
+
+            case SHARED_TEXT_VIDEO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_video_item, parent, false));
+
+            case SHARED_TEXT_AUDIO_VIDEO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_text_audio_video_item, parent, false));
+
+            case SHARED_AUDIO_AUDIO_VIDEO_POST:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.shared_audio_audio_video_item, parent, false));
 
             default:
                 throw new IllegalStateException("Unexpected value" + viewType);
@@ -207,8 +231,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                 getSharedPostButtons(holder, post);
                 break;
 
+            case SHARED_TEXT_VIDEO_POST:
+                Toast.makeText(context, "Shared Text Video Post Identified", Toast.LENGTH_SHORT).show();
+                break;
+
+            case SHARED_AUDIO_VIDEO_POST:
+                Toast.makeText(context, "Shared Audio Text Video Post Identified", Toast.LENGTH_SHORT).show();
+                break;
+
+            case SHARED_TEXT_AUDIO_VIDEO_POST:
+                Toast.makeText(context, "Shared Text Audio Video Post Identified", Toast.LENGTH_SHORT).show();
+                break;
+
+            case SHARED_AUDIO_AUDIO_VIDEO_POST:
+                Toast.makeText(context, "Shared Audio Audio Video Post Identified", Toast.LENGTH_SHORT).show();
+                break;
+
             default:
-                Toast.makeText(context, "Unknown post type identified", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Unknown post type identified " + post.getPostType(), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -1252,8 +1292,30 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             case "sharedAudioAudioImagePost":
                 return SHARED_AUDIO_AUDIO_IMAGE_POST;
 
+            //case "sharedTextVideoPost":
+            case "sharedVideoPost":
+                return SHARED_TEXT_VIDEO_POST;
+
+            case "sharedAudioTextVideoPost":
+                return SHARED_AUDIO_VIDEO_POST;
+
+            //case "sharedTextAudioVideoPost":
+            case "sharedAudioVideoPost":
+                return SHARED_TEXT_AUDIO_VIDEO_POST;
+
+            case "sharedAudioAudioVideoPost":
+                return SHARED_AUDIO_AUDIO_VIDEO_POST;
+
             default:
+                //Toast.makeText(context, "Unable to find post type " + postList.get(position).getPostType(), Toast.LENGTH_SHORT).show();
                 throw new IllegalStateException("Unexpected value" + postList.get(position).getPostType());
         }
     }
+
+    public void addAll(List<PostModel> postLists){
+        int initSize = postList.size();
+        postList.addAll(postLists);
+        notifyItemRangeChanged(initSize, postLists.size());
+    }
+
 }
