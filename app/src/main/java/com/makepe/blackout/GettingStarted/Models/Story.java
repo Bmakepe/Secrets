@@ -1,5 +1,7 @@
 package com.makepe.blackout.GettingStarted.Models;
 
+import java.util.ArrayList;
+
 public class Story {
 
     private String storyID, userID, storyTimeStamp, storyCaption, storyImage, storyType, storyAudioUrl;
@@ -9,9 +11,8 @@ public class Story {
     public Story() {
     }
 
-    public Story(String storyID, String userID, String storyTimeStamp, String storyCaption,
-                 String storyImage, String storyType, String storyAudioUrl, long timeStart,
-                 long timeEnd, double longitude, double latitude) {
+    public Story(String storyID, String userID, String storyTimeStamp, String storyCaption, String storyImage,
+                 String storyType, String storyAudioUrl, long timeStart, long timeEnd, double longitude, double latitude) {
         this.storyID = storyID;
         this.userID = userID;
         this.storyTimeStamp = storyTimeStamp;

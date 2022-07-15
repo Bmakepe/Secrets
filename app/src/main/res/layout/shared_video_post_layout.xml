@@ -5,29 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:backgroundTint="@color/white"
+    android:background="#00FFFFFF"
     tools:ignore="UnusedAttribute">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#00FFFFFF">
-
-            <VideoView
-                android:id="@+id/postVideoView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#00FFFFFF"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        <include layout="@layout/video_media_player" />
 
         <ProgressBar
             android:id="@+id/fullLoadingProgressBar"
@@ -43,6 +28,7 @@
             android:padding="5dp"
             android:layout_centerInParent="true"
             android:id="@+id/videoPlayBTN"
+            android:visibility="gone"
             app:tint="@color/white" />
 
         <ImageView
@@ -61,32 +47,40 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="60dp">
+            android:layout_marginBottom="70dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:id="@+id/postProPic"
+                    android:id="@+id/video_details_area"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_above="@+id/bottom_details_area"
+                    android:layout_above="@+id/shared_video_details_area"
                     android:orientation="vertical"
-                    android:padding="5dp"
-                    android:visibility="visible">
+                    android:padding="5dp">
 
-                    <RelativeLayout
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/moment_image_user"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/default_profile_display_pic"
+                            app:civ_border_color="@color/colorBlack"
+                            app:civ_border_width="2dp" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
-                            android:orientation="vertical">
+                            android:layout_gravity="center_vertical"
+                            android:orientation="vertical"
+                            android:padding="2dp">
 
                             <RelativeLayout
                                 android:id="@+id/postHeader"
@@ -102,7 +96,7 @@
                                     android:layout_toStartOf="@+id/postDate"
                                     android:singleLine="true"
                                     android:textColor="#D3D1D1"
-                                    android:textSize="14sp"
+                                    android:textSize="12sp"
                                     android:textStyle="bold" />
 
                                 <TextView
@@ -111,22 +105,21 @@
                                     android:layout_height="wrap_content"
                                     android:layout_centerVertical="true"
                                     android:layout_marginStart="5dp"
-                                    android:layout_toStartOf="@+id/followBTN"
+                                    android:layout_toStartOf="@+id/videoItemFollowBTN"
                                     android:textColor="#D3D1D1"
                                     android:textSize="10sp"
                                     tools:ignore="SmallSp" />
 
                                 <TextView
-                                    android:id="@+id/followBTN"
+                                    android:id="@+id/videoItemFollowBTN"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_centerVertical="true"
                                     android:layout_marginStart="5dp"
                                     android:layout_toStartOf="@+id/videoMenuBTN"
-                                    android:text="Follow"
                                     android:textAllCaps="true"
                                     android:textColor="#D3D1D1"
-                                    android:textSize="14sp"
+                                    android:textSize="12sp"
                                     android:textStyle="bold"
                                     tools:ignore="SmallSp" />
 
@@ -135,7 +128,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_alignParentEnd="true"
-                                    android:layout_margin="5dp"
                                     android:src="@drawable/ic_item_menu_icon"
                                     app:tint="#D3D1D1" />
 
@@ -148,104 +140,86 @@
                                 android:orientation="horizontal"
                                 android:visibility="gone">
 
-                                <ImageView
-                                    android:layout_width="20dp"
-                                    android:layout_height="20dp"
-                                    android:src="@drawable/ic_my_location_black_24dp" />
-
                                 <TextView
                                     android:id="@+id/postVideoCheckIn"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center_vertical"
-                                    android:layout_marginStart="2dp"
                                     android:drawablePadding="5dp"
+                                    android:gravity="center_vertical"
                                     android:singleLine="true"
                                     android:textColor="#D3D1D1"
                                     android:textSize="12sp"
                                     android:textStyle="normal"
-                                    android:visibility="gone" />
+                                    android:visibility="visible"
+                                    app:drawableTint="@color/colorBlack" />
 
                             </LinearLayout>
 
                         </LinearLayout>
 
-                    </RelativeLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/videoCaption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="2dp"
+                        android:textColor="#D3D1D1"
+                        android:textSize="12sp" />
 
                     <RelativeLayout
-                        android:id="@+id/tagsArea"
+                        android:id="@+id/videoTagsArea"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="gone">
 
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/videoTaggedList"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:padding="2dp"
-                                android:src="@drawable/ic_person_black_24dp" />
-
-                            <TextView
-                                android:id="@+id/taggedPeopleList"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center_vertical"
-                                android:singleLine="true"
-                                android:text="Chaka, Kamohelo, Mahao, Matli and 3 others"
-                                android:textColor="#D3D1D1"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
+                            android:layout_gravity="center_vertical"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:drawablePadding="5dp"
+                            android:gravity="center_vertical"
+                            android:singleLine="true"
+                            android:textColor="#D3D1D1"
+                            android:textSize="12sp"
+                            android:textStyle="normal"
+                            app:drawableTint="#D3D1D1" />
 
                     </RelativeLayout>
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/bottom_details_area"
+                    android:id="@+id/shared_video_details_area"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/videoCaption"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:padding="5dp"
-                        android:textColor="#D3D1D1"
-                        android:textSize="16sp" />
+                    android:background="@color/white_greyish"
+                    android:orientation="vertical"
+                    android:padding="5dp">
 
                     <RelativeLayout
-                        android:id="@+id/shared_video_details_area"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@color/white_greyish"
-                        android:padding="5dp">
+                        android:layout_height="wrap_content">
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/shared_moment_image_user"
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/default_profile_display_pic"
-                            app:civ_border_color="@color/white"
+                            app:civ_border_color="@color/colorBlack"
                             app:civ_border_width="2dp" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
                             android:layout_toEndOf="@+id/shared_moment_image_user"
-                            android:orientation="vertical">
+                            android:orientation="vertical"
+                            android:padding="2dp">
 
                             <RelativeLayout
                                 android:layout_width="match_parent"
@@ -274,247 +248,71 @@
 
                             </RelativeLayout>
 
-                            <TextView
-                                android:id="@+id/shared_video_caption"
+                            <LinearLayout
+                                android:id="@+id/sharedVideoLocationArea"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="12sp" />
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/sharedVideoCheckIn"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:gravity="center_vertical"
+                                    android:singleLine="true"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="12sp"
+                                    android:textStyle="normal"
+                                    android:visibility="visible"
+                                    app:drawableTint="@color/colorBlack" />
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
                     </RelativeLayout>
 
+                    <TextView
+                        android:id="@+id/shared_video_caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp" />
+
+                    <RelativeLayout
+                        android:id="@+id/sharedTagsArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/sharedTaggedPeopleList"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:drawablePadding="5dp"
+                            android:gravity="center_vertical"
+                            android:singleLine="true"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="normal"
+                            app:drawableTint="@color/colorBlack" />
+
+                    </RelativeLayout>
+
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/interactionsArea"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/postProPic"
+                <include
                     android:layout_alignParentEnd="true"
-                    android:orientation="vertical">
-
-                    <RelativeLayout
-                        android:id="@+id/proPicArea"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1">
-
-                        <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/moment_image_user"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_centerInParent="true"
-                            android:src="@drawable/default_profile_display_pic"
-                            app:civ_border_color="@color/white"
-                            app:civ_border_width="2dp" />
-
-                        <de.hdodenhof.circleimageview.CircleImageView
-                            android:layout_width="15dp"
-                            android:layout_height="15dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_centerHorizontal="true"
-                            android:backgroundTint="@color/white"
-                            android:src="@drawable/ic_add_circle_black_24dp"
-                            app:civ_circle_background_color="@color/white" />
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:id="@+id/viewsArea"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:padding="5dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:id="@+id/post_views"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_baseline_play_arrow_24"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:id="@+id/videoViewsCounter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:singleLine="true"
-                                android:textColor="@color/white"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:id="@+id/likesArea"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:padding="5dp"
-                        tools:ignore="Suspicious0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:id="@+id/post_likes"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_favorite_border_black_24dp"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:id="@+id/likes"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:singleLine="true"
-                                android:textColor="@color/white"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:id="@+id/commentsArea"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:padding="5dp"
-                        tools:ignore="Suspicious0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:id="@+id/comment"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_insert_comment_black_24dp"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:id="@+id/post_comments"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:singleLine="true"
-                                android:textColor="@color/white"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:id="@+id/shareArea"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:padding="5dp"
-                        tools:ignore="Suspicious0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:layout_centerVertical="true"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:id="@+id/shareBTN"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_baseline_share_24"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:singleLine="true"
-                                android:text="Share"
-                                android:textColor="@color/white"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:padding="5dp"
-                        tools:ignore="Suspicious0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:id="@+id/bookmarkBTN"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_bookmark_border_black_24dp"
-                                app:tint="@color/white" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:singleLine="true"
-                                android:text="Save"
-                                android:textColor="@color/white"
-                                android:textSize="10sp"
-                                android:textStyle="normal"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
-                    </RelativeLayout>
-
-                </LinearLayout>
+                    android:layout_above="@+id/video_details_area"
+                    layout="@layout/video_post_social_btns"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
             </RelativeLayout>
 

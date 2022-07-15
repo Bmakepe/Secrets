@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/cardView_color"
-        android:padding="5dp">
+        android:padding="5dp"
+        android:background="@color/cardView_color">
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -124,73 +124,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/tagsArea">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_alignParentEnd="true"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_person_black_24dp"
-                        android:padding="2dp"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:singleLine="true"
-                        android:id="@+id/taggedPeopleList"
-                        android:layout_gravity="center_vertical"
-                        android:text="Chaka, Kamohelo, Mahao, Matli and 3 others"
-                        android:textStyle="normal"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="10sp"
-                        tools:ignore="SmallSp" />
-
-                </LinearLayout>
-
-            </RelativeLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/postPicArea"
-                    android:visibility="gone"
-                    android:backgroundTint="@color/white_greyish"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="1dp"
-                    tools:ignore="UnusedAttribute">
-
-                    <ProgressBar
-                        android:id="@+id/progress_load_media"
-                        style="@android:style/Widget"
-                        android:backgroundTint="@color/white"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_centerVertical="true"/>
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="150dp"
-                        android:scaleType="centerCrop"
-                        android:visibility="gone"
-                        android:src="@drawable/ic_image_black_24dp"
-                        android:id="@+id/postImage"/>
-
-                </RelativeLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -201,10 +138,6 @@
                     android:textColor="@color/colorBlack"
                     android:textStyle="normal"
                     android:id="@+id/postCaption"/>
-
-                <include
-                    layout="@layout/audio_media_player"
-                    android:visibility="gone"/>
 
             </LinearLayout>
 
@@ -218,24 +151,31 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/transparent_circle_with_border"
                     android:backgroundTint="@color/colorBlack">
 
-                    <ImageView
-                        android:id="@+id/shared_postImage"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/sharedPostImageRecyclerView"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/default_profile_display_pic"
-                        android:transitionName="img"
-                        android:visibility="visible"
-                        tools:ignore="UnusedAttribute" />
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/sharedPostImagesCounter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/rounded_edittext"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:padding="5dp"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
+                        android:id="@+id/shared_post_details_area"
                         android:background="@color/white_greyish"
                         android:padding="2dp">
 
@@ -317,32 +257,6 @@
 
                         </RelativeLayout>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:visibility="gone">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:src="@drawable/ic_person_black_24dp"
-                                android:padding="2dp"/>
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:singleLine="true"
-                                android:id="@+id/shared_taggedPeopleList"
-                                android:layout_gravity="center_vertical"
-                                android:text="Chaka, Kamohelo, Mahao, Matli and 3 others"
-                                android:textStyle="normal"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="10sp"
-                                tools:ignore="SmallSp" />
-
-                        </LinearLayout>
-
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -352,6 +266,20 @@
                             android:textColor="@color/colorBlack"
                             android:textStyle="normal"
                             android:id="@+id/shared_post_desc"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:gravity="center_vertical"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:id="@+id/sharedPost_taggedPeopleList"
+                            android:layout_gravity="center_vertical"
+                            android:visibility="gone"
+                            android:textStyle="normal"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            app:drawableTint="@color/colorBlack" />
 
                     </LinearLayout>
 

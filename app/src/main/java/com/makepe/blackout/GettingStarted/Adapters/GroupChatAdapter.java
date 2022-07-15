@@ -71,7 +71,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
 
     private GetTimeAgo getTimeAgo;
 
-    private AudioPlayer audioPlayer;
+    //private AudioPlayer audioPlayer;
     private UniversalFunctions universalFunctions;
 
     private boolean videoIsPlaying = false;
@@ -306,7 +306,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
 
     private void getAudioMessageDetails(GroupChat chat, ViewHolder holder) {
 
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         try{//convert timestamp

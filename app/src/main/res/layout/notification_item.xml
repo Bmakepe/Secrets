@@ -1,70 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="8dp">
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/notiProIMG"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:civ_border_color="@color/colorBlack"
-        app:civ_border_width="2dp"
-        android:src="@drawable/default_profile_display_pic"/>
+    android:orientation="vertical"
+    android:backgroundTint="@color/white"
+    app:cardElevation="5dp"
+    app:cardCornerRadius="5dp"
+    android:layout_margin="2dp"
+    app:cardUseCompatPadding="false"
+    tools:ignore="UnusedAttribute">
 
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
-        android:orientation="vertical"
-        android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/notiProIMG"
-        android:layout_toStartOf="@+id/post_image">
+        android:padding="5dp">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/notificationPics">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/notiUsername"
-                android:textStyle="bold"
-                android:singleLine="true"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/notiProIMG"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/default_profile_display_pic"
+                android:visibility="visible"
+                app:civ_border_color="@color/colorBlack"
+                app:civ_border_width="2dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/notiTimeStamp"
-                android:layout_alignParentEnd="true"
-                android:singleLine="true"
-                android:textStyle="bold"
-                android:textColor="@color/colorBlack"
-                android:textSize="10sp"
-                tools:ignore="SmallSp"
-                android:gravity="center_vertical"
-                android:layout_centerVertical="true"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_toEndOf="@+id/notiProIMG"
+                android:layout_height="wrap_content">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/notiUsername"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="2"
+                        android:padding="5dp"
+                        android:text="Bokang Makepe"
+                        android:textColor="@color/colorBlack"
+                        android:layout_toStartOf="@+id/notiTimeStamp"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/notiTimeStamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxLines="2"
+                        android:padding="5dp"
+                        android:text="5 days ago"
+                        android:layout_alignParentEnd="true"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp"
+                        android:textStyle="normal" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/notiComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="2"
+                    android:padding="5dp"
+                    android:text="commented on your post: "
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp"
+                    android:textStyle="normal" />
+
+            </LinearLayout>
 
         </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/notiComment"
-            android:textSize="12sp"
-            android:textColor="@color/colorBlack"
-            android:maxLines="3"/>
+        <ImageView
+            android:id="@+id/post_image"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="fitCenter"
+            android:visibility="visible"
+            android:src="@drawable/ic_image_black_24dp" />
 
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/post_image"
-        android:layout_alignParentEnd="true"/>
-
-</RelativeLayout>
+</androidx.cardview.widget.CardView>

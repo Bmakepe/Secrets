@@ -82,8 +82,8 @@
                         android:layout_height="wrap_content"
                         android:hint="Whats Up???"
                         android:inputType="textMultiLine|textNoSuggestions"
-                        android:textColorHint="#fff"
-                        android:textColor="#000"
+                        android:textColorHint="@color/colorBlack"
+                        android:textColor="@color/colorBlack"
                         android:id="@+id/shareCaption"
                         android:layout_gravity="center"
                         android:textSize="12sp"
@@ -148,19 +148,26 @@
 
                     <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="250dp"
                         android:id="@+id/share_postPicArea"
                         android:visibility="gone">
 
-                        <ImageView
-                            android:id="@+id/share_postImage"
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/sharedImagePostRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="250dp"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/default_profile_display_pic"
-                            android:transitionName="img"
-                            android:visibility="visible"
-                            tools:ignore="UnusedAttribute" />
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/sharedPostImagesCounter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:background="@drawable/rounded_edittext"
+                            android:backgroundTint="@color/colorPrimary"
+                            android:padding="5dp"
+                            android:textColor="@color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
                         <ProgressBar
                             android:id="@+id/progress_load_media"
@@ -288,7 +295,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:padding="2dp"
-                            android:text="This is the caption area"
                             android:textColor="@color/colorBlack"
                             android:textSize="12sp"
                             android:visibility="visible" />
@@ -302,6 +308,20 @@
                             <include layout="@layout/audio_media_player" />
 
                         </RelativeLayout>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:gravity="center_vertical"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:id="@+id/shared_taggedPeopleList"
+                            android:layout_gravity="center_vertical"
+                            android:textStyle="normal"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="10sp"
+                            tools:ignore="SmallSp"
+                            app:drawableTint="@color/colorBlack" />
 
                     </LinearLayout>
 

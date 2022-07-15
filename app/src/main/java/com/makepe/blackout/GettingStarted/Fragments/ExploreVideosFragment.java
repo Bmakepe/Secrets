@@ -19,6 +19,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
@@ -54,7 +55,7 @@ public class ExploreVideosFragment extends Fragment {
         videoPager = view.findViewById(R.id.videoPager);
         videoLoader = view.findViewById(R.id.videoPostLoader);
 
-        videoReference = FirebaseDatabase.getInstance().getReference("Posts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         videoList = new ArrayList<>();
 
         getVideos();
@@ -72,12 +73,15 @@ public class ExploreVideosFragment extends Fragment {
 
                     assert videos != null;
                     if (videos.getPostType().equals("videoPost")
-                            ||videos.getPostType().equals("audioVideoPost")
-                            ||videos.getPostType().equals("sharedVideoPost"))
+                            || videos.getPostType().equals("sharedVideoPost")
+                            || videos.getPostType().equals("sharedAudioTextVideoPost")
+                            || videos.getPostType().equals("audioVideoPost")
+                            || videos.getPostType().equals("sharedTextAudioVideoPost")
+                            || videos.getPostType().equals("sharedAudioAudioVideoPost"))
                         videoList.add(videos);
 
                     Collections.shuffle(videoList);
-                    videoPager.setAdapter(new VideoFootageAdapter(videoList, getActivity()));
+                    videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));
 
                 }
                 videoLoader.setVisibility(View.GONE);

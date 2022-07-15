@@ -3,10 +3,12 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -17,10 +19,10 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -40,18 +43,23 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.makepe.blackout.GettingStarted.Adapters.FriendsAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.TaggedFriendsAdapter;
 import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
+import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -63,16 +71,20 @@ public class AddStoryActivity extends AppCompatActivity {
     private String myUri = "", userID, storyID;
     private StorageTask storageTask;
     private StorageReference storageReference, audioReference;
-    private DatabaseReference userReference, storyReference;
+    private DatabaseReference userReference, storyReference, followingReference;
+    private UploadFunctions uploadFunctions;
 
     private CircleImageView storyProPic;
     private ImageView storyPic;
-    private TextView storyUser, storyFAB, locationTV;
+    private TextView storyUser, storyFAB, locationTV, tagFriendsBTN;
     private EditText storyCaption;
-    private RelativeLayout locationArea;
     private TextInputLayout storyCaptionSection;
     private LocationServices locationServices;
     private ProgressDialog pd;
+    private Switch commentSwitch;
+
+    private ArrayList<User> taggedUsers = new ArrayList<>();
+    private TaggedFriendsAdapter taggedFriendsAdapter;
 
     //for recording audio status
     private AudioRecorder audioRecorder;
@@ -96,8 +108,13 @@ public class AddStoryActivity extends AppCompatActivity {
         storyUser = findViewById(R.id.addStoryUsername);
         storyFAB = findViewById(R.id.postFAB);
         locationTV = findViewById(R.id.locationCheckIn);
-        locationArea = findViewById(R.id.postLocationBTN);
+        RelativeLayout locationArea = findViewById(R.id.postLocationBTN);
         storyCaptionSection = findViewById(R.id.storyCaptionSection);
+        tagFriendsBTN = findViewById(R.id.tagFriendsBTN);
+
+        //for tagging friends
+        RecyclerView taggedFriendsRecycler = findViewById(R.id.taggedFriendsRecycler);
+        commentSwitch = findViewById(R.id.commentSwitch);
 
         playAudioArea = findViewById(R.id.playAudioArea);
         voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
@@ -111,11 +128,18 @@ public class AddStoryActivity extends AppCompatActivity {
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         audioReference = FirebaseStorage.getInstance().getReference();
+        followingReference = FirebaseDatabase.getInstance().getReference("Follow")
+                .child(userID).child("following");
 
         locationServices = new LocationServices(locationTV, AddStoryActivity.this);
         audioRecorder = new AudioRecorder(lavPlaying, AddStoryActivity.this,
                 AddStoryActivity.this, playAudioArea, voicePlayBTN, seekTimer);
+        uploadFunctions = new UploadFunctions(AddStoryActivity.this);
 
+        taggedFriendsRecycler.hasFixedSize();
+        taggedFriendsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        taggedFriendsAdapter = new TaggedFriendsAdapter(AddStoryActivity.this, taggedUsers);
+        taggedFriendsRecycler.setAdapter(taggedFriendsAdapter);
 
         storyID = storyReference.push().getKey();
 
@@ -151,10 +175,12 @@ public class AddStoryActivity extends AppCompatActivity {
                 if (storyFAB.getText().toString().trim().equals("Record")) {
                     if (audioRecorder.checkRecordingPermission()){
                         storyCaptionSection.setVisibility(View.GONE);
+
                         if (!audioRecorder.isRecording()){
                             storyFAB.setText("Stop");
                             audioRecorder.startRecording();
                         }
+
                     }else {
                         audioRecorder.requestRecordingPermission();
                     }
@@ -203,6 +229,95 @@ public class AddStoryActivity extends AppCompatActivity {
             }
         });
 
+        tagFriendsBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBottomSheetDialog();
+            }
+        });
+
+    }
+
+    private void showBottomSheetDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tag_friends_bottom_sheet);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.closeSheetBTN);
+        TextView taggedFriendsDoneBTN = bottomSheetDialog.findViewById(R.id.taggedFriendsDoneBTN);
+        SearchView searchView = bottomSheetDialog.findViewById(R.id.searchView);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.tagFriendsRecycler);
+
+        List<User> userList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        FriendsAdapter friendsAdapter = new FriendsAdapter(userList, AddStoryActivity.this);
+        friendsRecycler.setAdapter(friendsAdapter);
+
+        followingReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                idList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    idList.add(ds.getKey());
+                }
+
+                userReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        userList.clear();
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            for (String ID : idList){
+                                if (user.getUSER_ID().equals(ID))
+                                    userList.add(user);
+                            }
+
+                            Collections.sort(userList, new Comparator<User>() {
+                                @Override
+                                public int compare(User o1, User o2) {
+                                    return o1.getUsername().compareTo(o2.getUsername());
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        assert close != null;
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        taggedFriendsDoneBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                taggedUsers.addAll(friendsAdapter.taggedFriends);
+                taggedFriendsAdapter.notifyDataSetChanged();
+                bottomSheetDialog.dismiss();
+
+            }
+        });
     }
 
     private void publishAudioStory() {
@@ -229,7 +344,7 @@ public class AddStoryActivity extends AppCompatActivity {
 
                     if (mImageUri != null){
                         final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
-                                + "." + getFileExtension(mImageUri));
+                                + "." + uploadFunctions.getFileExtension(mImageUri));
 
                         storageTask = imageReference.putFile(mImageUri);
                         storageTask.continueWithTask(new Continuation() {
@@ -256,7 +371,6 @@ public class AddStoryActivity extends AppCompatActivity {
                                     hashMap.put("storyID", storyID);
                                     hashMap.put("userID", userID);
                                     hashMap.put("storyTimeStamp", String.valueOf(System.currentTimeMillis()));
-                                    hashMap.put("storyCaption", storyCaption.getText().toString());
                                     hashMap.put("storyType", "audioStory");
                                     hashMap.put("storyAudioUrl", audioLink);
 
@@ -265,10 +379,21 @@ public class AddStoryActivity extends AppCompatActivity {
                                         hashMap.put("longitude", locationServices.getLongitude());
                                     }
 
+                                    if (commentSwitch.isChecked())
+                                        hashMap.put("commentsAllowed", false);
+                                    else
+                                        hashMap.put("commentsAllowed", true);
+
                                     storyReference.child(userID).child(storyID).setValue(hashMap)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
+
+                                                    if (!taggedUsers.isEmpty()) {
+                                                        for (int i = 0; i < taggedUsers.size(); i++) {
+                                                            storyReference.child(userID).child(storyID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
+                                                        }
+                                                    }
 
                                                     storyFAB.setVisibility(View.VISIBLE);
                                                     pd.dismiss();
@@ -320,18 +445,12 @@ public class AddStoryActivity extends AppCompatActivity {
 
     }
 
-    private String getFileExtension(Uri uri){
-        ContentResolver contentResolver = getContentResolver();
-        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
-    }
-
     private void publishStory(){
         pd.show();
 
         if(mImageUri != null){
             final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
-            + "." + getFileExtension(mImageUri) );
+            + "." + uploadFunctions.getFileExtension(mImageUri) );
 
             storageTask = imageReference.putFile(mImageUri);
             storageTask.continueWithTask(new Continuation(){
@@ -361,7 +480,6 @@ public class AddStoryActivity extends AppCompatActivity {
                         hashMap.put("storyTimeStamp", String.valueOf(System.currentTimeMillis()));
                         hashMap.put("storyCaption", storyCaption.getText().toString());
                         hashMap.put("storyType", "textStory");
-                        hashMap.put("storyAudioUrl", "");
 
                         if (!locationTV.getText().toString().equals("No Location")) {
                             hashMap.put("latitude", locationServices.getLatitude());
@@ -372,6 +490,12 @@ public class AddStoryActivity extends AppCompatActivity {
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
+
+                                        if (!taggedUsers.isEmpty()) {
+                                            for (int i = 0; i < taggedUsers.size(); i++) {
+                                                storyReference.child(userID).child(storyID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
+                                            }
+                                        }
 
                                         storyFAB.setVisibility(View.VISIBLE);
                                         pd.dismiss();

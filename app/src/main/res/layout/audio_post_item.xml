@@ -7,19 +7,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_margin="2dp"
-    android:background="@color/white_greyish"
-    tools:ignore="UnusedAttribute">
+    android:background="@color/white_greyish">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/cardView_color"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/cardView_color">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="2dp"
             android:visibility="visible"
             android:id="@+id/postPicArea"
             tools:ignore="UnusedAttribute">
@@ -41,16 +39,14 @@
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="2dp">
+                    android:layout_height="wrap_content">
 
                     <LinearLayout
                         android:id="@+id/rPostDeclaration"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="2dp">
+                        android:orientation="horizontal">
 
                         <RelativeLayout
                             android:layout_width="wrap_content"
@@ -165,15 +161,6 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/postCaption"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:visibility="gone" />
-
                     <include
                         layout="@layout/audio_media_player" />
 
@@ -190,31 +177,6 @@
                     android:visibility="gone"/>
 
             </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:text="@string/tagged_names"
-                android:textStyle="italic"
-                android:paddingStart="2dp"
-                android:singleLine="true"
-                android:paddingEnd="2dp"
-                android:textColor="@color/colorBlack"
-                android:id="@+id/rPostTags"
-                tools:ignore="SmallSp"
-                android:visibility="gone"/>
 
         </RelativeLayout>
 

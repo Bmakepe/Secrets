@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,15 +25,12 @@ import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
+import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> {
-
-    private UniversalFunctions postAdapter;
-
-    public MediaAdapter() {
-    }
 
     private Context context;
     private List<PostModel> mPosts;
@@ -48,8 +46,7 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.media_item_layout, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.media_item_layout, parent, false));
     }
 
     @Override
@@ -57,17 +54,11 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final PostModel modelPost = mPosts.get(position);
-        postAdapter = new UniversalFunctions(context);
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
         if (modelPost.getPostType().equals("imagePost")
                 || modelPost.getPostType().equals("audioImagePost")){
-            Glide.with(context)
-                    .load(modelPost.getPostImage())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .centerCrop()
-                    .error(R.drawable.default_profile_display_pic)
-                    .into(holder.post_image);
+            getPostImage(holder, modelPost);
         }else{
             getSharedImagePost(modelPost, holder);
         }
@@ -83,7 +74,68 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
         });
     }
 
+    private void getPostImage(ViewHolder holder, PostModel modelPost) {
+
+        ArrayList<String> imageURLs = new ArrayList<>();
+
+        postReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel postModel = ds.getValue(PostModel.class);
+
+                    assert postModel != null;
+                    if (postModel.getPostID().equals(modelPost.getPostID())){
+                        postReference.child(postModel.getPostID()).child("images").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                if (snapshot.exists()){
+                                    if (snapshot.getChildrenCount() == 1){
+                                        for (DataSnapshot data : snapshot.getChildren()){
+                                            String imageURL = data.getValue().toString();
+                                            try{
+                                                holder.multipleMediaIcon.setVisibility(View.GONE);
+                                                holder.multipleMediaIcon.setImageResource(R.drawable.ic_image_black_24dp);
+                                                Picasso.get().load(imageURL).into(holder.post_image);
+                                                holder.mediaLoader.setVisibility(View.GONE);
+                                            }catch (NullPointerException ignored){}
+                                        }
+                                    }else{
+                                        imageURLs.clear();
+                                        for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                                            imageURLs.add(dataSnapshot.getValue().toString());
+                                        }
+
+                                        try{
+                                            holder.multipleMediaIcon.setVisibility(View.VISIBLE);
+                                            holder.multipleMediaIcon.setImageResource(R.drawable.ic_baseline_collections_24);
+                                            Picasso.get().load(imageURLs.get(0)).into(holder.post_image);
+                                            holder.mediaLoader.setVisibility(View.GONE);
+                                        }catch (NullPointerException ignored){}
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     private void getSharedImagePost(PostModel modelPost, ViewHolder holder) {
+
+        ArrayList<String> imageURLs = new ArrayList<>();
+
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -93,12 +145,43 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
                     assert model != null;
                     if (modelPost.getSharedPost().equals(model.getPostID())){
 
-                        Glide.with(context)
-                                .load(model.getPostImage())
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .centerCrop()
-                                .error(R.drawable.default_profile_display_pic)
-                                .into(holder.post_image);
+                        postReference.child(model.getSharedPost()).child("images").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                if (snapshot.exists()){
+                                    if (snapshot.getChildrenCount() == 1){
+                                        for (DataSnapshot data : snapshot.getChildren()){
+                                            String imageURL = data.getValue().toString();
+                                            try{
+                                                holder.multipleMediaIcon.setVisibility(View.GONE);
+                                                holder.multipleMediaIcon.setImageResource(R.drawable.ic_image_black_24dp);
+                                                Picasso.get().load(imageURL).into(holder.post_image);
+                                                holder.mediaLoader.setVisibility(View.GONE);
+                                            }catch (NullPointerException ignored){}
+                                        }
+                                    }else{
+                                        imageURLs.clear();
+                                        for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                                            imageURLs.add(dataSnapshot.getValue().toString());
+                                        }
+
+                                        try{
+                                            holder.multipleMediaIcon.setVisibility(View.VISIBLE);
+                                            holder.multipleMediaIcon.setImageResource(R.drawable.ic_baseline_collections_24);
+                                            Picasso.get().load(imageURLs.get(0)).into(holder.post_image);
+                                            holder.mediaLoader.setVisibility(View.GONE);
+                                        }catch (NullPointerException ignored){}
+                                    }
+                                }
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+
                     }
                 }
             }
@@ -117,12 +200,17 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private ImageView post_image;
+        public ImageView post_image, multipleMediaIcon;
+        public ProgressBar mediaLoader;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             post_image = itemView.findViewById(R.id.post_image);
+            multipleMediaIcon = itemView.findViewById(R.id.mediaMultipleImageIcon);
+            mediaLoader = itemView.findViewById(R.id.mediaLoader);
         }
     }
+
+
 }

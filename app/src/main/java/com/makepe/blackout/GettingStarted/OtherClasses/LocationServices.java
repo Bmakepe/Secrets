@@ -165,7 +165,6 @@ public class LocationServices implements LocationListener {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
-                            Toast.makeText(context, "Shared your location", Toast.LENGTH_SHORT).show();
                             sendMessage = false;
 
                             locationDialog.dismiss();
@@ -190,11 +189,11 @@ public class LocationServices implements LocationListener {
             groupChatMap.put("latitude", getLatitude());
             groupChatMap.put("longitude", getLongitude());
 
+            assert chatID != null;
             groupChatReference.child(chatID).setValue(groupChatMap)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            Toast.makeText(context, "You have shared your location", Toast.LENGTH_SHORT).show();
                             groupMessage = false;
 
                             locationDialog.dismiss();

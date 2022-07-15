@@ -47,6 +47,16 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator"
         tools:targetApi="m">
         <activity
+            android:name=".GettingStarted.InAppActivities.PosteActivity"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/app_id_test" /> <!-- android:value="ca-app-pub-2193593343976198~4007924319" -->
+        <activity
+            android:name=".GettingStarted.InAppActivities.MusicActivity"
+            android:exported="false" />
+        <activity
             android:name=".GettingStarted.InAppActivities.ViewStoryActivity"
             android:exported="false" />
         <activity

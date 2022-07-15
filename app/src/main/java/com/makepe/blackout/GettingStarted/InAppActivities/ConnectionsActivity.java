@@ -60,58 +60,9 @@ public class ConnectionsActivity extends AppCompatActivity {
                 getFollowing();
                 break;
 
-            case "Likes":
-                getLikes();
-                break;
-
-            case "Views":
-                getViewers();
-                break;
-
             default:
                 Toast.makeText(this, "Unable to solve request", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void getViewers() {
-        final DatabaseReference viewsReference = FirebaseDatabase.getInstance().getReference("Views").child(userID);
-        viewsReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                idList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    idList.add(ds.getKey());
-                    connectionsToolbar.setTitle("Views");
-                }
-                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void getLikes() {
-        final DatabaseReference likesRef = FirebaseDatabase.getInstance().getReference("Likes").child(userID);
-        likesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                idList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    idList.add(ds.getKey());
-                    connectionsToolbar.setTitle("Likes");
-                }
-                connectionsRecycler.setAdapter(new UserAdapter( ConnectionsActivity.this, idList, "goToProfile"));
-                //getUserDetails();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 
     private void getFollowing() {

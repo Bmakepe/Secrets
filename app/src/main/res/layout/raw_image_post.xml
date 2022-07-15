@@ -19,226 +19,184 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:padding="2dp"
             android:visibility="visible"
             android:id="@+id/postPicArea"
             tools:ignore="UnusedAttribute">
 
-            <RelativeLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/postImageRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent" />
 
-                <ImageView
-                    android:id="@+id/rPostImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/default_profile_display_pic"
-                    android:transitionName="img"
-                    android:visibility="visible"
-                    tools:ignore="UnusedAttribute" />
+            <TextView
+                android:id="@+id/postImagesCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/rounded_edittext"
+                android:backgroundTint="@color/colorPrimary"
+                android:padding="5dp"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <ProgressBar
-                    android:id="@+id/post_item_image_loader"
-                    style="@android:style/Widget"
-                    android:backgroundTint="@color/white"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_centerVertical="true"/>
+            <ProgressBar
+                android:id="@+id/post_item_image_loader"
+                style="@android:style/Widget"
+                android:backgroundTint="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_centerVertical="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/white_greyish"
+                android:orientation="vertical"
+                android:padding="2dp">
 
                 <LinearLayout
-                    android:orientation="vertical"
+                    android:id="@+id/rPostDeclaration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:background="@color/white_greyish"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:padding="2dp">
 
-                    <LinearLayout
-                        android:id="@+id/rPostDeclaration"
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/postProPic"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_centerInParent="true"
+                            android:padding="2dp"
+                            android:src="@drawable/default_profile_display_pic"
+                            android:tint="@color/colorPrimary"
+                            app:civ_border_color="@color/colorBlack"
+                            app:civ_border_overlay="true"
+                            app:civ_border_width="1dp" />
+
+                        <ImageView
+                            android:id="@+id/privacyIcon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:padding="3dp"
+                            android:src="@drawable/ic_lock_black_24dp"
+                            android:visibility="gone"
+                            app:tint="@color/colorBlack" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="2dp">
+                        android:layout_height="wrap_content">
 
-                        <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-
-                            <de.hdodenhof.circleimageview.CircleImageView
-                                android:id="@+id/postProPic"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:layout_centerInParent="true"
-                                android:padding="2dp"
-                                android:src="@drawable/default_profile_display_pic"
-                                android:tint="@color/colorPrimary"
-                                app:civ_border_color="@color/colorBlack"
-                                app:civ_border_overlay="true"
-                                app:civ_border_width="1dp" />
-
-                            <ImageView
-                                android:id="@+id/privacyIcon"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_alignParentBottom="true"
-                                android:padding="3dp"
-                                android:src="@drawable/ic_lock_black_24dp"
-                                android:visibility="gone"
-                                app:tint="@color/colorBlack" />
-
-                        </RelativeLayout>
-
-                        <RelativeLayout
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="2dp"
+                            android:layout_toStartOf="@+id/layoutDate"
+                            android:orientation="vertical">
 
-                            <LinearLayout
+                            <TextView
+                                android:id="@+id/postUsername"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_centerVertical="true"
-                                android:layout_marginStart="2dp"
-                                android:layout_toStartOf="@+id/layoutDate"
-                                android:orientation="vertical">
+                                android:singleLine="true"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:id="@+id/post_location_area"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
 
                                 <TextView
-                                    android:id="@+id/postUsername"
+                                    android:id="@+id/rPostLocation"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
                                     android:singleLine="true"
                                     android:textColor="@color/colorBlack"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold" />
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:id="@+id/post_location_area"
-                                    android:visibility="gone"
-                                    android:orientation="horizontal">
-
-                                    <TextView
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:textSize="10sp"
-                                        android:textStyle="normal"
-                                        android:visibility="visible"
-                                        android:layout_gravity="center_vertical"
-                                        android:singleLine="true"
-                                        android:textColor="@color/colorBlack"
-                                        android:id="@+id/rPostLocation"
-                                        tools:ignore="SmallSp" />
-
-                                </LinearLayout>
+                                    android:textSize="10sp"
+                                    android:textStyle="normal"
+                                    android:visibility="visible"
+                                    tools:ignore="SmallSp" />
 
                             </LinearLayout>
 
-                            <FrameLayout
-                                android:id="@+id/layoutDate"
+                        </LinearLayout>
+
+                        <FrameLayout
+                            android:id="@+id/layoutDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:padding="5dp">
+
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
-                                android:padding="5dp">
+                                android:orientation="horizontal">
 
-                                <LinearLayout
+                                <TextView
+                                    android:id="@+id/postTimeStamp"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:orientation="horizontal">
+                                    android:layout_gravity="center"
+                                    android:gravity="center"
+                                    android:padding="2dp"
+                                    android:singleLine="true"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="10sp"
+                                    tools:ignore="SmallSp" />
 
-                                    <TextView
-                                        android:id="@+id/postTimeStamp"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:layout_gravity="center"
-                                        android:gravity="center"
-                                        android:padding="2dp"
-                                        android:singleLine="true"
-                                        android:textColor="@color/colorBlack"
-                                        android:textSize="10sp"
-                                        tools:ignore="SmallSp" />
+                                <ImageView
+                                    android:id="@+id/postMenuBTN"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:padding="2dp"
+                                    android:src="@drawable/ic_item_menu_icon"
+                                    android:visibility="visible" />
 
-                                    <ImageView
-                                        android:id="@+id/postMenuBTN"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:padding="2dp"
-                                        android:src="@drawable/ic_item_menu_icon"
-                                        android:visibility="visible" />
+                            </LinearLayout>
 
-                                </LinearLayout>
+                        </FrameLayout>
 
-                            </FrameLayout>
-
-                        </RelativeLayout>
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/postCaption"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:visibility="visible" />
-                    <include
-                        layout="@layout/audio_media_player"
-                        android:visibility="gone"/>
+                    </RelativeLayout>
 
                 </LinearLayout>
 
-                <ProgressBar
-                    android:id="@+id/progress_load_photo"
-                    android:layout_marginTop="70dp"
-                    style="@android:style/Widget"
-                    android:backgroundTint="#FFF"
+                <TextView
+                    android:id="@+id/postCaption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:visibility="gone"/>
+                    android:padding="2dp"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp"
+                    android:visibility="visible" />
 
-            </RelativeLayout>
+                <include
+                    layout="@layout/audio_media_player"
+                    android:visibility="gone" />
 
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:text="@string/tagged_names"
-                android:textStyle="italic"
-                android:paddingStart="2dp"
-                android:singleLine="true"
-                android:paddingEnd="2dp"
-                android:textColor="@color/colorBlack"
-                android:id="@+id/rPostTags"
-                tools:ignore="SmallSp"
-                android:visibility="gone"/>
+            </LinearLayout>
 
         </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/capSection">
-
-            <include
-                layout="@layout/post_item_social_buttons"/>
-
-        </LinearLayout>
+        <include
+            layout="@layout/post_item_social_buttons"/>
 
     </LinearLayout>
 

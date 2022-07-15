@@ -55,52 +55,44 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
 
         PostModel post = videoList.get(position);
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        videoReference = FirebaseDatabase.getInstance().getReference("Posts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         universalFunctions = new UniversalFunctions(context);
 
-        switch(post.getPostType()){
-            case "videoPost":
+        universalFunctions.checkVideoViewCount(holder.videoViews, post);
 
-            case "audioVideoPost":
-                getVideoOwnerDetails(post, holder);
-                getVideoDetails(post, holder);
-                universalFunctions.checkVideoViewCount(holder.videoViews, post);
-                break;
-
-            case "sharedVideoPost":
-                getSharedVideoDetails(post, holder);
-                universalFunctions.checkVideoViewCount(holder.videoViews, post);
-                break;
-
-            default:
-                Toast.makeText(context, "Unknown type recognized", Toast.LENGTH_SHORT).show();
+        if (post.getPostType().equals("videoPost") || post.getPostType().equals("audioVideoPost")){
+            getVideoOwnerDetails(post, holder);
+            getVideoDetails(post, holder);
+        }else{
+            getSharedVideoPostDetails(post, holder);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
+                /*Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
                 videoIntent.putExtra("videoID", post.getPostID());
-                videoIntent.putExtra("reason", "userVideos");
-                videoIntent.putExtra("userID", post.getUserID());
-                context.startActivity(videoIntent);
+                context.startActivity(videoIntent);*/
 
             }
         });
     }
 
-    private void getSharedVideoDetails(PostModel post, ViewHolder holder) {
+    private void getSharedVideoPostDetails(PostModel post, ViewHolder holder) {
         videoReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        PostModel sharedVideo = ds.getValue(PostModel.class);
 
-                    assert postModel != null;
-                    if (post.getSharedPost().equals(postModel.getPostID())){
-                        getVideoDetails(postModel, holder);
-                        getVideoOwnerDetails(postModel, holder);
+                        assert sharedVideo != null;
+                        if (sharedVideo.getPostID().equals(post.getSharedPost())) {
+
+                            getVideoOwnerDetails(sharedVideo, holder);
+                            getVideoDetails(sharedVideo, holder);
+                        }
                     }
                 }
             }
@@ -119,6 +111,7 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
+                    assert user != null;
                     if (user.getUSER_ID().equals(post.getUserID()))
                         try{
                             Picasso.get().load(user.getImageURL()).into(holder.videoOwnPic);

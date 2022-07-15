@@ -2,10 +2,15 @@ package com.makepe.blackout.GettingStarted;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
+import android.widget.TextView;
 
+import com.makepe.blackout.GettingStarted.OtherClasses.Secrets;
 import com.makepe.blackout.R;
 
 public class SplashActivity extends AppCompatActivity {

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -67,14 +68,18 @@ public class NotificationsFragment extends Fragment {
         notificationsReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                notificationList.clear();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    NotiModel notiModel = snapshot.getValue(NotiModel.class);
-                    notificationList.add(notiModel);
-                }
+                if (dataSnapshot.exists()) {
+                    notificationList.clear();
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        NotiModel notiModel = snapshot.getValue(NotiModel.class);
+                        notificationList.add(notiModel);
+                    }
 
-                Collections.reverse(notificationList);
-                notiRecycler.setAdapter(new NotificationAdapter(getActivity(), notificationList));
+                    Collections.reverse(notificationList);
+                    notiRecycler.setAdapter(new NotificationAdapter(getActivity(), notificationList));
+                }else{
+                    Toast.makeText(getActivity(), "You don't have any notifications", Toast.LENGTH_SHORT).show();
+                }
                 notificationsLoader.setVisibility(View.GONE);
             }
 

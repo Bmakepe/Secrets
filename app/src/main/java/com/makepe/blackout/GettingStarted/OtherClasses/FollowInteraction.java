@@ -6,7 +6,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -14,6 +16,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 
 public class FollowInteraction {
 
@@ -21,6 +24,7 @@ public class FollowInteraction {
     private DatabaseReference followReference = FirebaseDatabase.getInstance().getReference("Follow");
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
     private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    private SendNotifications notifications = new SendNotifications();
 
     private boolean isFollowing = false, isFollower = false;
 
@@ -101,7 +105,13 @@ public class FollowInteraction {
                 child(firebaseUser.getUid())
                 .child("following")
                 .child(hisUserID)
-                .setValue(true);
+                .setValue(true)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        notifications.addFollowNotification(hisUserID);
+                    }
+                });
 
         followReference
                 .child(hisUserID)
@@ -117,7 +127,12 @@ public class FollowInteraction {
                 .child(firebaseUser.getUid())
                 .child("following")
                 .child(hisUserID)
-                .removeValue();
+                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(context, "Notification will be removed", Toast.LENGTH_SHORT).show();
+                    }
+                });
         
         followReference
                 .child(hisUserID)

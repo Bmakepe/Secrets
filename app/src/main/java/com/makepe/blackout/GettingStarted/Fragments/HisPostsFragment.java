@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,9 +24,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.TimelineAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.InteractionsActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -43,11 +43,13 @@ public class HisPostsFragment extends Fragment {
     private MediaAdapter mediaAdapter;
     private int mediaCount;
     private TextView mediaCounter, seeMore;
+    private LinearLayout hisMediaArea, hisPostsArea;
 
     //for his normal posts
     private RecyclerView hisPostsRecycler;
     private List<PostModel> postList;
-    private PostAdapter timelineAdapter;
+    //private PostAdapter timelineAdapter;
+    private TimelineAdapter timelineAdapter;
     private TextView postCounter;
 
     //firebase dependencies
@@ -74,12 +76,14 @@ public class HisPostsFragment extends Fragment {
         mediaCounter = view.findViewById(R.id.hisMediaNo);
         seeMore = view.findViewById(R.id.viewHisMedia);
         hisMediaRecycler = view.findViewById(R.id.hisMedia);
+        hisMediaArea = view.findViewById(R.id.hisMediaArea);
 
         //for normal posts
         postCounter = view.findViewById(R.id.hisPostsNo);
         hisPostsRecycler = view.findViewById(R.id.hisPostsRecycler);
+        hisPostsArea = view.findViewById(R.id.hisPostsArea);
 
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
 
         getHisMedia();
@@ -113,7 +117,8 @@ public class HisPostsFragment extends Fragment {
 
         postList = new ArrayList<>();
 
-        timelineAdapter = new PostAdapter(getContext(), postList);
+        //timelineAdapter = new PostAdapter(getContext(), postList);
+        timelineAdapter = new TimelineAdapter(getContext(), postList);
         hisPostsRecycler.setAdapter(timelineAdapter);
 
         loadHisPosts();
@@ -126,28 +131,28 @@ public class HisPostsFragment extends Fragment {
                 postList.clear();
                 int i = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    PostModel modelPost = snapshot.getValue(PostModel.class);
-                    assert modelPost != null;
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+                    assert postModel != null;
 
-                    /*if (modelPost.getUserID().equals(hisUserID)){
-                        if (!modelPost.getPostType().equals("imagePost")
-                                || !modelPost.getPostType().equals("audioImagePost")
-                                || !modelPost.getPostType().equals("videoPost")
-                                || !modelPost.getPostType().equals("audioVideoPost") ){
-                            postList.add(modelPost);
+
+                    if (postModel.getUserID().equals(hisUserID))
+                        if (!postModel.getPostType().equals("videoPost")
+                                && !postModel.getPostType().equals("sharedVideoPost")
+                                && !postModel.getPostType().equals("audioVideoPost")
+                                && !postModel.getPostType().equals("sharedAudioTextVideoPost")
+                                && !postModel.getPostType().equals("sharedTextAudioVideoPost")
+                                && !postModel.getPostType().equals("sharedAudioAudioVideoPost")
+                                && !postModel.getPostType().equals("imagePost")
+                                && !postModel.getPostType().equals("audioImagePost")){
+                            postList.add(postModel);
                             i++;
                         }
-                    }*/
-                    if(modelPost.getPostImage().equals("noImage")
-                            && hisUserID.equals(modelPost.getUserID())
-                            && !modelPost.getPostType().equals("videoPost")
-                            && !modelPost.getPostType().equals("sharedVideoPost")
-                            && !modelPost.getPostType().equals("audioVideoPost")){
-                        postList.add(modelPost);
-                        i++;
-                    }
 
                 }
+
+                if (i ==0)
+                    hisPostsArea.setVisibility(View.GONE);
+
                 postCounter.setText("Posts [" + i + "]");
                 Collections.reverse(postList);
                 timelineAdapter.notifyDataSetChanged();
@@ -196,6 +201,11 @@ public class HisPostsFragment extends Fragment {
                     }
 
                 }
+
+                if (mediaCount == 0){
+                    hisMediaArea.setVisibility(View.GONE);
+                }
+
                 mediaCounter.setText("Media [" + mediaCount + "]");
                 Collections.reverse(mediaList);
                 mediaAdapter.notifyDataSetChanged();

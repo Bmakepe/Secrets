@@ -11,10 +11,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +29,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -45,6 +48,7 @@ import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
@@ -67,7 +71,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     private UniversalFunctions universalFunctions;
     private UniversalNotifications universalNotifications;
     private GetTimeAgo getTimeAgo;
-    private AudioPlayer audioPlayer;
 
     private boolean isLoaderVisible = false;
 
@@ -91,11 +94,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
     public PostAdapter(Context context, List<PostModel> postList) {
         this.context = context;
         this.postList = postList;
-    }
-
-    public PostAdapter(Context context){
-        this.context = context;
-        this.postList = new ArrayList<>();
     }
 
     @NonNull
@@ -458,7 +456,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     private void displaySharedTextAudioPost(MyHolder holder, PostModel post) {
 
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         postReference.child(post.getPostID()).addValueEventListener(new ValueEventListener() {
@@ -1112,7 +1110,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     private void getSharedAudio(MyHolder holder, PostModel sharedPost) {
 
-        audioPlayer = new AudioPlayer(context, holder.shared_playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.shared_playBTN,
                 holder.shared_seekTimer, holder.shared_postTotalTime, holder.shared_audioAnimation);
 
         try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
@@ -1139,7 +1137,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
 
     private void getNormalPostAudio(MyHolder holder, PostModel post){
 
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         holder.playBTN.setOnClickListener(new View.OnClickListener() {
@@ -1160,7 +1158,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
         return postList.size();
     }
 
-    public class MyHolder extends RecyclerView.ViewHolder {
+    class MyHolder extends RecyclerView.ViewHolder {
         //-----Views from row post.xml
             //---------------view for post owner details
         public CircleImageView postProPic;
@@ -1234,7 +1232,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
             sharedPostDesc = itemView.findViewById(R.id.shared_post_desc);
             sharedProgressBar = itemView.findViewById(R.id.shared_progress_load_media);
             sharedLocationArea = itemView.findViewById(R.id.sharedLocationArea);
-            sharedPostImage = itemView.findViewById(R.id.shared_postImage);
+            //sharedPostImage = itemView.findViewById(R.id.shared_postImage);
             sharedPost = itemView.findViewById(R.id.shared_post_item);
             sharedPostVolumeBTN = itemView.findViewById(R.id.sharePostItemVolumeBTN);
 
@@ -1307,9 +1305,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyHolder> {
                 return SHARED_AUDIO_AUDIO_VIDEO_POST;
 
             default:
-                //Toast.makeText(context, "Unable to find post type " + postList.get(position).getPostType(), Toast.LENGTH_SHORT).show();
                 throw new IllegalStateException("Unexpected value" + postList.get(position).getPostType());
         }
+
     }
 
     public void addAll(List<PostModel> postLists){

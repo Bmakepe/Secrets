@@ -24,6 +24,33 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
 
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/rounded_edittext"
+            android:padding="2dp"
+            android:backgroundTint="@color/white">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/mediaMultipleImageIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_baseline_collections_24"
+                app:civ_border_color="@color/white"
+                app:civ_border_width="1dp"
+                app:civ_circle_background_color="@color/white"
+                app:tint="@color/colorBlack" />
+
+        </RelativeLayout>
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/mediaLoader"/>
+
     </RelativeLayout>
 
 </androidx.cardview.widget.CardView>

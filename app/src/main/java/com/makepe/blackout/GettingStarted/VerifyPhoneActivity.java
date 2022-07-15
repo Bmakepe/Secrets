@@ -3,9 +3,12 @@ package com.makepe.blackout.GettingStarted;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +34,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class VerifyPhoneActivity extends AppCompatActivity {
@@ -39,13 +43,15 @@ public class VerifyPhoneActivity extends AppCompatActivity {
     private EditText editTextCode;
     private FirebaseAuth mAuth;
     private ProgressBar progressBar;
-    private TextView resendOTP, changeNum, subHeading;
+    private TextView resendOTP, changeNum, subHeading, countDownTimerTV;
     private Button verifyBTN;
     private ProgressDialog verifyDialog;
     private DatabaseReference userReference;
     private FirebaseUser firebaseUser;
 
     private PhoneAuthProvider.ForceResendingToken mResendToken;
+
+    private long duration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +64,16 @@ public class VerifyPhoneActivity extends AppCompatActivity {
         resendOTP = findViewById(R.id.resendOTP);
         subHeading = findViewById(R.id.subHeading);
         verifyBTN = findViewById(R.id.verifyBTN);
-        resendOTP = findViewById(R.id.resendOTP);
+        countDownTimerTV = findViewById(R.id.countDownTimer);
 
         Intent intent = getIntent();
         final String number = intent.getExtras().getString("number");//retrieve number from previous activity
 
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        
+        duration = TimeUnit.MINUTES.toMillis(2);
+        
+        createTimer();
 
         verifyDialog = new ProgressDialog(this);
         subHeading.setText("We are automatically detecting a verification SMS send to your mobile number " + number);
@@ -102,6 +112,25 @@ public class VerifyPhoneActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void createTimer() {
+        CountDownTimer countDownTimer = new CountDownTimer(duration, 1000) {
+            @Override
+            public void onTick(long l) {
+                String sDuration = String.format(Locale.ENGLISH, "%02d:%02d"
+                        , TimeUnit.MILLISECONDS.toMinutes(l)
+                        , TimeUnit.MILLISECONDS.toSeconds(l) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l)));
+                countDownTimerTV.setText(sDuration);
+            }
+
+            @Override
+            public void onFinish() {
+
+            }
+        };
+        countDownTimer.start();
     }
 
     private void resendOTP(String number, PhoneAuthProvider.ForceResendingToken token) {//resend OTP function

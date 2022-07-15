@@ -4,42 +4,22 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="5dp">
+    android:padding="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="2dp">
+        android:orientation="horizontal" >
 
-        <RelativeLayout
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:id="@+id/picLayout"
-            android:layout_gravity="center">
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:id="@+id/contactProPic"
-                android:src="@drawable/default_profile_display_pic"
-                android:layout_centerInParent="true"
-                app:civ_border_color="@color/colorPrimaryDark"
-                app:civ_border_width="1dp"
-                app:civ_border_overlay="true"/>
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:src="@drawable/online_circle"
-                android:id="@+id/contactOnlineStatus"
-                android:layout_alignParentTop="true"
-                android:layout_margin="3dp"
-                android:padding="2dp"
-                android:layout_alignParentStart="true"
-                android:visibility="gone"/>
-
-        </RelativeLayout>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/contactProPic"
+            android:src="@drawable/default_profile_display_pic"
+            android:layout_gravity="center_vertical"
+            app:civ_border_color="@color/colorPrimaryDark"
+            app:civ_border_width="1dp"
+            app:civ_border_overlay="true"/>
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -47,23 +27,24 @@
             android:layout_gravity="center">
 
             <TextView
+                android:id="@+id/contactName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/contactName"
-                android:text="@string/contact_name"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="@color/colorBlack"
+                android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/contactSelector"
-                android:layout_centerVertical="true"/>
+                android:text="@string/contact_name"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                android:padding="5dp"
+                android:textStyle="bold" />
 
-            <RadioButton
+            <CheckBox
+                android:id="@+id/contactSelector"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:id="@+id/contactSelector"
-                android:visibility="visible"
-                android:layout_centerVertical="true"/>
+                android:layout_centerVertical="true"
+                android:visibility="visible" />
 
         </RelativeLayout>
 

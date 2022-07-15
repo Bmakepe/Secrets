@@ -19,7 +19,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="2dp"
             android:visibility="visible"
             android:id="@+id/postPicArea"
             tools:ignore="UnusedAttribute">
@@ -194,31 +193,6 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:text="@string/tagged_names"
-                android:textStyle="italic"
-                android:paddingStart="2dp"
-                android:singleLine="true"
-                android:paddingEnd="2dp"
-                android:textColor="@color/colorBlack"
-                android:id="@+id/rPostTags"
-                tools:ignore="SmallSp"
-                android:visibility="gone"/>
-
-        </RelativeLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -233,7 +207,7 @@
             </RelativeLayout>
 
             <include
-                layout="@layout/post_item_social_buttons"/>
+                layout="@layout/post_item_social_buttons" />
 
         </LinearLayout>
 

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,13 +25,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
-import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
+import com.makepe.blackout.GettingStarted.Adapters.TimelineAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.InteractionsActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,11 +42,13 @@ public class MyPostsFragment extends Fragment {
     private RecyclerView mediaRecycler;
     private MediaAdapter mediaAdapter;
     private List<PostModel> mediaList;
+    private LinearLayout myMediaArea, myPostsArea;
 
     //for regular posts
     private TextView postsCounter;
     private RecyclerView postRecycler;
-    private PostAdapter timelineAdapter;
+    //private PostAdapter timelineAdapter;
+    private TimelineAdapter timelineAdapter;
     private List<PostModel> postList;
 
     //firebase dependencies
@@ -69,13 +69,15 @@ public class MyPostsFragment extends Fragment {
         mediaCounter = view.findViewById(R.id.MediaNo);
         seeMore = view.findViewById(R.id.viewMyMedia);
         mediaRecycler = view.findViewById(R.id.myMediaRecycler);
+        myMediaArea = view.findViewById(R.id.myMediaArea);
 
         //for regular posts
         postsCounter = view.findViewById(R.id.PostsNo);
         postRecycler = view.findViewById(R.id.myPostsRecycler);
+        myPostsArea = view.findViewById(R.id.myPostsArea);
 
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        postsRef = FirebaseDatabase.getInstance().getReference("Posts");
+        postsRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         getMyMedia();
@@ -107,8 +109,10 @@ public class MyPostsFragment extends Fragment {
 
         postList = new ArrayList<>();
 
-        timelineAdapter = new PostAdapter(getActivity(), postList);
+        timelineAdapter = new TimelineAdapter(getActivity(), postList);
+        //timelineAdapter = new PostAdapter(getActivity(), postList);
         postRecycler.setAdapter(timelineAdapter);
+        timelineAdapter.notifyDataSetChanged();
 
         loadPosts();
     }
@@ -118,33 +122,29 @@ public class MyPostsFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 postList.clear();
-                int i = 0;
+                int postCounter = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    PostModel modelPost = snapshot.getValue(PostModel.class);
-                    assert modelPost != null;
-                    if(modelPost.getPostImage().equals("noImage")
-                            && firebaseUser.getUid().equals(modelPost.getUserID())
-                            && !modelPost.getPostType().equals("videoPost")
-                            && !modelPost.getPostType().equals("sharedVideoPost")
-                            && !modelPost.getPostType().equals("audioVideoPost")){
+                    PostModel postModel = snapshot.getValue(PostModel.class);
+                    assert postModel != null;
 
-                        postList.add(modelPost);
-                        i++;
-                    }
-
-
-                    /*if (modelPost.getUserID().equals(firebaseUser.getUid())){
-                        if (!modelPost.getPostType().equals("imagePost")
-                                || !modelPost.getPostType().equals("audioImagePost")
-                                || !modelPost.getPostType().equals("videoPost")
-                                || !modelPost.getPostType().equals("audioVideoPost") ){
-
-                            postList.add(modelPost);
-                            i++;
+                    if (postModel.getUserID().equals(firebaseUser.getUid()))
+                        if (!postModel.getPostType().equals("videoPost")
+                                && !postModel.getPostType().equals("sharedVideoPost")
+                                && !postModel.getPostType().equals("audioVideoPost")
+                                && !postModel.getPostType().equals("sharedAudioTextVideoPost")
+                                && !postModel.getPostType().equals("sharedTextAudioVideoPost")
+                                && !postModel.getPostType().equals("sharedAudioAudioVideoPost")
+                                && !postModel.getPostType().equals("imagePost")
+                                && !postModel.getPostType().equals("audioImagePost")){
+                            postList.add(postModel);
+                            postCounter++;
                         }
-                    }*/
                 }
-                postsCounter.setText("Posts [" + i + "]");
+
+                if (postCounter == 0)
+                    myPostsArea.setVisibility(View.GONE);
+
+                postsCounter.setText("Posts [" + postCounter + "]");
                 Collections.reverse(postList);
                 timelineAdapter.notifyDataSetChanged();
             }
@@ -189,8 +189,11 @@ public class MyPostsFragment extends Fragment {
                             mediaCount++;
                         }
                     }
-
                 }
+
+                if (mediaCount == 0)
+                    myMediaArea.setVisibility(View.GONE);
+
                 mediaCounter.setText("Media [" + mediaCount + "]");
                 Collections.reverse(mediaList);
                 mediaAdapter.notifyDataSetChanged();

@@ -422,6 +422,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendAudioMessage() {
         messageDialog.show();
+        chatID = chatReference.push().getKey();
 
         StorageReference audioPath = audioReference.child(firebaseUser.getUid()).child(chatID + ".3gp");
         Uri audioUrl = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
@@ -440,8 +441,6 @@ public class ChatActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Uri> task) {
                 if (task.isSuccessful()){
                     Uri audioDownloadLink = task.getResult();
-
-                    chatID = chatReference.push().getKey();
 
                     HashMap<String, Object> messageMap = new HashMap<>();
 

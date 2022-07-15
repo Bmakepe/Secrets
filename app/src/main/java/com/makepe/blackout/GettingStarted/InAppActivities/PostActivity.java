@@ -85,12 +85,11 @@ public class PostActivity extends AppCompatActivity{
     private StorageReference storageReference, audioReference;
 
     private ImageView picToUpload, editImageBTN;
-    private TextView postBTN, postDurationTV;
+    private TextView postBTN;
     private EditText captionArea;
     private String name, uid, caption, postID, timeStamp;
     private CardView imageCardView, videoCardView;
     private TextInputLayout postCaptionArea;
-    private RelativeLayout postDurationArea;
     private Switch commentSwitch;
 
     private ProgressBar postProgress;
@@ -153,8 +152,6 @@ public class PostActivity extends AppCompatActivity{
         postCaptionArea = findViewById(R.id.postCaptionArea);
         deleteAudioBTN = findViewById(R.id.recordingDeleteBTN);
         commentSwitch = findViewById(R.id.commentSwitch);
-        postDurationArea = findViewById(R.id.postDurationArea);
-        postDurationTV = findViewById(R.id.postDurationTV);
         editImageBTN = findViewById(R.id.editImageBTN);
 
         playAudioArea = findViewById(R.id.playAudioArea);
@@ -264,7 +261,6 @@ public class PostActivity extends AppCompatActivity{
                 PopupMenu popupMenu = new PopupMenu(PostActivity.this, privacyBTN, Gravity.END);
                 popupMenu.getMenu().add(Menu.NONE, 0, 0, "Public");
                 popupMenu.getMenu().add(Menu.NONE, 1, 0, "Only To My Followers");
-                popupMenu.getMenu().add(Menu.NONE, 2, 0, "For Me");
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -281,11 +277,6 @@ public class PostActivity extends AppCompatActivity{
                                 audiencePicker.setText("Only To My Followers");
                                 break;
 
-                            case 2:
-                                privacyProtection = "For Me";
-                                audiencePicker.setText("For Me");
-                                break;
-
                             default:
                                 Toast.makeText(PostActivity.this, "Unknown Selection", Toast.LENGTH_SHORT).show();
                         }
@@ -293,57 +284,6 @@ public class PostActivity extends AppCompatActivity{
                     }
                 });
                 popupMenu.show();
-            }
-        });
-
-        postDurationArea.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(PostActivity.this, postDurationTV, Gravity.END);
-                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Default");
-                popupMenu.getMenu().add(Menu.NONE, 1, 0, "1 Hour");
-                popupMenu.getMenu().add(Menu.NONE, 2, 0, "6 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 3, 0, "12 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 4, 0, "24 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 5, 0, "3 Days");
-
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-
-                        switch (menuItem.getItemId()){
-                            case 0:
-                                postDurationTV.setText("Default");
-                                break;
-
-                            case 1:
-                                postDurationTV.setText("1 Hour");
-                                break;
-
-                            case 2:
-                                postDurationTV.setText("6 Hours");
-                                break;
-
-                            case 3:
-                                postDurationTV.setText("12 Hours");
-                                break;
-
-                            case 4:
-                                postDurationTV.setText("24 Hours");
-                                break;
-
-                            case 5:
-                                postDurationTV.setText("3 Days");
-                                break;
-
-                            default:
-                                Toast.makeText(PostActivity.this, "Unknown Selection", Toast.LENGTH_SHORT).show();
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-
             }
         });
 
@@ -927,7 +867,7 @@ public class PostActivity extends AppCompatActivity{
         friendListDialog.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
         friendListDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
 
-        List<ContactsModel> userList = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
 
         RecyclerView friendListRecycler = friendListDialog.findViewById(R.id.friendListRecycler);
         ImageView doneTagBTN = friendListDialog.findViewById(R.id.doneTagBTN);
@@ -957,7 +897,7 @@ public class PostActivity extends AppCompatActivity{
         });
     }//friend list pop up
 
-    private void getFriendList(final List<ContactsModel> userList, RecyclerView friendListRecycler) {
+    private void getFriendList(final List<User> userList, RecyclerView friendListRecycler) {
         FriendsAdapter userAdapter;
         friendListRecycler.setHasFixedSize(true);
         friendListRecycler.setNestedScrollingEnabled(false);
@@ -979,7 +919,7 @@ public class PostActivity extends AppCompatActivity{
                 userList.clear();
 
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    ContactsModel user = ds.getValue(ContactsModel.class);
+                    User user = ds.getValue(User.class);
 
                     assert user != null;
                     assert firebaseUser != null;
@@ -987,9 +927,9 @@ public class PostActivity extends AppCompatActivity{
                         userList.add(user);
                     }
 
-                    Collections.sort(userList, new Comparator<ContactsModel>() {
+                    Collections.sort(userList, new Comparator<User>() {
                         @Override
-                        public int compare(ContactsModel o1, ContactsModel o2) {
+                        public int compare(User o1, User o2) {
                             return o1.getUsername().compareTo(o2.getUsername());
                         }
                     });

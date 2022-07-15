@@ -19,7 +19,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:padding="2dp"
             android:visibility="visible"
             android:id="@+id/postPicArea"
             tools:ignore="UnusedAttribute">
@@ -28,15 +27,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/rPostImage"
+                <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/default_profile_display_pic"
-                    android:transitionName="img"
-                    android:visibility="visible"
-                    tools:ignore="UnusedAttribute" />
+                    android:id="@+id/postImageRecyclerView"/>
+
+                <TextView
+                    android:id="@+id/postImagesCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/rounded_edittext"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:padding="5dp"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <ProgressBar
                     android:id="@+id/post_item_image_loader"
@@ -176,15 +182,6 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/postCaption"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:visibility="gone" />
-
                     <include
                         layout="@layout/audio_media_player"/>
 
@@ -201,31 +198,6 @@
                     android:visibility="gone"/>
 
             </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:text="@string/tagged_names"
-                android:textStyle="italic"
-                android:paddingStart="2dp"
-                android:singleLine="true"
-                android:paddingEnd="2dp"
-                android:textColor="@color/colorBlack"
-                android:id="@+id/rPostTags"
-                tools:ignore="SmallSp"
-                android:visibility="gone"/>
 
         </RelativeLayout>
 

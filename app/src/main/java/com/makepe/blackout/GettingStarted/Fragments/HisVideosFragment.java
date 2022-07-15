@@ -51,7 +51,7 @@ public class HisVideosFragment extends Fragment {
 
         videosRecycler = view.findViewById(R.id.hisVideosRecycler);
 
-        videoReference = FirebaseDatabase.getInstance().getReference("Posts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
         videoList = new ArrayList<>();
 
@@ -74,7 +74,10 @@ public class HisVideosFragment extends Fragment {
                     if (videos.getUserID().equals(hisUserID)){
                         if (videos.getPostType().equals("videoPost")
                                 || videos.getPostType().equals("sharedVideoPost")
-                                || videos.getPostType().equals("audioVideoPost")){
+                                || videos.getPostType().equals("sharedAudioTextVideoPost")
+                                || videos.getPostType().equals("audioVideoPost")
+                                || videos.getPostType().equals("sharedTextAudioVideoPost")
+                                || videos.getPostType().equals("sharedAudioAudioVideoPost")){
                             videoList.add(videos);
                         }
                     }

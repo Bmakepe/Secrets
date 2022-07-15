@@ -30,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.MediaAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.PostAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.TimelineAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.VideoItemAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
@@ -77,7 +78,7 @@ public class SavedPostsActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         savedReference = FirebaseDatabase.getInstance().getReference("Saves")
                 .child(firebaseUser.getUid());
-        postsReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postsReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
         savedMediaRecycler.hasFixedSize();
         savedMediaRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -186,7 +187,11 @@ public class SavedPostsActivity extends AppCompatActivity {
                                     || postModel.getPostType().equals("sharedAudioAudioImagePost")){
                                 mediaPostList.add(postModel);
                             }else if (postModel.getPostType().equals("videoPost")
-                                    || postModel.getPostType().equals("sharedVideoPost")){
+                                    || postModel.getPostType().equals("sharedVideoPost")
+                                    || postModel.getPostType().equals("sharedAudioTextVideoPost")
+                                    || postModel.getPostType().equals("audioVideoPost")
+                                    || postModel.getPostType().equals("sharedTextAudioVideoPost")
+                                    || postModel.getPostType().equals("sharedAudioAudioVideoPost")){
                                 savedVideosList.add(postModel);
                             }
 
@@ -196,7 +201,7 @@ public class SavedPostsActivity extends AppCompatActivity {
                     if (!postListSaves.isEmpty()){
                         postsArea.setVisibility(View.VISIBLE);
                         savedPostsHead.setText("Saved Posts [" + postListSaves.size() +  "]");
-                        savedPostsRecycler.setAdapter(new PostAdapter(SavedPostsActivity.this, postListSaves));
+                        savedPostsRecycler.setAdapter(new TimelineAdapter(SavedPostsActivity.this, postListSaves));
                     }
 
                     if (!mediaPostList.isEmpty()){

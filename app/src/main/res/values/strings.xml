@@ -1,4 +1,13 @@
 <resources>
+
+    <!--Admob test ids-->
+    <string name="native_ad_test">ca-app-pub-3940256099942544/2247696110</string>
+    <string name="app_id_test">ca-app-pub-3940256099942544~3347511713</string>
+
+    <!--Admob live ids-->
+    <string name="native_ad_live">ca-app-pub-2193593343976198/6342443613</string>
+    <string name="admob_app_id">ca-app-pub-2193593343976198~4007924319</string>
+
     <string name="app_name">Secrets</string>
     <string name="welcome">Welcome To Dynasty</string>
     <string name="input_number">Enter Your Phone Number</string>
@@ -104,5 +113,6 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="skip">Skip</string>
     <string name="location_text">Click Here To Retrieve Your Address</string>
+    <string name="app_record">Record</string>
 
 </resources>

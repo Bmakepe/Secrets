@@ -2,8 +2,11 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -23,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -33,6 +37,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,6 +50,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.makepe.blackout.GettingStarted.Adapters.FriendsAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.PostImageAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.TaggedFriendsAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
@@ -56,7 +65,11 @@ import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -66,27 +79,29 @@ public class SharePostActivity extends AppCompatActivity{
     private CircleImageView myProfilePic;
     private EditText myCaptionET;
     private Toolbar toolbar;
+    private Switch commentSwitch;
 
     //for shared post views
     private CircleImageView hisProfilePic;
-    private TextView hisNameTV, hisLocationTV, hisCaptionTV, hisPostDate, postDurationTV;
-    private ImageView hisPostImage;
-    private RelativeLayout picArea, postDurationArea;
+    private TextView hisNameTV, hisLocationTV, hisCaptionTV, hisPostDate, sharedPostImagesCounter, hisTaggedUsers;
+    private RelativeLayout picArea;
     private LinearLayout hisLocationArea;
     private ProgressBar sharedImageLoader;
+    private RecyclerView sharedImagePostRecycler;
 
     //for other views
-    private TextView shareBTN;
+    private TextView shareBTN, tagFriendsBTN;
     private RelativeLayout privacyBTN;
     private LinearLayout myLocationArea;
     private TextInputLayout postCaptionArea;
+    private RecyclerView taggedFriendsRecycler;
 
     //for video sharing
     private VideoView videoView;
     private RelativeLayout videoArea;
     private ProgressBar sharedVideoLoader;
 
-    private DatabaseReference postRef, userRef, notificationsRef;
+    private DatabaseReference postRef, userRef, notificationsRef, followingReference;
     private FirebaseUser firebaseUser;
     private StorageReference audioReference;
 
@@ -94,6 +109,8 @@ public class SharePostActivity extends AppCompatActivity{
 
     private GetTimeAgo getTimeAgo;
     private UniversalFunctions universalFunctions;
+    private ArrayList<User> taggedUsers = new ArrayList<>();
+    private TaggedFriendsAdapter taggedFriendsAdapter;
 
     //for audio recorder
     private AudioRecorder audioRecorder;
@@ -116,8 +133,6 @@ public class SharePostActivity extends AppCompatActivity{
     private TextView myLocationCheckIn, audiencePicker;
     private String privacyProtection = "Public";
 
-    private int postTimeDuration;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +145,7 @@ public class SharePostActivity extends AppCompatActivity{
         //for normal post views
         myProfilePic = findViewById(R.id.share_userProPic);
         myCaptionET = findViewById(R.id.shareCaption);
-        postDurationArea = findViewById(R.id.postDurationArea);
-        postDurationTV = findViewById(R.id.postDurationTV);
+        commentSwitch = findViewById(R.id.commentSwitch);
 
         //for shared post views
         hisProfilePic = findViewById(R.id.share_image_user);
@@ -139,10 +153,12 @@ public class SharePostActivity extends AppCompatActivity{
         hisLocationTV = findViewById(R.id.share_postCheckIn);
         hisCaptionTV = findViewById(R.id.share_post_desc);
         hisPostDate = findViewById(R.id.share_postDate);
-        hisPostImage = findViewById(R.id.share_postImage);
+        hisTaggedUsers = findViewById(R.id.shared_taggedPeopleList);
         picArea = findViewById(R.id.share_postPicArea);
         hisLocationArea = findViewById(R.id.shared_postLocationArea);
         sharedImageLoader = findViewById(R.id.progress_load_media);
+        sharedImagePostRecycler = findViewById(R.id.sharedImagePostRecycler);
+        sharedPostImagesCounter = findViewById(R.id.sharedPostImagesCounter);
 
         //for other views
         shareBTN = findViewById(R.id.postFAB);
@@ -151,6 +167,8 @@ public class SharePostActivity extends AppCompatActivity{
         myLocationCheckIn = findViewById(R.id.locationCheckIn);
         audiencePicker = findViewById(R.id.audience_picker);
         postCaptionArea = findViewById(R.id.textMessage);
+        tagFriendsBTN = findViewById(R.id.tagFriendsBTN);
+        taggedFriendsRecycler = findViewById(R.id.taggedFriendsRecycler);
 
         //for video views
         videoView = findViewById(R.id.sharePreviewCameraSelectedVideo);
@@ -172,8 +190,10 @@ public class SharePostActivity extends AppCompatActivity{
 
         Intent intent = getIntent();
         sharePostID = intent.getStringExtra("postID");
+
         getTimeAgo = new GetTimeAgo();
         uploadProgress = new ProgressDialog(this);
+        uploadProgress.setMessage("Loading... Please wait...");
         universalFunctions = new UniversalFunctions(SharePostActivity.this);
         locationServices = new LocationServices(myLocationCheckIn, SharePostActivity.this);
         audioRecorder = new AudioRecorder(lavPlaying, SharePostActivity.this,
@@ -182,11 +202,18 @@ public class SharePostActivity extends AppCompatActivity{
         audioPlayer = new AudioPlayer(SharePostActivity.this, playBTN,
                 audioSeekTimer, postTotalTime, audioAnimation);
 
-        postRef = FirebaseDatabase.getInstance().getReference("Posts");
+        postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         notificationsRef = FirebaseDatabase.getInstance().getReference("Notifications");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         audioReference = FirebaseStorage.getInstance().getReference();
+        followingReference = FirebaseDatabase.getInstance().getReference("Follow")
+                .child(firebaseUser.getUid()).child("following");
+
+        taggedFriendsRecycler.hasFixedSize();
+        taggedFriendsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        taggedFriendsAdapter = new TaggedFriendsAdapter(SharePostActivity.this, taggedUsers);
+        taggedFriendsRecycler.setAdapter(taggedFriendsAdapter);
 
         postID = postRef.push().getKey();
 
@@ -210,16 +237,6 @@ public class SharePostActivity extends AppCompatActivity{
             @Override
             public void afterTextChanged(Editable editable) {
 
-            }
-        });
-
-        hisPostImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SharePostActivity.this, FullScreenImageActivity.class);
-                intent.putExtra("itemID", sharePostID);
-                intent.putExtra("reason", "postImage");
-                startActivity(intent);
             }
         });
 
@@ -259,57 +276,6 @@ public class SharePostActivity extends AppCompatActivity{
                     }
                 });
                 popupMenu.show();
-            }
-        });
-
-        postDurationArea.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(SharePostActivity.this, postDurationTV, Gravity.END);
-                popupMenu.getMenu().add(Menu.NONE, 0, 0, "Default");
-                popupMenu.getMenu().add(Menu.NONE, 1, 0, "1 Hour");
-                popupMenu.getMenu().add(Menu.NONE, 2, 0, "6 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 3, 0, "12 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 4, 0, "24 Hours");
-                popupMenu.getMenu().add(Menu.NONE, 5, 0, "3 Days");
-
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-
-                        switch (menuItem.getItemId()){
-                            case 0:
-                                postDurationTV.setText("Default");
-                                break;
-
-                            case 1:
-                                postDurationTV.setText("1 Hour");
-                                break;
-
-                            case 2:
-                                postDurationTV.setText("6 Hours");
-                                break;
-
-                            case 3:
-                                postDurationTV.setText("12 Hours");
-                                break;
-
-                            case 4:
-                                postDurationTV.setText("24 Hours");
-                                break;
-
-                            case 5:
-                                postDurationTV.setText("3 Days");
-                                break;
-
-                            default:
-                                Toast.makeText(SharePostActivity.this, "Unknown Selection", Toast.LENGTH_SHORT).show();
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-
             }
         });
 
@@ -357,6 +323,9 @@ public class SharePostActivity extends AppCompatActivity{
                                 uploadSharedPost("sharedTextAudioImagePost");
                                 break;
 
+                            case "audioVideoPost":
+                                uploadSharedPost("sharedTextAudioVideoPost");
+
                             default:
                                 Toast.makeText(SharePostActivity.this, "Unknown post type being shared", Toast.LENGTH_SHORT).show();
                         }
@@ -382,8 +351,12 @@ public class SharePostActivity extends AppCompatActivity{
                                 uploadSharedAudioPost("sharedAudioAudioImagePost");
                                 break;
 
+                            case "audioVideoPost":
+                                uploadSharedAudioPost("sharedAudioAudioVideoPost");
+                                break;
+
                             default:
-                                Toast.makeText(SharePostActivity.this, "Unknown post type being shared", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SharePostActivity.this, "Unknown post type being shared: " + postType, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -403,6 +376,149 @@ public class SharePostActivity extends AppCompatActivity{
             }
         });
 
+        tagFriendsBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBottomSheetDialog();
+            }
+        });
+
+        hisTaggedUsers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showTagsBottomSheetDialog();
+            }
+        });
+
+    }
+
+    private void showTagsBottomSheetDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(SharePostActivity.this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(SharePostActivity.this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        UserAdapter userAdapter = new UserAdapter(SharePostActivity.this, idList, "goToProfile");
+        friendsRecycler.setAdapter(userAdapter);
+
+        postRef.child(postID).child("taggedFriends")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            userAdapter.notifyDataSetChanged();
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        bottomSheetDialog.show();
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void showBottomSheetDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tag_friends_bottom_sheet);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.closeSheetBTN);
+        TextView taggedFriendsDoneBTN = bottomSheetDialog.findViewById(R.id.taggedFriendsDoneBTN);
+        SearchView searchView = bottomSheetDialog.findViewById(R.id.searchView);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.tagFriendsRecycler);
+
+        List<User> userList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        FriendsAdapter friendsAdapter = new FriendsAdapter(userList, SharePostActivity.this);
+        friendsRecycler.setAdapter(friendsAdapter);
+
+        followingReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                idList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    idList.add(ds.getKey());
+                }
+
+                userRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        userList.clear();
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            User user = ds.getValue(User.class);
+
+                            for (String ID : idList){
+                                assert user != null;
+                                if (user.getUSER_ID().equals(ID))
+                                    userList.add(user);
+                            }
+
+                            Collections.sort(userList, new Comparator<User>() {
+                                @Override
+                                public int compare(User o1, User o2) {
+                                    return o1.getUsername().compareTo(o2.getUsername());
+                                }
+                            });
+                            friendsAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        assert close != null;
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        taggedFriendsDoneBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                taggedUsers.addAll(friendsAdapter.taggedFriends);
+                taggedFriendsAdapter.notifyDataSetChanged();
+                bottomSheetDialog.dismiss();
+
+            }
+        });
     }
 
     private void getSharedPostDescription() {
@@ -413,7 +529,7 @@ public class SharePostActivity extends AppCompatActivity{
                     PostModel postModel = snapshot.getValue(PostModel.class);
 
                     if (postModel.getPostID().equals(sharePostID)){
-                        getPostDetails(postModel);
+                        displaySharedPost(postModel);
                     }
 
                 }
@@ -426,91 +542,149 @@ public class SharePostActivity extends AppCompatActivity{
         });
     }
 
-    private void getPostDetails(PostModel postModel) {
-        postType = postModel.getPostType();
-        userID = postModel.getUserID();
+    private void displaySharedPost(PostModel post) {
 
-        switch (postModel.getPostType()){
-            case "imagePost":
-                picArea.setVisibility(View.VISIBLE);
-                hisPostImage.setVisibility(View.VISIBLE);
-                try{
-                    Picasso.get().load(postModel.getPostImage()).into(hisPostImage);
-                    sharedImageLoader.setVisibility(View.GONE);
-                }catch (NullPointerException ignored){}
-                getUniversalPostDetails(postModel);
-                getUserDetails(postModel);
+        postType = post.getPostType();
+        userID = post.getUserID();
+
+        getUniversalPostDetails(post);
+        getUserDetails(post);
+        checkPostTags(post);
+
+        switch (post.getPostType()){
+            case "videoPost":
+                hisCaptionTV.setVisibility(View.VISIBLE);
+                hisCaptionTV.setText(post.getPostCaption());
+
+                getVideoDetails(post);
+                break;
+
+            case "audioVideoPost":
+                hisCaptionTV.setVisibility(View.GONE);
+                mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                getVideoDetails(post);
+                mediaPlayer(post);
+                break;
+
+            case "audioPost":
+                hisCaptionTV.setVisibility(View.GONE);
+                mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                mediaPlayer(post);
+                break;
+
+            case "audioImagePost":
+                hisCaptionTV.setVisibility(View.GONE);
+                mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                mediaPlayer(post);
+                getPostImages(post);
 
                 break;
 
             case "textPost":
+                hisCaptionTV.setVisibility(View.VISIBLE);
+                hisCaptionTV.setText(post.getPostCaption());
                 picArea.setVisibility(View.GONE);
-                getUniversalPostDetails(postModel);
-                getUserDetails(postModel);
+
                 break;
 
-            case "videoPost":
-                try{
-                    getUserDetails(postModel);
-                    videoArea.setVisibility(View.VISIBLE);
-                    videoView.setVideoURI(Uri.parse(postModel.getVideoURL()));
+            case "imagePost":
+                hisCaptionTV.setVisibility(View.VISIBLE);
+                hisCaptionTV.setText(post.getPostCaption());
 
-                    videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mediaPlayer) {
-                            mediaPlayer.start();
-                            sharedVideoLoader.setVisibility(View.GONE);
-                            mediaPlayer.setLooping(true);
-                            mediaPlayer.setVolume(100f, 100f);
-
-                            float videoRatio = mediaPlayer.getVideoWidth() / (float)mediaPlayer.getVideoHeight();
-                            float screenRatio = videoView.getWidth() / (float)videoView.getHeight();
-                            float scale  = videoRatio / screenRatio;
-                            if (scale >= 1f){
-                                videoView.setScaleX(scale);
-                            }else {
-                                videoView.setScaleY(1f / scale);
-                            }
-                        }
-                    });
-
-                    videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mediaPlayer) {
-                            mediaPlayer.start();
-                        }
-                    });
-                }catch (NullPointerException ignored){}
-                break;
-
-            case "audioPost":
-                mediaPlayerArea.setVisibility(View.VISIBLE);
-                hisCaptionTV.setVisibility(View.GONE);
-
-                getUserDetails(postModel);
-                mediaPlayer(postModel);
-                break;
-
-            case "audioImagePost":
-                mediaPlayerArea.setVisibility(View.VISIBLE);
-                hisCaptionTV.setVisibility(View.GONE);
-                picArea.setVisibility(View.VISIBLE);
-                hisPostImage.setVisibility(View.VISIBLE);
-
-                getUserDetails(postModel);
-                mediaPlayer(postModel);
-
-                try{
-                    Picasso.get().load(postModel.getPostImage()).into(hisPostImage);
-                    sharedImageLoader.setVisibility(View.GONE);
-                }catch (NullPointerException ignored){}
-                getUniversalPostDetails(postModel);
+                getPostImages(post);
 
                 break;
 
             default:
-                Toast.makeText(this, "Unknown sharing error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Unidentified Post Type: " + post.getPostType(), Toast.LENGTH_SHORT).show();
         }
+
+    }
+
+    private void checkPostTags(PostModel post) {
+        postRef.child(post.getPostID()).child("taggedFriends")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    if (snapshot.getChildrenCount() == 1)
+                        hisTaggedUsers.setText("with: " + snapshot.getChildrenCount() + " friend");
+                    else
+                        hisTaggedUsers.setText("with: " + snapshot.getChildrenCount() + " friends");
+
+                    hisTaggedUsers.setVisibility(View.VISIBLE);
+                }else{
+                    hisTaggedUsers.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getVideoDetails(PostModel post) {
+        videoArea.setVisibility(View.VISIBLE);
+        videoView.setVideoURI(Uri.parse(post.getVideoURL()));
+
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mediaPlayer.start();
+                sharedVideoLoader.setVisibility(View.GONE);
+                mediaPlayer.setLooping(true);
+                mediaPlayer.setVolume(100f, 100f);
+
+                float videoRatio = mediaPlayer.getVideoWidth() / (float)mediaPlayer.getVideoHeight();
+                float screenRatio = videoView.getWidth() / (float)videoView.getHeight();
+                float scale  = videoRatio / screenRatio;
+                if (scale >= 1f){
+                    videoView.setScaleX(scale);
+                }else {
+                    videoView.setScaleY(1f / scale);
+                }
+            }
+        });
+
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                mediaPlayer.start();
+            }
+        });
+    }
+
+    private void getPostImages(PostModel post) {
+        ArrayList<String> imageList = new ArrayList<>();
+
+        sharedImagePostRecycler.hasFixedSize();
+        sharedImagePostRecycler.setLayoutManager(new LinearLayoutManager(SharePostActivity.this, LinearLayoutManager.HORIZONTAL, false));
+
+        postRef.child(post.getPostID()).child("images").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    imageList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        imageList.add(ds.getValue().toString());
+                    }
+                    sharedImagePostRecycler.setAdapter(new PostImageAdapter(SharePostActivity.this, imageList));
+                    sharedPostImagesCounter.setText("" + snapshot.getChildrenCount());
+                    picArea.setVisibility(View.VISIBLE);
+                    sharedImageLoader.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getUserDetails(PostModel postModel) {
@@ -581,11 +755,9 @@ public class SharePostActivity extends AppCompatActivity{
                     sharedMap.put("userID", firebaseUser.getUid());//usersID
                     sharedMap.put("postID", postID);
                     sharedMap.put("postCaption", myCaptionET.getText().toString());
-                    sharedMap.put("postImage", "noImage");
                     sharedMap.put("postTime", String.valueOf(System.currentTimeMillis()));
                     sharedMap.put("postPrivacy", privacyProtection);//post security
                     sharedMap.put("postType", postType);//post security
-                    sharedMap.put("videoURL", "noVideo");//post security
                     sharedMap.put("sharedPost", sharePostID);
                     sharedMap.put("audioURL", audioLink);
 
@@ -594,12 +766,36 @@ public class SharePostActivity extends AppCompatActivity{
                         sharedMap.put("longitude", locationServices.getLongitude());
                     }
 
+                    if (commentSwitch.isChecked())
+                        sharedMap.put("commentsAllowed", false);
+                    else
+                        sharedMap.put("commentsAllowed", true);
+
                     postRef.child(postID).setValue(sharedMap)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    uploadProgress.dismiss();
-                                    finish();
+
+                                    if (!taggedUsers.isEmpty()) {
+                                        for (int i = 0; i < taggedUsers.size(); i++) {
+                                            postRef.child(postID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
+                                        }
+                                        taggedUsers.clear();
+                                    }
+
+                                    postRef.child(sharePostID).child("sharedBy").child(firebaseUser.getUid()).setValue(true)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+
+                                                    Toast.makeText(SharePostActivity.this, "Shared Successfully", Toast.LENGTH_SHORT).show();
+                                                    uploadProgress.dismiss();
+
+                                                    sendShareNotification(myCaptionET.getText().toString());
+
+                                                    finish();
+                                                }
+                                            });
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -620,11 +816,9 @@ public class SharePostActivity extends AppCompatActivity{
         sharedMap.put("userID", firebaseUser.getUid());//usersID
         sharedMap.put("postID", postID);
         sharedMap.put("postCaption", myCaptionET.getText().toString());
-        sharedMap.put("postImage", "noImage");
         sharedMap.put("postTime", String.valueOf(System.currentTimeMillis()));
         sharedMap.put("postPrivacy", privacyProtection);//post security
         sharedMap.put("postType", sharedTextPost);//post security
-        sharedMap.put("videoURL", "noVideo");//post security
         sharedMap.put("sharedPost", sharePostID);
 
         if (!myLocationCheckIn.getText().toString().equals("No Location")) {
@@ -632,17 +826,39 @@ public class SharePostActivity extends AppCompatActivity{
             sharedMap.put("longitude", locationServices.getLongitude());
         }
 
+        if (commentSwitch.isChecked())
+            sharedMap.put("commentsAllowed", false);
+        else
+            sharedMap.put("commentsAllowed", true);
+
         postRef.child(postID).setValue(sharedMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(SharePostActivity.this, "Shared Successfully", Toast.LENGTH_SHORT).show();
-                        uploadProgress.dismiss();
 
-                        sendShareNotification(myCaptionET.getText().toString());
-                        myCaptionET.setText("");
+                        if (!taggedUsers.isEmpty()) {
+                            for (int i = 0; i < taggedUsers.size(); i++) {
+                                postRef.child(postID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
+                            }
+                            taggedUsers.clear();
+                        }
 
-                        finish();
+                        postRef.child(sharePostID).child("sharedBy").child(firebaseUser.getUid()).setValue(true)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+
+                                                Toast.makeText(SharePostActivity.this, "Shared Successfully", Toast.LENGTH_SHORT).show();
+                                                uploadProgress.dismiss();
+
+                                                sendShareNotification(myCaptionET.getText().toString());
+                                                myCaptionET.setText("");
+
+                                                finish();
+                                            }
+                                        });
+
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -672,13 +888,6 @@ public class SharePostActivity extends AppCompatActivity{
 
     private void getUniversalPostDetails(PostModel post) {
 
-        if (post.getPostCaption().equals("")){
-            hisCaptionTV.setVisibility(View.GONE);
-        }else{
-            hisCaptionTV.setVisibility(View.VISIBLE);
-            hisCaptionTV.setText(post.getPostCaption());
-        }
-
         try{
             universalFunctions.findAddress(post.getLatitude(), post.getLongitude(), hisLocationTV, myLocationArea);
         }catch (Exception ignored){}
@@ -686,7 +895,6 @@ public class SharePostActivity extends AppCompatActivity{
         try{
             hisPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), SharePostActivity.this));
         }catch (NumberFormatException ignored){}
-
 
     }
 

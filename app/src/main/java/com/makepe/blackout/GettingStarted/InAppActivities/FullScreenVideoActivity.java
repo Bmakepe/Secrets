@@ -31,10 +31,10 @@ public class FullScreenVideoActivity extends AppCompatActivity {
     private ProgressBar fullScreenLoader;
     private List<PostModel> videoList;
 
-    private DatabaseReference videoReference, followReference;
+    private DatabaseReference videoReference;
     private FirebaseUser firebaseUser;
 
-    private String videoID, reason, userID;
+    private String videoID;
 
     private List<String> followingList;
     private Toolbar toolbar;
@@ -53,49 +53,15 @@ public class FullScreenVideoActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         videoID = intent.getStringExtra("videoID");
-        reason = intent.getStringExtra("reason");
-        userID = intent.getStringExtra("userID");
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        videoReference = FirebaseDatabase.getInstance().getReference("Posts");
-        followReference = FirebaseDatabase.getInstance().getReference("Follow")
-                .child(firebaseUser.getUid())
-                .child("following");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
         videoList = new ArrayList<>();
 
-        switch (reason){
-            case "random":
-                checkFollowing();
-                break;
-
-            case "userVideos":
-                getUserVideos();
-                break;
-
-            default:
-                Toast.makeText(this, "Unknown reason", Toast.LENGTH_SHORT).show();
-        }
+        getUserVideos();
     }
 
-    private void checkFollowing() {
-        followingList = new ArrayList<>();
-        followReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    followingList.add(ds.getKey());
-                }
-
-                getRandomVideos();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
 
     private void getUserVideos() {
         videoReference.addValueEventListener(new ValueEventListener() {
@@ -105,18 +71,26 @@ public class FullScreenVideoActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
-                    try{
+                    if (postModel.getPostID().equals(videoID)){
+                        String userID = postModel.getUserID();
+
                         if (postModel.getUserID().equals(userID)){
-                            if (postModel.getPostType().equals("videoPost")) {
-                                if (postModel.getPostID().equals(videoID)){
-                                    videoList.add(0, postModel);
-                                }else {
-                                    videoList.add(postModel);
-                                }
+                            if (postModel.getPostType().equals("videoPost")
+                                    || postModel.getPostType().equals("audioVideoPost")){
+                                videoList.add(postModel);
                             }
                         }
-                        fullScreenLoader.setVisibility(View.GONE);
-                    }catch (NullPointerException ignored){}
+                    }
+
+                    for (int i = 0; i < videoList.size(); i++){
+                        PostModel model = videoList.get(i);
+                        if (model.getPostID().equals(videoID)){
+                            videoList.remove(model);
+                            videoList.add(0, model);
+                        }
+                    }
+                    fullScreenLoader.setVisibility(View.GONE);
+                    Toast.makeText(FullScreenVideoActivity.this, "" + videoList.size() , Toast.LENGTH_SHORT).show();
                 }
                 fullScreenPager.setAdapter(new VideoFootageAdapter(videoList, FullScreenVideoActivity.this));
             }

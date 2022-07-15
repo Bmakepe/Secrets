@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
+    android:layout_height="120dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:backgroundTint="@color/white"
@@ -19,17 +19,57 @@
         android:id="@+id/exploreImageArea">
 
         <ImageView
+            android:id="@+id/exploreImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/exploreImage"
             android:layout_centerHorizontal="true"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop" />
 
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/exploreImageLoader"
             android:layout_centerInParent="true"/>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/rounded_edittext"
+            android:layout_margin="2dp"
+            android:backgroundTint="@color/white">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/multipleImageIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                app:civ_border_color="@color/white"
+                app:civ_border_width="1dp"
+                app:civ_circle_background_color="@color/white"
+                app:tint="@color/colorBlack" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white_greyish"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="2dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/exploreItemOwner"
+                android:textStyle="normal"
+                android:textSize="12sp"
+                android:textColor="@color/colorBlack"
+                android:maxLines="2"/>
+
+        </LinearLayout>
 
     </RelativeLayout>
 

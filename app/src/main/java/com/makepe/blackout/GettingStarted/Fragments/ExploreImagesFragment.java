@@ -57,12 +57,13 @@ public class ExploreImagesFragment extends Fragment {
 
     private View view;
 
-    private int currentPage = PAGE_START;
+    /*private int currentPage = PAGE_START;
     private final boolean isLastPage = false;
     private final int totalPage = 10;
     private boolean isLoading = false;
 
-    private SwipeRefreshLayout refreshLayout;
+    private SwipeRefreshLayout refreshLayout;*/
+
     private LinearLayoutManager layoutManager;
 
     public ExploreImagesFragment() {
@@ -83,11 +84,11 @@ public class ExploreImagesFragment extends Fragment {
 
         exploreRecycler = view.findViewById(R.id.exploreRecycler);
         exploreToolbar = view.findViewById(R.id.exploreImageToolbar);
-        refreshLayout = view.findViewById(R.id.exploreRefresher);
+        //refreshLayout = view.findViewById(R.id.exploreRefresher);
 
         ((AppCompatActivity)getActivity()).setSupportActionBar(exploreToolbar);
 
-        postRef = FirebaseDatabase.getInstance().getReference("Posts");
+        postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -100,7 +101,7 @@ public class ExploreImagesFragment extends Fragment {
         declareRecycler();
         getAllExploreItems();
 
-        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        /*refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 new Handler().postDelayed(new Runnable() {
@@ -142,12 +143,12 @@ public class ExploreImagesFragment extends Fragment {
 
                 refreshLayout.setEnabled(isLastItemDisplayed(exploreRecycler));
             }
-        });
+        });*/
 
         return view;
     }
 
-    private boolean isLastItemDisplayed(RecyclerView recyclerView){
+    /*private boolean isLastItemDisplayed(RecyclerView recyclerView){
         if(recyclerView.getAdapter().getItemCount() != 0){
             int lastVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastCompletelyVisibleItemPosition();
             return lastVisibleItemPosition != RecyclerView.NO_POSITION && lastVisibleItemPosition == recyclerView.getAdapter().getItemCount() - 1;
@@ -168,7 +169,7 @@ public class ExploreImagesFragment extends Fragment {
 
             }
         }, 1500);
-    }
+    }*/
 
     private void getAllExploreItems() {
         getNormalPostsItems();
@@ -189,7 +190,7 @@ public class ExploreImagesFragment extends Fragment {
 
     private void getExploreUsers() {
 
-        userRef.addValueEventListener(new ValueEventListener() {
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot snap : snapshot.getChildren()){
@@ -200,6 +201,8 @@ public class ExploreImagesFragment extends Fragment {
                 }
 
                 updateRecycler();
+
+                exploreAdapter.notifyDataSetChanged();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -208,7 +211,7 @@ public class ExploreImagesFragment extends Fragment {
     }
 
     private void getNormalPostsItems() {
-        postRef.addValueEventListener(new ValueEventListener() {
+        postRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot ds : snapshot.getChildren()){
@@ -217,7 +220,8 @@ public class ExploreImagesFragment extends Fragment {
                     try{
                         assert postModel != null;
                         if (!postModel.getPostPrivacy().equals("Private")
-                                && postModel.getPostType().equals("imagePost"))
+                                && postModel.getPostType().equals("imagePost")
+                                || postModel.getPostType().equals("audioImagePost"))
                             exploreItems.add(postModel.getPostID());
 
                     }catch (NullPointerException ignored){}
@@ -238,7 +242,6 @@ public class ExploreImagesFragment extends Fragment {
 
         exploreAdapter = new ExploreAdapter(exploreItems, getContext());
         exploreRecycler.setAdapter(exploreAdapter);
-        exploreAdapter.notifyDataSetChanged();
     }
 
     @Override

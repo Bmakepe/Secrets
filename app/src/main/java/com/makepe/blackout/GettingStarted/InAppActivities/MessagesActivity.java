@@ -33,8 +33,11 @@ public class MessagesActivity extends AppCompatActivity {
     private ViewPager messagesPager;
     private FloatingActionButton messagesFAB;
 
-    int[] colorIntArray = {R.color.colorPrimaryDark, R.color.colorPrimary, R.color.backGroundLeft};
-    int[] iconIntArray = {R.drawable.ic_contacts_black_24dp, R.drawable.ic_group_add_black_24dp, R.drawable.ic_baseline_add_ic_call_24};
+    int[] colorIntArray = {R.color.colorPrimaryDark, R.color.colorPrimary};
+    int[] iconIntArray = {R.drawable.ic_contacts_black_24dp, R.drawable.ic_group_add_black_24dp};
+
+    /*int[] colorIntArray = {R.color.colorPrimaryDark, R.color.colorPrimary, R.color.backGroundLeft};
+    int[] iconIntArray = {R.drawable.ic_contacts_black_24dp, R.drawable.ic_group_add_black_24dp, R.drawable.ic_baseline_add_ic_call_24};*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +54,7 @@ public class MessagesActivity extends AppCompatActivity {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new ChatListFragment(), "Chats");
         viewPagerAdapter.addFragment(new GroupListFragment(), "Groups");
-        viewPagerAdapter.addFragment(new CallHistoryFragment(), "Calls");
+        //viewPagerAdapter.addFragment(new CallHistoryFragment(), "Calls");
         messagesPager.setAdapter(viewPagerAdapter);
         messagesTabs.setupWithViewPager(messagesPager);
 
@@ -87,14 +90,14 @@ public class MessagesActivity extends AppCompatActivity {
                         });
                         break;
 
-                    case 2:
+                    /*case 2:
                         messagesFAB.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 startActivity(new Intent(MessagesActivity.this, CallUserListActivity.class));
                             }
                         });
-                        break;
+                        break;*/
 
                     default:
                         Toast.makeText(MessagesActivity.this, "Unknown error detected", Toast.LENGTH_SHORT).show();

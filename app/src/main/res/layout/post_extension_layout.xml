@@ -132,22 +132,49 @@
 
     </RelativeLayout>
 
-    <RelativeLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_marginTop="2dp">
+        android:padding="5dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="5dp"
             android:singleLine="true"
+            android:text="Tag Friends"
+            android:paddingBottom="5dp"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:id="@+id/tagFriendsBTN"
+            app:drawableStartCompat="@drawable/ic_person_add_black_24dp"
+            app:drawableTint="@color/colorBlack" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/taggedFriendsRecycler"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/commentSwitch"
+            android:drawablePadding="5dp"
+            android:singleLine="true"
             android:text="Disable Comments"
             android:textColor="@color/colorBlack"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:layout_toStartOf="@+id/commentSwitch"
             app:drawableStartCompat="@drawable/ic_insert_comment_black_24dp"
             app:drawableTint="@color/colorBlack" />
 
@@ -159,66 +186,5 @@
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
     </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_marginTop="2dp"
-        android:id="@+id/postDurationArea">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/postDurationTV"
-            android:drawablePadding="5dp"
-            android:singleLine="true"
-            android:text="Post Appearance Duration"
-            android:textColor="@color/colorBlack"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_access_time_black_24dp"
-            app:drawableTint="@color/colorBlack" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:drawablePadding="5dp"
-            android:singleLine="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/postDurationTV"
-            android:text="Default"
-            android:textColor="@color/colorBlack"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_marginTop="2dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawablePadding="5dp"
-            android:singleLine="true"
-            android:text="Tag Friends"
-            android:textColor="@color/colorBlack"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_person_add_black_24dp"
-            app:drawableTint="@color/colorBlack" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/taggedFriendsRecycler"/>
-
-    </LinearLayout>
 
 </LinearLayout>

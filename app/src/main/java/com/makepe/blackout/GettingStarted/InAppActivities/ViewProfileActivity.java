@@ -3,6 +3,8 @@ package com.makepe.blackout.GettingStarted.InAppActivities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
@@ -12,8 +14,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -26,6 +26,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,10 +36,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.HisTabAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.Fragments.HisPostsFragment;
 import com.makepe.blackout.GettingStarted.Fragments.HisVideosFragment;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
@@ -49,11 +50,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static com.google.firebase.storage.FirebaseStorage.getInstance;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
@@ -71,7 +69,7 @@ public class ViewProfileActivity extends AppCompatActivity {
     private Dialog picDialog;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference;
+    private DatabaseReference userReference, followReference;
 
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
@@ -115,6 +113,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        followReference = FirebaseDatabase.getInstance().getReference("Follow");
 
         HisPostsFragment postsFragment = new HisPostsFragment();
         postsFragment.setArguments(bundle);
@@ -195,10 +194,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         findViewById(R.id.hisFollowersListBTN).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent followersIntent = new Intent(ViewProfileActivity.this, ConnectionsActivity.class);
-                followersIntent.putExtra("UserID", hisUserID);
-                followersIntent.putExtra("Interaction", "Followers");
-                startActivity(followersIntent);
+
+                showFollowersDialog();
 
             }
         });
@@ -206,11 +203,7 @@ public class ViewProfileActivity extends AppCompatActivity {
         findViewById(R.id.hisFollowingListBTN).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent followersIntent = new Intent(ViewProfileActivity.this, ConnectionsActivity.class);
-                followersIntent.putExtra("UserID", hisUserID);
-                followersIntent.putExtra("Interaction", "Following");
-                startActivity(followersIntent);
-
+                showFollowingDialog();
             }
         });
 
@@ -224,6 +217,99 @@ public class ViewProfileActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void showFollowingDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        interactionHeader.setText("Following");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+
+        followReference.child(hisUserID).child("following")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            friendsRecycler.setAdapter(new UserAdapter(ViewProfileActivity.this, idList, "goToProfile"));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void showFollowersDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        interactionHeader.setText("Followers");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+
+        followReference.child(hisUserID).child("followers")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            friendsRecycler.setAdapter(new UserAdapter(ViewProfileActivity.this, idList, "goToProfile"));
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
     }
 
     private void iniPicPopUp(String hisUserID) {
@@ -326,11 +412,6 @@ public class ViewProfileActivity extends AppCompatActivity {
 
     private void getUserInfo() {
 
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList= new ContactsList(phoneBook, ViewProfileActivity.this);
-        contactsList.readContacts();
-        final List<ContactsModel> finalContacts = contactsList.getContactsList();
-
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -340,42 +421,36 @@ public class ViewProfileActivity extends AppCompatActivity {
 
                         assert user != null;
                         if (user.getUSER_ID().equals(hisUserID)){
-                                hisUsername.setVisibility(View.VISIBLE);
-                                hisBiography.setVisibility(View.VISIBLE);
+                            hisUsername.setVisibility(View.VISIBLE);
+                            hisBiography.setVisibility(View.VISIBLE);
 
-                                hisBiography.setText(user.getBio());
-                                aboutTV.setText("About " + user.getUsername());
+                            hisBiography.setText(user.getBio());
+                            aboutTV.setText("About " + user.getUsername());
 
-                                for(ContactsModel contactsModel: finalContacts){
-
-                                    if(hisUserID.equals(FirebaseAuth.getInstance().getCurrentUser())){
-                                        hisUsername.setText("Me");
-                                    }else if(contactsModel.getNumber().equals(user.getNumber())){
-                                        hisPhoneName = contactsModel.getUsername();
-                                        hisUsername.setText(hisPhoneName);
-                                    }else{
-                                        hisUsername.setText(user.getUsername());
-                                    }
-                                }
-
-                                try{
-                                    Picasso.get().load(user.getImageURL()).into(hisProfilePic);
-                                    Picasso.get().load(user.getCoverURL()).into(hisCoverPic);
-                                    coverLoader.setVisibility(View.GONE);
-                                    picLoader.setVisibility(View.GONE);
-                                }catch (NullPointerException e){
-                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProfilePic);
-                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(hisCoverPic);
-                                    coverLoader.setVisibility(View.GONE);
-                                    picLoader.setVisibility(View.GONE);
-                                }
-
-                                try{
-                                    latitude = user.getLatitude();
-                                    longitude = user.getLongitude();
-                                    universalFunctions.findAddress(latitude, longitude, hisLocationDetails, hisProfileLocationArea);
-                                }catch (NullPointerException ignored){}
+                            if(hisUserID.equals(firebaseUser.getUid())){
+                                hisUsername.setText("Me");
+                            }else {
+                                hisUsername.setText(user.getUsername());
                             }
+
+                            try{
+                                Picasso.get().load(user.getImageURL()).into(hisProfilePic);
+                                Picasso.get().load(user.getCoverURL()).into(hisCoverPic);
+                                coverLoader.setVisibility(View.GONE);
+                                picLoader.setVisibility(View.GONE);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProfilePic);
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(hisCoverPic);
+                                coverLoader.setVisibility(View.GONE);
+                                picLoader.setVisibility(View.GONE);
+                            }
+
+                            try{
+                                latitude = user.getLatitude();
+                                longitude = user.getLongitude();
+                                universalFunctions.findAddress(latitude, longitude, hisLocationDetails, hisProfileLocationArea);
+                            }catch (NullPointerException ignored){}
+                        }
 
                     }
                 }

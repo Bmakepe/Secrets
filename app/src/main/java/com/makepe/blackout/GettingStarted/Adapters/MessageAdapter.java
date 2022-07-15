@@ -1,6 +1,7 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -41,7 +42,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.Models.Chat;
+import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
@@ -74,15 +77,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     private static final int MSG_TYPE_AUDIO_RIGHT = 7;
     private static final int MSG_TYPE_VIDEO_LEFT = 8;
     private static final int MSG_TYPE_VIDEO_RIGHT = 9;
+    public static final int MSG_TYPE_STORY_LEFT = 10;
+    public static final int MSG_TYPE_STORY_RIGHT = 11;
+    public static final int MSG_TYPE_AUDIO_STORY_RIGHT = 12;
+    public static final int MSG_TYPE_AUDIO_STORY_LEFT = 13;
 
     private final Context context;
     private final List<Chat> mChats;
 
-    private AudioPlayer audioPlayer;
+    //private AudioPlayer audioPlayer;
     private UniversalFunctions universalFunctions;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference chatReference, userReference;
+    private DatabaseReference chatReference, userReference, storyReference;
 
     private GetTimeAgo getTimeAgo;
 
@@ -128,6 +135,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             case MSG_TYPE_VIDEO_LEFT:
                 return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_video_left, parent, false));
 
+            case MSG_TYPE_STORY_LEFT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_story_text_left, parent, false));
+
+            case MSG_TYPE_STORY_RIGHT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_story_text_right, parent, false));
+
+            case MSG_TYPE_AUDIO_STORY_RIGHT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_story_audio_right, parent, false));
+
+            case MSG_TYPE_AUDIO_STORY_LEFT:
+                return new MyHolder(LayoutInflater.from(context).inflate(R.layout.msg_item_story_audio_left, parent, false));
+
             default:
                 throw new IllegalStateException("Unexpected value: " + viewType);
         }
@@ -138,6 +157,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
         chatReference = FirebaseDatabase.getInstance().getReference("Chats");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        storyReference = FirebaseDatabase.getInstance().getReference("Story");
         Chat chat = mChats.get(position);
         getTimeAgo = new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
@@ -234,10 +254,45 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                 getMessageVideoDetails(chat, holder);
                 break;
 
+            case "storyTextMessage":
+                holder.showMessages.setText(chat.getMessage());
+                getStoryMessageDetails(chat, holder);
+                break;
+
+            case "storyAudioMessage":
+                getAudioMessageDetails(chat, holder);
+                getStoryMessageDetails(chat, holder);
+                break;
+
             default:
                 Toast.makeText(context, "unknown message type detected: " + chat.getMessage_type(), Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private void getStoryMessageDetails(Chat chat, MyHolder holder) {
+        storyReference.child(chat.getReceiver()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for(DataSnapshot ds : snapshot.getChildren()){
+                        Story story = ds.getValue(Story.class);
+
+                        assert story != null;
+                        if (story.getStoryID().equals(chat.getStoryID()))
+                            try{
+                                Picasso.get().load(story.getStoryImage()).into(holder.storyImage);
+                                holder.messageStoryImageLoader.setVisibility(View.GONE);
+                            }catch (NullPointerException ignored){}
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getMessageVideoDetails(Chat chat, MyHolder holder) {
@@ -272,7 +327,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
     private void getAudioMessageDetails(Chat chat, MyHolder holder) {
 
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         try{//convert timestamp
@@ -447,12 +502,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     class MyHolder extends RecyclerView.ViewHolder {
 
         //for text chat views
-        private CircleImageView chatPic;
-        private TextView showMessages, timeStamp, messageMediaSeeMoreBTN, viewLocationBTN;
-        private ImageView ticks;
+        public CircleImageView chatPic;
+        public TextView showMessages, timeStamp, messageMediaSeeMoreBTN, viewLocationBTN;
+        public ImageView ticks, storyImage;
 
-        private RecyclerView mediaRecycler;
-        private LinearLayout locationTextArea;
+        public RecyclerView mediaRecycler;
+        public LinearLayout locationTextArea;
+
+        public ProgressBar messageStoryImageLoader;
 
         //--------------for audio post buttons
         public CircleImageView playBTN;
@@ -475,6 +532,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             viewLocationBTN = itemView.findViewById(R.id.viewLocationBTN);
             locationTextArea = itemView.findViewById(R.id.locationTextArea);
             messageMediaSeeMoreBTN = itemView.findViewById(R.id.messageMediaSeeMoreBTN);
+            storyImage = itemView.findViewById(R.id.dmStoryImage);
+            messageStoryImageLoader = itemView.findViewById(R.id.messageStoryImageLoader);
 
             //for audio buttons
             playBTN = itemView.findViewById(R.id.postItem_playVoiceIcon);
@@ -505,6 +564,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                     return MSG_TYPE_AUDIO_RIGHT;
                 case "videoMessage":
                     return MSG_TYPE_VIDEO_RIGHT;
+                case "storyAudioMessage":
+                    return MSG_TYPE_AUDIO_STORY_RIGHT;
+                case "storyTextMessage":
+                    return MSG_TYPE_STORY_RIGHT;
             }
 
         }else{
@@ -520,6 +583,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                     return MSG_TYPE_AUDIO_LEFT;
                 case "videoMessage":
                     return MSG_TYPE_VIDEO_LEFT;
+                case "storyAudioMessage":
+                    return MSG_TYPE_AUDIO_STORY_LEFT;
+                case "storyTextMessage":
+                    return MSG_TYPE_STORY_LEFT;
             }
 
         }

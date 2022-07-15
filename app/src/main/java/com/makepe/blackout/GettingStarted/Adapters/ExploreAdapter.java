@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,6 +25,7 @@ import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHolder> {
@@ -48,7 +50,8 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         String exploreItemID = exploreItems.get(position);
-        postRef = FirebaseDatabase.getInstance().getReference("Posts");
+        postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        userRef = FirebaseDatabase.getInstance().getReference("Users");
 
         getExploreItemDetails(exploreItemID, holder);
 
@@ -63,8 +66,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
                             postIntent.putExtra("postID", exploreItemID);
                             context.startActivity(postIntent);
                         }else{
-                            userRef = FirebaseDatabase.getInstance().getReference("Users").child(exploreItemID);
-                            userRef.addValueEventListener(new ValueEventListener() {
+                            userRef.child(exploreItemID).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     if (snapshot.exists()){
@@ -92,37 +94,133 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
     }
 
     private void getExploreItemDetails(String exploreItemID, ViewHolder holder) {
-        postRef.child(exploreItemID).addValueEventListener(new ValueEventListener() {
+
+        postRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel model = ds.getValue(PostModel.class);
+
+                    assert model != null;
+                    if (model.getPostID().equals(exploreItemID)){
+
+                        getPostItem(holder, model);
+
+                    }else{
+                        getUserItem(holder, exploreItemID);
+                    }
+                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getUserItem(ViewHolder holder, String exploreItemID) {
+        userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
-                    PostModel postModel = snapshot.getValue(PostModel.class);
-                    try {
-                        assert postModel != null;
-                        Picasso.get().load(postModel.getPostImage()).into(holder.exploreImage);
-                        holder.imageLoader.setVisibility(View.GONE);
-                    }catch (NullPointerException ignored){}
-                }else{
-                    userRef = FirebaseDatabase.getInstance().getReference("Users").child(exploreItemID);
-                    userRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()){
-                                User user = snapshot.getValue(User.class);
 
-                                try{
-                                    assert user != null;
-                                    Picasso.get().load(user.getImageURL()).into(holder.exploreImage);
-                                    holder.imageLoader.setVisibility(View.GONE);
-                                }catch (NullPointerException ignored){}
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        User user = ds.getValue(User.class);
+
+                        if (user.getUSER_ID().equals(exploreItemID)){
+                            holder.exploreItemOwner.setText(user.getUsername());
+
+                            try{
+                                assert user != null;
+                                Picasso.get().load(user.getImageURL()).into(holder.exploreImage);
+                                holder.imageLoader.setVisibility(View.GONE);
+                                holder.multipleImageIcon.setImageResource(R.drawable.ic_baseline_person_24);
+                            }catch (NullPointerException ignored){}
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getPostItem(ViewHolder holder, PostModel model) {
+
+        ArrayList<String> imageURL = new ArrayList<>();
+
+        postRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel myPost = ds.getValue(PostModel.class);
+
+                    if (myPost.getPostID().equals(model.getPostID())){
+
+                        postRef.child(myPost.getPostID()).child("images").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                if (snapshot.exists()){
+                                    if (snapshot.getChildrenCount() == 1){
+                                        for (DataSnapshot ds : snapshot.getChildren()){
+                                            String imageURL = ds.getValue().toString();
+                                            try{
+                                                holder.multipleImageIcon.setImageResource(R.drawable.ic_image_black_24dp);
+                                                Picasso.get().load(imageURL).into(holder.exploreImage);
+                                                holder.imageLoader.setVisibility(View.GONE);
+                                            }catch (NullPointerException ignored){}
+
+                                            getPostOwner(myPost, holder);
+
+                                        }
+                                    }else{
+                                        imageURL.clear();
+                                        for (DataSnapshot ds : snapshot.getChildren()){
+                                            imageURL.add(ds.getValue().toString());
+                                        }
+
+                                        try{
+                                            holder.multipleImageIcon.setImageResource(R.drawable.ic_baseline_collections_24);
+                                            Picasso.get().load(imageURL.get(0)).into(holder.exploreImage);
+                                            holder.imageLoader.setVisibility(View.GONE);
+                                        }catch (NullPointerException ignored){}
+
+                                        getPostOwner(myPost, holder);
+                                    }
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getPostOwner(PostModel myPost, ViewHolder holder) {
+
+        userRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot data : snapshot.getChildren()){
+                    User user = data.getValue(User.class);
+
+                    if (user.getUSER_ID().equals(myPost.getUserID())){
+                        holder.exploreItemOwner.setText(user.getUsername());
+                    }
                 }
             }
 
@@ -140,16 +238,19 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView exploreImage;
-        ProgressBar imageLoader;
-        RelativeLayout exploreImageArea;
+        public ImageView exploreImage, multipleImageIcon;
+        public ProgressBar imageLoader;
+        public RelativeLayout exploreImageArea;
+        public TextView exploreItemOwner;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             exploreImage = itemView.findViewById(R.id.exploreImage);
+            multipleImageIcon = itemView.findViewById(R.id.multipleImageIcon);
             imageLoader = itemView.findViewById(R.id.exploreImageLoader);
             exploreImageArea = itemView.findViewById(R.id.exploreImageArea);
+            exploreItemOwner = itemView.findViewById(R.id.exploreItemOwner);
 
         }
     }

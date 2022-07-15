@@ -1,9 +1,7 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,13 +18,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
+import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.NotiModel;
+import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
@@ -34,15 +33,13 @@ import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyHolder> {
 
     private Context mContext;
     private List<NotiModel> mNotifications;
-    private DatabaseReference userReference;
+    private DatabaseReference userReference, postReference, storyReference, commentReference;
     private FirebaseUser firebaseUser;
 
     private GetTimeAgo getTimeAgo;
@@ -55,9 +52,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @NonNull
     @Override
     public MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-        View view = LayoutInflater.from(mContext).inflate(R.layout.notification_item, parent, false);
-        return new NotificationAdapter.MyHolder(view);
+        return new MyHolder(LayoutInflater.from(mContext).inflate(R.layout.notification_item, parent, false));
     }
 
     @Override
@@ -65,11 +60,31 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         final NotiModel notification = mNotifications.get(position);
         getTimeAgo = new GetTimeAgo();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
+        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        storyReference = FirebaseDatabase.getInstance().getReference("Story");
+        commentReference = FirebaseDatabase.getInstance().getReference("Comments");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        holder.text.setText(notification.getText());
-
         getUserInfo(holder, notification);
+        getNotificationContent(holder, notification);
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(notification.isPost() || notification.isStory()){
+                    Intent intent = new Intent(mContext, CommentsActivity.class);
+                    intent.putExtra("postID", notification.getPostID());
+                    mContext.startActivity(intent);
+                }else if (notification.isFollowing()){
+                    Intent intent = new Intent(mContext, ViewProfileActivity.class);
+                    intent.putExtra("uid", notification.getUserID());
+                    mContext.startActivity(intent);
+                }
+            }
+        });
+    }
+
+    private void getNotificationContent(MyHolder holder, NotiModel notification) {
 
         try{//convert timestamp to x days ago
             holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(notification.getTimeStamp()), mContext));
@@ -77,28 +92,83 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             Toast.makeText(mContext, "Could not format time", Toast.LENGTH_SHORT).show();
         }//for converting timestamp
 
-        if(notification.isIspost()){
-            holder.post_image.setVisibility(View.VISIBLE);
-            getPostImage(holder.post_image, notification.getPostid());
+        holder.text.setText(notification.getText());
+
+
+        if(notification.isPost()){
+
+            postReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        PostModel model = ds.getValue(PostModel.class);
+
+                        assert model != null;
+                        if (model.getPostID().equals(notification.getPostID())){
+                            if (model.getPostType().equals("imagePost")
+                                    || model.getPostType().equals("audioImagePost")){
+                                try{
+                                    holder.post_image.setVisibility(View.VISIBLE);
+                                    Picasso.get().load(model.getPostImage()).into(holder.post_image);
+                                }catch (NullPointerException ignored){}
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+        }else if (notification.isStory()){
+            storyReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        Story story = ds.getValue(Story.class);
+
+                        if (story.getStoryID().equals(notification.getPostID())){
+                            try{
+                                holder.post_image.setVisibility(View.VISIBLE);
+                                Picasso.get().load(story.getStoryImage()).into(holder.post_image);
+                            }catch (NullPointerException ignored){}
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }else if (notification.isComment()){
+            commentReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        CommentModel commentModel = ds.getValue(CommentModel.class);
+
+                        assert commentModel != null;
+                        if (commentModel.getCommentID().equals(notification.getPostID()))
+                            if (commentModel.getCommentType().equals("imageComment")
+                                    || commentModel.getCommentType().equals("audioImageComment"))
+                                try{
+                                    holder.post_image.setVisibility(View.VISIBLE);
+                                    Picasso.get().load(commentModel.getCommentImage()).into(holder.post_image);
+                                }catch (NullPointerException ignored){}
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
         }else{
             holder.post_image.setVisibility(View.GONE);
         }
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(notification.isIspost() || notification.isStory()){
-                    Toast.makeText(mContext, "Post Notification", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(mContext, CommentsActivity.class);
-                    intent.putExtra("postID", notification.getPostid());
-                    mContext.startActivity(intent);
-                }else{
-                    Intent intent = new Intent(mContext, ViewProfileActivity.class);
-                    intent.putExtra("uid", notification.getUserid());
-                    mContext.startActivity(intent);
-                }
-            }
-        });
     }
 
     @Override
@@ -135,7 +205,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     for(DataSnapshot ds : dataSnapshot.getChildren()) {
                         User user = ds.getValue(User.class);
 
-                        if (user.getUSER_ID().equals(notification.getUserid())) {
+                        if (user.getUSER_ID().equals(notification.getUserID())) {
 
                             try {
                                 Picasso.get().load(user.getImageURL()).into(holder.image_profile);
@@ -145,7 +215,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                             //username.setText(username1);
 
                             for (ContactsModel contactsModel : phoneContacts) {
-                                if (notification.getUserid().equals(firebaseUser.getUid())) {
+                                if (notification.getUserID().equals(firebaseUser.getUid())) {
                                     holder.username.setText("Me");
                                 } else if (contactsModel.getNumber().equals(user.getNumber())) {
                                     holder.username.setText(contactsModel.getUsername());
@@ -165,21 +235,4 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         });
     }
 
-    private void getPostImage(final ImageView imageView, String postid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                PostModel post = dataSnapshot.getValue(PostModel.class);
-                try{
-                    Picasso.get().load(post.getPostImage()).into(imageView);
-                }catch (NullPointerException ignore){}
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
 }

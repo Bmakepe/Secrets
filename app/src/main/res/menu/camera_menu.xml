@@ -6,4 +6,5 @@
         android:id="@+id/skipSearch"
         android:title="Skip"
         app:showAsAction="always"/>
+
 </menu>

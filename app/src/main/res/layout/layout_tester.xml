@@ -1,327 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<com.google.android.gms.ads.nativead.NativeAdView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/background_gradient">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:id="@+id/nativeAdView"
+    android:background="@color/white_greyish"
+    android:layout_margin="2dp"
+    tools:ignore="UnusedAttribute">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/cameraToolbar"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="5dp"
-        android:background="@null"
-        app:contentInsetLeft="0dp"
-        app:contentInsetStartWithNavigation="0dp">
+        android:layout_height="250dp"
+        android:padding="2dp"
+        android:visibility="visible"
+        android:id="@+id/postPicArea"
+        tools:ignore="UnusedAttribute">
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#FFC107"
+            android:padding="2dp"
+            android:text="AD"
+            android:textColor="@color/white" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/skipCamBTN"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawablePadding="5dp"
-                android:padding="10dp"
-                android:text="SKIP"
-                android:layout_alignParentEnd="true"
-                android:textColor="@color/colorBlack"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:drawableEndCompat="@drawable/ic_baseline_arrow_forward_24"
-                app:drawableTint="@color/colorBlack" />
-
-        </RelativeLayout>
-
-    </androidx.appcompat.widget.Toolbar>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_below="@+id/cameraToolbar"
-        android:backgroundTint="@color/white"
-        android:layout_above="@+id/cameraButtonsArea"
-        app:cardElevation="5dp"
-        app:cardCornerRadius="5dp"
-        android:layout_margin="2dp"
-        app:cardUseCompatPadding="false"
-        tools:ignore="UnusedAttribute">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.wonderkiln.camerakit.CameraView
+            <com.google.android.gms.ads.nativead.MediaView
+                android:id="@+id/media_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/cameraKit"
-                android:adjustViewBounds="true"
-                app:ckFacing="back"
-                app:ckFlash="off"
-                app:ckFocus="continuous"
-                app:ckMethod="standard"
-                app:ckZoom="pinch"
-                app:ckPermissions="strict"
-                app:ckCropOutput="true"
-                app:ckJpegQuality="100"
-                app:ckVideoQuality="highest"/>
+                android:layout_gravity="center_horizontal" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_alignParentEnd="true">
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:id="@+id/flipCameraArea"
-                    android:padding="5dp"
-                    android:layout_gravity="center_horizontal">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true"
-                        android:layout_centerHorizontal="true">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_flip_camera_android_24"
-                            app:tint="@color/white"
-                            android:id="@+id/flipCamera"
-                            android:padding="5dp"
-                            android:layout_gravity="center" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textStyle="normal"
-                            android:textSize="12sp"
-                            android:text="Switch"
-                            android:layout_gravity="center"
-                            tools:ignore="SmallSp"
-                            android:singleLine="true"/>
-
-                    </LinearLayout>
-
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:padding="5dp"
-                    android:id="@+id/addFilterArea"
-                    android:layout_gravity="center_horizontal">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true"
-                        android:layout_centerHorizontal="true">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_photo_filter_24"
-                            app:tint="@color/white"
-                            android:padding="5dp"
-                            android:layout_gravity="center" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textStyle="normal"
-                            android:textSize="12sp"
-                            android:text="Add Filter"
-                            android:layout_gravity="center"
-                            tools:ignore="SmallSp"
-                            android:singleLine="true"/>
-
-                    </LinearLayout>
-
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:id="@+id/cameraTimerArea"
-                    android:padding="5dp"
-                    android:layout_gravity="center_horizontal">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true"
-                        android:layout_centerHorizontal="true">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_timer_24"
-                            app:tint="@color/white"
-                            android:padding="5dp"
-                            android:layout_gravity="center" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textStyle="normal"
-                            android:textSize="12sp"
-                            android:text="Timer"
-                            android:layout_gravity="center"
-                            tools:ignore="SmallSp"
-                            android:singleLine="true"/>
-
-                    </LinearLayout>
-
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:id="@+id/cameraFlashArea"
-                    android:padding="5dp"
-                    android:layout_gravity="center_horizontal">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true"
-                        android:layout_centerHorizontal="true">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_flash_off_24"
-                            android:id="@+id/switchFlashButton"
-                            app:tint="@color/white"
-                            android:padding="5dp"
-                            android:layout_gravity="center" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textStyle="normal"
-                            android:textSize="12sp"
-                            android:text="Off"
-                            android:layout_gravity="center"
-                            android:id="@+id/cameraFlashState"
-                            tools:ignore="SmallSp"
-                            android:singleLine="true"/>
-
-                    </LinearLayout>
-
-                </RelativeLayout>
-
-            </LinearLayout>
-
-        </RelativeLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:orientation="vertical"
-        android:id="@+id/cameraButtonsArea"
-        android:layout_margin="12dp">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/captureArea"
-            android:layout_centerHorizontal="true">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="@drawable/transparent_circle_with_border"
-                android:backgroundTint="@color/white"
-                android:layout_gravity="center_horizontal"
-                android:layout_margin="5dp"
-                android:visibility="gone"
+                android:layout_alignParentBottom="true"
+                android:background="@color/white_greyish"
                 android:padding="2dp">
 
-                <ImageView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/rPostDeclaration"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_baseline_fiber_manual_record_24"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="5dp"
-                    android:id="@+id/conditionIcon"
-                    app:tint="@color/white" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/ad_app_icon"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_centerInParent="true"
+                            android:padding="2dp"
+                            android:src="@drawable/default_profile_display_pic"
+                            android:tint="@color/colorPrimary"
+                            app:civ_border_color="@color/colorBlack"
+                            app:civ_border_overlay="true"
+                            app:civ_border_width="1dp" />
+
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/ad_headline"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorBlack"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/ad_advertiser"
+                                android:layout_gravity="bottom"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <RatingBar
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                style="?android:attr/ratingBarStyleSmall"
+                                android:isIndicator="true"
+                                android:numStars="5"
+                                android:id="@+id/ad_stars"
+                                android:layout_gravity="center_vertical"
+                                android:stepSize="0.5"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ad_body"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp" />
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="VIDEO"
-                    android:layout_gravity="center"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:layout_margin="5dp"
-                    android:id="@+id/camTypeBTN"/>
+                    android:layout_gravity="end"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ad_price"
+                        android:layout_margin="5dp"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ad_store"
+                        android:layout_margin="5dp"
+                        android:textSize="12sp"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ad_call_to_action"
+                        android:layout_margin="5dp"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/takePic"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/transparent_hallow_circle"
-                android:backgroundTint="@color/colorBlack"
-                android:padding="15dp"
-                android:src="@drawable/ic_camera_black_24dp"
-                android:visibility="visible"
-                app:tint="@color/colorBlack" />
-
         </RelativeLayout>
-
-        <com.google.android.material.tabs.TabLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/captureArea">
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Photo"/>
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Video"/>
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Live"/>
-
-        </com.google.android.material.tabs.TabLayout>
 
     </RelativeLayout>
 
-</RelativeLayout>
+</com.google.android.gms.ads.nativead.NativeAdView>

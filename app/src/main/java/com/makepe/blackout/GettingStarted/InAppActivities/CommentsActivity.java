@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,16 +47,18 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.CommentsAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
+import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -71,23 +74,24 @@ public class CommentsActivity extends AppCompatActivity {
 
     private CircleImageView hisProPic, myProPic;
     private TextView hisName, postLocation, postTimestamp, likeCounter,
-            commentCounter, postCaption, postCommentBTN, commentsLocationTV;
+            commentCounter, postCaption, postCommentBTN, commentsLocationTV, shareCounter, taggedPeopleList;
     private ImageView likesIcon, saveIcon, goToGalleryBTN, commentPostImage;
     private RelativeLayout likesArea, shareArea, saveArea, commentMediaPlayer;
-    private LinearLayout locationArea, commentLocationArea;
+    private LinearLayout locationArea, commentLocationArea, tagsArea;
     private EditText commentET;
     private RecyclerView commentsRecycler;
     private TextInputLayout commentCaptionArea;
 
     private DatabaseReference commentReference, userReference, postReference,
-            storyReference;
+            storyReference, likesReference;
     private FirebaseUser firebaseUser;
 
     private String itemID, userID, commentID;
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
+    private SendNotifications notifications;
     private GetTimeAgo getTimeAgo;
     private LocationServices locationServices;
+    private UploadFunctions uploadFunctions;
 
     private List<CommentModel> commentList;
 
@@ -142,6 +146,9 @@ public class CommentsActivity extends AppCompatActivity {
         commentLocationArea = findViewById(R.id.comments_location_area);
         commentCaptionArea = findViewById(R.id.commentCaptionArea);
         commentMediaPlayer = findViewById(R.id.commentMediaPlayer);
+        shareCounter = findViewById(R.id.shareCounter);
+        taggedPeopleList = findViewById(R.id.taggedPeopleList);
+        tagsArea = findViewById(R.id.tagsArea);
 
         //for recording the audio
         playAudioArea = findViewById(R.id.playAudioArea);
@@ -161,15 +168,17 @@ public class CommentsActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         commentReference = FirebaseDatabase.getInstance().getReference("Comments");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        postReference = FirebaseDatabase.getInstance().getReference("Posts").child(itemID);
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         storageReference = FirebaseStorage.getInstance().getReference("CommentImages");
         audioReference = FirebaseStorage.getInstance().getReference();
+        likesReference = FirebaseDatabase.getInstance().getReference("Likes");
 
         universalFunctions = new UniversalFunctions(this);
-        notifications = new UniversalNotifications(this);
+        notifications = new SendNotifications(this);
         getTimeAgo = new GetTimeAgo();
         commentList = new ArrayList<>();
+        uploadFunctions = new UploadFunctions(this);
         uploadDialog = new ProgressDialog(this);
         locationServices = new LocationServices(commentsLocationTV, CommentsActivity.this);
         audioRecorder = new AudioRecorder(lavPlaying, CommentsActivity.this,
@@ -179,7 +188,10 @@ public class CommentsActivity extends AppCompatActivity {
                 audioSeekTimer, postTotalTime, audioAnimation);
 
         commentsRecycler.hasFixedSize();
-        commentsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        commentsRecycler.setLayoutManager(layoutManager);
 
         commentID = commentReference.push().getKey();
 
@@ -191,6 +203,7 @@ public class CommentsActivity extends AppCompatActivity {
         universalFunctions.nrLikes(likeCounter, itemID);
         universalFunctions.getCommentsCount(itemID, commentCounter);
         universalFunctions.isSaved(itemID, saveIcon);
+        universalFunctions.getSharedNumber(itemID, shareCounter);
 
         commentET.addTextChangedListener(new TextWatcher() {
             @Override
@@ -212,20 +225,18 @@ public class CommentsActivity extends AppCompatActivity {
             }
         });
 
-        likesArea.setOnClickListener(new View.OnClickListener() {
+        likeCounter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(CommentsActivity.this, ConnectionsActivity.class);
-                intent.putExtra("UserID", itemID);
-                intent.putExtra("Interaction", "Likes");
-                startActivity(intent);
+
+                showLikesDialog();
+
             }
         });
 
         shareArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Intent shareIntent = new Intent(CommentsActivity.this, SharePostActivity.class);
                 shareIntent.putExtra("postID", itemID);
                 startActivity(shareIntent);
@@ -301,7 +312,7 @@ public class CommentsActivity extends AppCompatActivity {
                     audioRecorder.stopPlayingAudio();
                 }
             }
-        }); 
+        });
 
         deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -311,14 +322,14 @@ public class CommentsActivity extends AppCompatActivity {
             }
         });
 
-        likesIcon.setOnClickListener(new View.OnClickListener() {
+        likesArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(likesIcon.getTag().equals("like")){
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(itemID)
                             .child(firebaseUser.getUid()).setValue(true);
-                    if (!firebaseUser.getUid().equals(userID))
-                        notifications.addLikesNotifications(userID, itemID);
+                    /*if (!userID.equals(firebaseUser.getUid()))
+                        notifications.addLikesNotification(itemID, userID);*/
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(itemID)
                             .child(firebaseUser.getUid()).removeValue();
@@ -356,6 +367,186 @@ public class CommentsActivity extends AppCompatActivity {
             }
         });
 
+        tagsArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showTaggedFriends();
+            }
+        });
+
+        shareCounter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showShareDialog();
+            }
+        });
+
+    }
+
+    private void showLikesDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+
+        assert interactionHeader != null;
+        interactionHeader.setText("Likes");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+
+        likesReference.child(itemID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    idList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        idList.add(ds.getKey());
+                    }
+                    friendsRecycler.setAdapter(new UserAdapter(CommentsActivity.this, idList, "goToProfile"));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void showShareDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+
+        assert interactionHeader != null;
+        interactionHeader.setText("Shared By");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        UserAdapter userAdapter = new UserAdapter(CommentsActivity.this, idList, "goToProfile");
+        friendsRecycler.setAdapter(userAdapter);
+
+        postReference.child(itemID).child("sharedBy").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    idList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        idList.add(ds.getKey());
+                    }
+                    userAdapter.notifyDataSetChanged();
+                }else{
+                    Toast.makeText(CommentsActivity.this, "Could not retrieve shares", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void showTaggedFriends() {
+
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+
+        assert interactionHeader != null;
+        interactionHeader.setText("Tagged Friends");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        UserAdapter userAdapter = new UserAdapter(CommentsActivity.this, idList, "goToProfile");
+        friendsRecycler.setAdapter(userAdapter);
+
+        postReference.child(itemID).child("taggedFriends")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            userAdapter.notifyDataSetChanged();
+                        }else{
+                            storyReference.child(userID).child(itemID).child("taggedFriends")
+                                    .addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            if (snapshot.exists()){
+                                                idList.clear();
+                                                for (DataSnapshot ds : snapshot.getChildren()){
+                                                    idList.add(ds.getKey());
+                                                }
+                                                userAdapter.notifyDataSetChanged();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
     }
 
     private void uploadAudioComment() {
@@ -379,7 +570,7 @@ public class CommentsActivity extends AppCompatActivity {
 
                     if (imageUri != null){
                         final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
-                                + "." + getFileExtension(imageUri));
+                                + "." + uploadFunctions.getFileExtension(imageUri));
 
                         uploadTask = imageReference.putFile(imageUri);
                         uploadTask.continueWithTask(new Continuation() {
@@ -418,11 +609,11 @@ public class CommentsActivity extends AppCompatActivity {
                                                     resetLayout();
                                                 }
                                             }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
                                 }
                             }
                         });
@@ -450,11 +641,11 @@ public class CommentsActivity extends AppCompatActivity {
                                         resetLayout();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     }
                 }
             }
@@ -471,8 +662,9 @@ public class CommentsActivity extends AppCompatActivity {
             audioRecorder.resetRecorder();
         }
 
-        if (!userID.equals(firebaseUser.getUid()))
-            notifications.sendCommentNotification(itemID, userID, commentET.getText().toString());
+        /*if (!userID.equals(firebaseUser.getUid()))
+            notifications.addCommentNotification(itemID, userID);*/
+
         commentET.setText("");
 
         if (!commentsLocationTV.getText().toString().equals("No Location"))
@@ -483,7 +675,7 @@ public class CommentsActivity extends AppCompatActivity {
 
     private void addImageComment() {
         final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
-                + "." + getFileExtension(imageUri));
+                + "." + uploadFunctions.getFileExtension(imageUri));
 
         uploadTask = fileReference.putFile(imageUri);
         uploadTask.continueWithTask(new Continuation() {
@@ -531,12 +723,12 @@ public class CommentsActivity extends AppCompatActivity {
                         resetLayout();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(CommentsActivity.this, "Comment Unsuccessful", Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(CommentsActivity.this, "Comment Unsuccessful", Toast.LENGTH_SHORT).show();
 
-            }
-        });
+                    }
+                });
     }
 
     private void readComments() {
@@ -565,28 +757,30 @@ public class CommentsActivity extends AppCompatActivity {
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()){
-                    PostModel model = snapshot.getValue(PostModel.class);
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel model = ds.getValue(PostModel.class);
 
                     assert model != null;
-                    if (model.getPostID().equals(itemID))
+                    if (model.getPostID().equals(itemID)){
                         displayPostDetails(model);
-                }else{
-                    storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for (DataSnapshot ds : snapshot.getChildren()){
-                                if (ds.child(itemID).exists()){
-                                    displayStoryDetails(ds);
+                    }else{
+                        storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot ds : snapshot.getChildren()){
+                                    if (ds.child(itemID).exists()){
+                                        shareCounter.setVisibility(View.GONE);
+                                        displayStoryDetails(ds);
+                                    }
                                 }
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             }
 
@@ -632,6 +826,30 @@ public class CommentsActivity extends AppCompatActivity {
             postTimestamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(story.getStoryTimeStamp()), CommentsActivity.this));
         } catch (NumberFormatException ignored) {}
 
+        storyReference.child(story.getUserID()).child(story.getStoryID()).child("taggedFriends")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+
+                            if (snapshot.getChildrenCount() == 1)
+                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friend");
+                            else
+                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friends");
+
+                            tagsArea.setVisibility(View.VISIBLE);
+                        }else {
+                            tagsArea.setVisibility(View.GONE);
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -664,7 +882,12 @@ public class CommentsActivity extends AppCompatActivity {
 
         if (model.getPostType().equals("audioPost")
                 || model.getPostType().equals("audioImagePost")
-                || model.getPostType().equals("audioVideoPost")){
+                || model.getPostType().equals("audioVideoPost")
+                || model.getPostType().equals("sharedAudioTextPost")
+                || model.getPostType().equals("sharedAudioVideoPost")
+                || model.getPostType().equals("sharedAudioImagePost")
+                || model.getPostType().equals("sharedAudioAudioPost")
+                || model.getPostType().equals("sharedAudioAudioImagePost")){
 
             postCaption.setVisibility(View.GONE);
             commentMediaPlayer.setVisibility(View.VISIBLE);
@@ -697,6 +920,29 @@ public class CommentsActivity extends AppCompatActivity {
                 shareArea.setVisibility(View.GONE);
             }
         }catch (NullPointerException ignored){}
+
+        postReference.child(model.getPostID()).child("taggedFriends")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+
+                            if (snapshot.getChildrenCount() == 1)
+                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friend");
+                            else
+                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friends");
+
+                            tagsArea.setVisibility(View.VISIBLE);
+                        }else {
+                            tagsArea.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
 
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -746,12 +992,6 @@ public class CommentsActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private String getFileExtension(Uri uri){
-        ContentResolver contentResolver = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return  mime.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     @Override

@@ -19,9 +19,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +35,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Fragments.ProfileFragment;
 import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
@@ -39,8 +43,10 @@ import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.R;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -50,10 +56,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class UniversalFunctions {
     private Context context;
     private UniversalNotifications universalNotifications = new UniversalNotifications();
+    private SendNotifications sendNotifications = new SendNotifications();
 
     private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
-    private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("Posts");
+    private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
     private DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
     private DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
     private DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
@@ -105,14 +112,14 @@ public class UniversalFunctions {
         });
     }
 
-    public void nrLikes(TextView likes, String postid){
-        likesReference.child(postid).addValueEventListener(new ValueEventListener() {
+    public void nrLikes(TextView likes, String postID){
+        likesReference.child(postID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.getChildrenCount() == 1)
-                    likes.setText(snapshot.getChildrenCount() + " like");
+                    likes.setText(snapshot.getChildrenCount() + " Like");
                 else
-                    likes.setText(snapshot.getChildrenCount() + " likes");
+                    likes.setText(snapshot.getChildrenCount() + " Likes");
             }
 
             @Override
@@ -127,9 +134,9 @@ public class UniversalFunctions {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getChildrenCount() == 1)
-                    commentCountTV.setText(dataSnapshot.getChildrenCount() + " comment");
+                    commentCountTV.setText(dataSnapshot.getChildrenCount() + " Comment");
                 else
-                    commentCountTV.setText(dataSnapshot.getChildrenCount() +" comments");
+                    commentCountTV.setText(dataSnapshot.getChildrenCount() +" Comments");
             }
 
             @Override
@@ -139,11 +146,11 @@ public class UniversalFunctions {
         });
     }
 
-    public void isSaved(final String postid, final ImageView imageView){
+    public void isSaved(final String postID, final ImageView imageView){
         savesReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.child(postid).exists()){
+                if(snapshot.child(postID).exists()){
                     imageView.setImageResource(R.drawable.ic_saved);
                     imageView.setTag("saved");
                 }else{
@@ -231,13 +238,13 @@ public class UniversalFunctions {
                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getChildrenCount() == 0) {
-                    videoViews.setText("Views");
-                }else if (snapshot.getChildrenCount() == 1) {
-                    videoViews.setText(snapshot.getChildrenCount() + " View");
-                }else {
-                    videoViews.setText(snapshot.getChildrenCount() + " Views");
-                }
+                if (snapshot.exists())
+                    if (snapshot.getChildrenCount() == 1)
+                        videoViews.setText(snapshot.getChildrenCount() + " View");
+                    else
+                        videoViews.setText(snapshot.getChildrenCount() + " Views");
+                else
+                    videoViews.setText("0 Views");
 
             }
 
@@ -298,6 +305,27 @@ public class UniversalFunctions {
         });
     }
 
+    public void getSharedNumber(String postID, TextView sharedPostTV){
+        postReference.child(postID).child("sharedBy").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    if (snapshot.getChildrenCount() == 1)
+                        sharedPostTV.setText(snapshot.getChildrenCount() + " Share");
+                    else
+                        sharedPostTV.setText(snapshot.getChildrenCount() + " Shares");
+                }else{
+                    sharedPostTV.setText("0 Shares");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     public void likePost(PostModel postModel){
 
         likesReference.child(postModel.getPostID())
@@ -305,8 +333,8 @@ public class UniversalFunctions {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        if(postModel.getUserID().equals(firebaseUser.getUid()))
-                            universalNotifications.addLikesNotifications(postModel.getPostID(), postModel.getUserID());
+                        /*if(!postModel.getUserID().equals(firebaseUser.getUid()))
+                            sendNotifications.addLikesNotification(postModel.getPostID(), postModel.getUserID());*/
                     }
                 });
     }
@@ -413,10 +441,9 @@ public class UniversalFunctions {
                         break;
 
                     case 2:
-                        Intent intent = new Intent(context, ConnectionsActivity.class);
-                        intent.putExtra("UserID", model.getUserID());
-                        intent.putExtra("Interaction", "Views");
-                        context.startActivity(intent);
+
+                        openViewsDialog(model);
+
                         break;
 
                     case 3:
@@ -450,13 +477,60 @@ public class UniversalFunctions {
                         totalCount++;
                     }
                 }
-
                 postsNo.setText(String.valueOf(totalCount));
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+    }
+
+
+    //-------for displaying dialogs---------//
+    public void openViewsDialog(PostModel model) {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+
+        assert interactionHeader != null;
+        interactionHeader.setText("Views");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(context));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        UserAdapter userAdapter = new UserAdapter(context, idList, "goToProfile");
+        friendsRecycler.setAdapter(userAdapter);
+
+        postViewsReference.child(model.getPostID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                idList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    idList.add(ds.getKey());
+                }
+                userAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
             }
         });
     }

@@ -15,9 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +34,7 @@ import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
@@ -54,7 +57,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
     private Context context;
     private List<CommentModel> commentList;
 
-    private DatabaseReference userReference, commentsRef;
+    private DatabaseReference userReference, commentsRef, likesReference;
     private FirebaseUser firebaseUser;
 
     private GetTimeAgo timeAgo;
@@ -62,15 +65,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
     private UniversalFunctions universalFunctions;
     private UniversalNotifications notifications;
     private FollowInteraction followInteraction;
-    private AudioPlayer audioPlayer;
+    //private AudioPlayer audioPlayer;
 
     public static final int COMMENT_IMAGE_POST = 100;
     public static final int COMMENT_TEXT_POST = 200;
     public static final int COMMENT_AUDIO_POST = 300;
     public static final int COMMENT_AUDIO_IMAGE_POST = 400;
-
-    public CommentsAdapter() {
-    }
 
     public CommentsAdapter(Context context, List<CommentModel> commentList) {
         this.context = context;
@@ -105,7 +105,9 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
         CommentModel comments = commentList.get(position);
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+        likesReference = FirebaseDatabase.getInstance().getReference("Likes");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
         timeAgo = new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
         notifications = new UniversalNotifications(context);
@@ -147,7 +149,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
 
     private void getAudioCommentDetails(CommentModel comments, MyHolder holder) {
 
-        audioPlayer = new AudioPlayer(context, holder.playBTN,
+        AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
         try{
@@ -222,12 +224,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
             @Override
             public void onClick(View view) {
                 if(holder.likesBTN.getTag().equals("like")){
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(comments.getCommentID())
+                    likesReference.child(comments.getCommentID())
                             .child(firebaseUser.getUid()).setValue(true);
-                    if (!firebaseUser.getUid().equals(comments.getUserID()))
-                        notifications.addLikesNotifications(comments.getUserID(), comments.getCommentID());
+                    /*if (!firebaseUser.getUid().equals(comments.getUserID()))
+                        notifications.addLikesNotifications(comments.getUserID(), comments.getCommentID());*/
                 }else{
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(comments.getCommentID())
+                    likesReference.child(comments.getCommentID())
                             .child(firebaseUser.getUid()).removeValue();
                 }
             }
@@ -237,10 +239,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(context, ConnectionsActivity.class);
-                intent.putExtra("UserID", comments.getCommentID());
-                intent.putExtra("Interaction", "Likes");
-                context.startActivity(intent);
+                showLikesDialog(comments);
             }
         });
 
@@ -250,6 +249,52 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                 Intent imageIntent = new Intent(context, FullScreenPictureActivity.class);
                 imageIntent.putExtra("imageURL", comments.getCommentImage());
                 context.startActivity(imageIntent);
+            }
+        });
+    }
+
+    private void showLikesDialog(CommentModel post) {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        assert interactionHeader != null;
+        interactionHeader.setText("Likes");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(context));
+        friendsRecycler.setNestedScrollingEnabled(true);
+
+        likesReference.child(post.getCommentID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    idList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        idList.add(ds.getKey());
+                    }
+                    friendsRecycler.setAdapter(new UserAdapter(context, idList, "goToProfile"));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
             }
         });
     }
@@ -352,10 +397,6 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
     }
 
     private void getCommentInfo(CommentModel comments, final MyHolder holder) {
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList = new ContactsList(phoneBook, context);
-        contactsList.readContacts();
-        final List<ContactsModel> phoneContacts = contactsList.getContactsList();
 
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -366,29 +407,17 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
 
                         assert user != null;
                         if (user.getUSER_ID().equals(comments.getUserID())) {
-
-                            for (ContactsModel contactsModel : phoneContacts) {
-                                if (user.getUSER_ID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                                    holder.commentOwner.setText("Me");
-                                } else if (contactsModel.getNumber().equals(user.getNumber())) {
-                                    holder.commentOwner.setText(contactsModel.getUsername());
-                                }else{
-                                    holder.commentOwner.setText(user.getUsername());
-                                }
+                            if (user.getUSER_ID().equals(firebaseUser.getUid())) {
+                                holder.commentOwner.setText("Me");
+                            } else{
+                                holder.commentOwner.setText(user.getUsername());
                             }
 
-                            Picasso.get().load(user.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(holder.cProPic, new Callback() {
-                                @Override
-                                public void onSuccess() {
-
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-
-                                    Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(holder.cProPic);
-                                }
-                            });
+                            try{
+                                Picasso.get().load(user.getImageURL()).into(holder.cProPic);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.cProPic);
+                            }
                         }
                     }
                 }

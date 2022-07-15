@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
@@ -51,7 +52,7 @@ public class ExploreFootageFragment extends Fragment {
         videoLoader = view.findViewById(R.id.followingVideosLoader);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         followReference = FirebaseDatabase.getInstance().getReference("Follow")
                 .child(firebaseUser.getUid())
                 .child("following");
@@ -95,13 +96,16 @@ public class ExploreFootageFragment extends Fragment {
                         if (postModel.getUserID().equals(id)){
                             if (postModel.getPostType().equals("videoPost")
                                     || postModel.getPostType().equals("sharedVideoPost")
-                                    || postModel.getPostType().equals("audioVideoPost")){
+                                    || postModel.getPostType().equals("sharedAudioTextVideoPost")
+                                    || postModel.getPostType().equals("audioVideoPost")
+                                    || postModel.getPostType().equals("sharedTextAudioVideoPost")
+                                    || postModel.getPostType().equals("sharedAudioAudioVideoPost")){
                                 videoList.add(postModel);
                             }
                         }
                     }
                     Collections.shuffle(videoList);
-                    videoPager.setAdapter(new VideoFootageAdapter(videoList, getActivity()));
+                    videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));
                     videoLoader.setVisibility(View.GONE);
                 }
             }

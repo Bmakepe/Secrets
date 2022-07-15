@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/dialog_bg"
+    android:padding="5dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/dialogHeader"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/closeSheetBTN"
+            android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+            android:padding="5dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tag Friends"
+            android:textStyle="normal"
+            android:layout_toEndOf="@+id/closeSheetBTN"
+            android:layout_toStartOf="@+id/taggedFriendsDoneBTN"
+            android:layout_centerVertical="true"
+            android:textSize="16sp"
+            android:textColor="@color/colorBlack"/>
+
+        <TextView
+            android:id="@+id/taggedFriendsDoneBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="Done"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:padding="5dp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+    <androidx.appcompat.widget.SearchView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:iconifiedByDefault="false"
+        android:layout_below="@+id/dialogHeader"
+        app:closeIcon="@drawable/ic_close_black_24dp"
+        app:queryHint="Search Friends"
+        android:id="@+id/searchView"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_below="@+id/searchView"
+        android:layout_height="match_parent"
+        android:id="@+id/tagFriendsRecycler"/>
+
+</RelativeLayout>

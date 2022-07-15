@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,11 +15,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,7 +41,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
+import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.EditProfileActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.MessagesActivity;
@@ -52,13 +51,12 @@ import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.GettingStarted.RegisterActivity;
-import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.ViewPagerAdapter;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
-import static com.google.firebase.storage.FirebaseStorage.getInstance;
+import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -84,7 +82,7 @@ public class ProfileFragment extends Fragment {
 
     //firebase
     private FirebaseUser firebaseUser;
-    private DatabaseReference userRef, postReference, storyReference;
+    private DatabaseReference userRef, postReference, storyReference, followReference;
 
     //for fragments
     private TabLayout profileTabs;
@@ -136,7 +134,9 @@ public class ProfileFragment extends Fragment {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("Posts");
-        storyReference = FirebaseDatabase.getInstance().getReference("Story").child(firebaseUser.getUid());
+        storyReference = FirebaseDatabase.getInstance().getReference("Story")
+                .child(firebaseUser.getUid());
+        followReference = FirebaseDatabase.getInstance().getReference("Follow");
 
         SharedPreferences prefs = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         uid = prefs.getString("profileid", "none");
@@ -162,21 +162,14 @@ public class ProfileFragment extends Fragment {
         followersListBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent followersIntent = new Intent(getActivity(), ConnectionsActivity.class);
-                followersIntent.putExtra("UserID", firebaseUser.getUid());
-                followersIntent.putExtra("Interaction", "Followers");
-                startActivity(followersIntent);
+                showFollowersDialog();
             }
         });
 
         followingListBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent followingIntent = new Intent(getActivity(), ConnectionsActivity.class);
-                followingIntent.putExtra("UserID", firebaseUser.getUid());
-                followingIntent.putExtra("Interaction", "Following");
-                startActivity(followingIntent);
-
+                showFollowingDialog();
             }
         });
 
@@ -247,6 +240,98 @@ public class ProfileFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void showFollowingDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext());
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        interactionHeader.setText("Following");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        friendsRecycler.setNestedScrollingEnabled(true);
+
+        followReference.child(firebaseUser.getUid()).child("following")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            friendsRecycler.setAdapter(new UserAdapter(getActivity(), idList, "goToProfile"));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void showFollowersDialog() {
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext());
+        bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
+
+        ImageView close = bottomSheetDialog.findViewById(R.id.taggedCloseSheetBTN);
+        TextView interactionHeader = bottomSheetDialog.findViewById(R.id.interactionHeader);
+        RecyclerView friendsRecycler = bottomSheetDialog.findViewById(R.id.taggedFriendsRecycler);
+
+        interactionHeader.setText("Followers");
+
+        ArrayList<String> idList = new ArrayList<>();
+
+        friendsRecycler.hasFixedSize();
+        friendsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        friendsRecycler.setNestedScrollingEnabled(true);
+        followReference.child(firebaseUser.getUid()).child("followers")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            idList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                idList.add(ds.getKey());
+                            }
+                            friendsRecycler.setAdapter(new UserAdapter(getActivity(), idList, "goToProfile"));
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        bottomSheetDialog.show();
+        bottomSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
     }
 
     private void getUserDetails() {

@@ -3,7 +3,7 @@ package com.makepe.blackout.GettingStarted.Models;
 import java.util.ArrayList;
 
 public class Chat {
-    private String sender, receiver, message, audio, timeStamp, message_type, media, chatID, videoURL;
+    private String sender, receiver, message, audio, timeStamp, message_type, media, chatID, videoURL, storyID;
     private ArrayList<String> mediaUriList;
     private boolean isSeen;
     private double latitude, longitude;
@@ -12,7 +12,7 @@ public class Chat {
     }
 
     public Chat(String sender, String receiver, String message, String audio, String timeStamp,
-                String message_type, String media, String chatID, String videoURL,
+                String message_type, String media, String chatID, String videoURL, String storyID,
                 ArrayList<String> mediaUriList, boolean isSeen, double latitude, double longitude) {
         this.sender = sender;
         this.receiver = receiver;
@@ -23,10 +23,19 @@ public class Chat {
         this.media = media;
         this.chatID = chatID;
         this.videoURL = videoURL;
+        this.storyID = storyID;
         this.mediaUriList = mediaUriList;
         this.isSeen = isSeen;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public String getStoryID() {
+        return storyID;
+    }
+
+    public void setStoryID(String storyID) {
+        this.storyID = storyID;
     }
 
     public String getVideoURL() {

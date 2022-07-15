@@ -61,7 +61,7 @@ public class InteractionsActivity extends AppCompatActivity {
         interactionType = intent.getStringExtra("interactionType");
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         savedMediaRef = FirebaseDatabase.getInstance().getReference("Saves")
                 .child(firebaseUser.getUid());
@@ -199,9 +199,12 @@ public class InteractionsActivity extends AppCompatActivity {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     assert modelPost != null;
-                    if(!modelPost.getPostImage().equals("noImage")
-                            && modelPost.getUserID().equals(userID)){
-                        mediaList.add(modelPost);
+
+                    if (modelPost.getUserID().equals(userID)){
+                        if (modelPost.getPostType().equals("imagePost")
+                                || modelPost.getPostType().equals("audioImagePost")){
+                            mediaList.add(modelPost);
+                        }
                     }
 
                 }
