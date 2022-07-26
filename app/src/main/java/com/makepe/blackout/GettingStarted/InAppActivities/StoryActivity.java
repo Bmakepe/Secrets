@@ -283,11 +283,13 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                 if(likeBTN.getTag().equals("like")){
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).setValue(true);
-                    /*if (!userID.equals(firebaseUser.getUid()))
-                        notifications.addLikesNotification(storyID, userID);*/
+                    if (!userID.equals(firebaseUser.getUid()))
+                        notifications.addStoryLikeNotification(storyList.get(counter));
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).removeValue();
+                    if (!userID.equals(firebaseUser.getUid()))
+                        notifications.removeStoryLikeNotification(storyList.get(counter));
                 }
             }
         });
@@ -506,8 +508,8 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
         HashMap<String, Object> messageMap = new HashMap<>();
         messageMap.put("chatID", chatID);
-        messageMap.put("sender", firebaseUser.getUid());
-        messageMap.put("receiver", userID);
+        messageMap.put("senderID", firebaseUser.getUid());
+        messageMap.put("receiverID", userID);
         messageMap.put("isSeen", false);
         messageMap.put("message", messageET.getText().toString());
         messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
@@ -558,8 +560,8 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                     HashMap<String, Object> messageMap = new HashMap<>();
 
                     messageMap.put("chatID", chatID);
-                    messageMap.put("sender", firebaseUser.getUid());
-                    messageMap.put("receiver", userID);
+                    messageMap.put("senderID", firebaseUser.getUid());
+                    messageMap.put("receiverID", userID);
                     messageMap.put("isSeen", false);
                     messageMap.put("storyID", storyID);
                     messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
@@ -593,7 +595,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    senderReference.child("id").setValue(userID);
+                    senderReference.child("userID").setValue(userID);
                     senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
                 }
             }
@@ -612,7 +614,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    receiverReference.child("id").setValue(firebaseUser.getUid());
+                    receiverReference.child("userID").setValue(firebaseUser.getUid());
                     senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
                 }
             }
@@ -685,7 +687,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
         }
 
-        Glide.with(getApplicationContext()).load(storyList.get(counter).getStoryImage()).into(storyPhoto);
+        Glide.with(getApplicationContext()).load(storyList.get(counter).getImageURL()).into(storyPhoto);
 
         storyTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(storyList.get(counter).getStoryTimeStamp()), StoryActivity.this));
 
@@ -760,12 +762,12 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                     User user = snapshot.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(userID)){
+                    if (user.getUserID().equals(userID)){
 
                         for(ContactsModel contactsModel : phoneContacts){
                             if(userID.equals(firebaseUser.getUid())){
                                 storyUsername.setText("Me");
-                            }else if(contactsModel.getNumber().equals(user.getNumber())){
+                            }else if(contactsModel.getPhoneNumber().equals(user.getPhoneNumber())){
                                 storyUsername.setText(contactsModel.getUsername());
                             }else{
                                 storyUsername.setText(user.getUsername());
@@ -878,7 +880,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
 
-                                StorageReference imageRef = FirebaseStorage.getInstance().getReference(storyList.get(counter).getStoryImage());
+                                StorageReference imageRef = FirebaseStorage.getInstance().getReference(storyList.get(counter).getImageURL());
                                 imageRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {

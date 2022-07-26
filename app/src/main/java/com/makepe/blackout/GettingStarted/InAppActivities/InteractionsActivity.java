@@ -43,7 +43,7 @@ public class InteractionsActivity extends AppCompatActivity {
     private ArrayList<User> userList;
 
     private DatabaseReference postReference, userReference,
-            savedMediaRef;
+            savedMediaRef, videosReference;
     private FirebaseUser firebaseUser;
 
     @Override
@@ -62,6 +62,7 @@ public class InteractionsActivity extends AppCompatActivity {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        videosReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         savedMediaRef = FirebaseDatabase.getInstance().getReference("Saves")
                 .child(firebaseUser.getUid());
@@ -111,7 +112,7 @@ public class InteractionsActivity extends AppCompatActivity {
 
     private void getVideos() {
         mediaList = new ArrayList<>();
-        postReference.addValueEventListener(new ValueEventListener() {
+        videosReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 mediaList.clear();
@@ -121,8 +122,6 @@ public class InteractionsActivity extends AppCompatActivity {
                     for (String id : savedList){
                         assert videos != null;
                         if (videos.getPostID().equals(id)){
-                            if (videos.getPostType().equals("videoPost")
-                                    || videos.getPostType().equals("sharedVideoPost"))
                             mediaList.add(videos);
                         }
                     }
@@ -226,7 +225,7 @@ public class InteractionsActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(userID)){
+                    if (user.getUserID().equals(userID)){
                         connectionsToolbar.setTitle(user.getUsername() + " Media");
                     }
                 }

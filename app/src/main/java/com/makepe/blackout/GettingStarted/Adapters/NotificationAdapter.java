@@ -60,7 +60,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         final NotiModel notification = mNotifications.get(position);
         getTimeAgo = new GetTimeAgo();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        postReference = FirebaseDatabase.getInstance().getReference("Posts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         commentReference = FirebaseDatabase.getInstance().getReference("Comments");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -68,20 +68,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         getUserInfo(holder, notification);
         getNotificationContent(holder, notification);
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(notification.isPost() || notification.isStory()){
-                    Intent intent = new Intent(mContext, CommentsActivity.class);
-                    intent.putExtra("postID", notification.getPostID());
-                    mContext.startActivity(intent);
-                }else if (notification.isFollowing()){
-                    Intent intent = new Intent(mContext, ViewProfileActivity.class);
-                    intent.putExtra("uid", notification.getUserID());
-                    mContext.startActivity(intent);
-                }
-            }
-        });
+
     }
 
     private void getNotificationContent(MyHolder holder, NotiModel notification) {
@@ -94,81 +81,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         holder.text.setText(notification.getText());
 
-
-        if(notification.isPost()){
-
-            postReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot ds : snapshot.getChildren()){
-                        PostModel model = ds.getValue(PostModel.class);
-
-                        assert model != null;
-                        if (model.getPostID().equals(notification.getPostID())){
-                            if (model.getPostType().equals("imagePost")
-                                    || model.getPostType().equals("audioImagePost")){
-                                try{
-                                    holder.post_image.setVisibility(View.VISIBLE);
-                                    Picasso.get().load(model.getPostImage()).into(holder.post_image);
-                                }catch (NullPointerException ignored){}
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-        }else if (notification.isStory()){
-            storyReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot ds : snapshot.getChildren()){
-                        Story story = ds.getValue(Story.class);
-
-                        if (story.getStoryID().equals(notification.getPostID())){
-                            try{
-                                holder.post_image.setVisibility(View.VISIBLE);
-                                Picasso.get().load(story.getStoryImage()).into(holder.post_image);
-                            }catch (NullPointerException ignored){}
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        }else if (notification.isComment()){
-            commentReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot ds : snapshot.getChildren()){
-                        CommentModel commentModel = ds.getValue(CommentModel.class);
-
-                        assert commentModel != null;
-                        if (commentModel.getCommentID().equals(notification.getPostID()))
-                            if (commentModel.getCommentType().equals("imageComment")
-                                    || commentModel.getCommentType().equals("audioImageComment"))
-                                try{
-                                    holder.post_image.setVisibility(View.VISIBLE);
-                                    Picasso.get().load(commentModel.getCommentImage()).into(holder.post_image);
-                                }catch (NullPointerException ignored){}
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        }else{
-            holder.post_image.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -176,7 +88,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return mNotifications.size();
     }
 
-    public class MyHolder extends RecyclerView.ViewHolder {
+    public static class MyHolder extends RecyclerView.ViewHolder {
         ImageView image_profile, post_image;
         public TextView username, text, timeStamp;
 
@@ -205,7 +117,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     for(DataSnapshot ds : dataSnapshot.getChildren()) {
                         User user = ds.getValue(User.class);
 
-                        if (user.getUSER_ID().equals(notification.getUserID())) {
+                        assert user != null;
+                        if (user.getUserID().equals(notification.getUserID())) {
 
                             try {
                                 Picasso.get().load(user.getImageURL()).into(holder.image_profile);
@@ -217,7 +130,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                             for (ContactsModel contactsModel : phoneContacts) {
                                 if (notification.getUserID().equals(firebaseUser.getUid())) {
                                     holder.username.setText("Me");
-                                } else if (contactsModel.getNumber().equals(user.getNumber())) {
+                                } else if (contactsModel.getPhoneNumber().equals(user.getPhoneNumber())) {
                                     holder.username.setText(contactsModel.getUsername());
                                 }else{
                                     holder.username.setText(user.getUsername());

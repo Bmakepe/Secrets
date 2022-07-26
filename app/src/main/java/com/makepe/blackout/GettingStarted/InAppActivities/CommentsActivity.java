@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -19,7 +18,6 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -83,7 +81,7 @@ public class CommentsActivity extends AppCompatActivity {
     private TextInputLayout commentCaptionArea;
 
     private DatabaseReference commentReference, userReference, postReference,
-            storyReference, likesReference;
+            storyReference, likesReference, videoReference;
     private FirebaseUser firebaseUser;
 
     private String itemID, userID, commentID;
@@ -96,7 +94,6 @@ public class CommentsActivity extends AppCompatActivity {
     private List<CommentModel> commentList;
 
     private Uri imageUri;
-    private String myUri = "";
     private StorageTask uploadTask;
     private StorageReference storageReference, audioReference;
     private ProgressDialog uploadDialog;
@@ -170,9 +167,10 @@ public class CommentsActivity extends AppCompatActivity {
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
-        storageReference = FirebaseStorage.getInstance().getReference("CommentImages");
+        storageReference = FirebaseStorage.getInstance().getReference("comment_images");
         audioReference = FirebaseStorage.getInstance().getReference();
         likesReference = FirebaseDatabase.getInstance().getReference("Likes");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
 
         universalFunctions = new UniversalFunctions(this);
         notifications = new SendNotifications(this);
@@ -281,20 +279,21 @@ public class CommentsActivity extends AppCompatActivity {
                 }else if (postCommentBTN.getText().toString().trim().equals("Post")){
 
                     uploadDialog.setMessage("loading...");
+                    uploadDialog.show();
 
                     if (!TextUtils.isEmpty(commentET.getText().toString())){
                         if (imageUri != null){
-                            uploadDialog.show();
-                            addImageComment();
+                            uploadImageTextComment();
                         }else{
-                            uploadDialog.show();
-                            addComment("textComment", "noImage");
+                            uploadTextComment();
                         }
 
                     }else if(audioRecorder.getRecordingFilePath() != null){
 
-                        uploadDialog.show();
-                        uploadAudioComment();
+                        if (imageUri != null)
+                            uploadImageAudioComment();
+                        else
+                            uploadAudioComment();
                     }
 
                 }
@@ -381,6 +380,243 @@ public class CommentsActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void uploadAudioComment() {
+        StorageReference audioPath = audioReference.child("AudioComments").child(commentID + ".3gp");
+        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+
+                    HashMap<String, Object> audioMap = new HashMap<>();
+
+                    audioMap.put("commentID", commentID);
+                    audioMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    audioMap.put("userID", firebaseUser.getUid());
+                    audioMap.put("postID", itemID);
+                    audioMap.put("commentType", "audioComment");
+                    audioMap.put("audioUrl", audioDownloadLink.toString());
+
+                    if(!commentsLocationTV.getText().toString().equals("No Location")){
+                        audioMap.put("latitude", locationServices.getLatitude());
+                        audioMap.put("longitude", locationServices.getLongitude());
+                    }
+
+                    commentReference.child(itemID).child(commentID).setValue(audioMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    resetLayout();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+        });
+    }
+
+    private void uploadImageAudioComment() {
+
+        StorageReference audioPath = audioReference.child("AudioComments").child(commentID + ".3gp");
+        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+
+                    final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
+                            + "." + uploadFunctions.getFileExtension(imageUri));
+
+                    uploadTask = imageReference.putFile(imageUri);
+                    uploadTask.continueWithTask(new Continuation() {
+                        @Override
+                        public Object then(@NonNull Task task) throws Exception {
+                            if (!task.isSuccessful())
+                                throw task.getException();
+                            return imageReference.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()){
+                                Uri imageDownloadLink = task.getResult();
+
+                                HashMap<String, Object> audioImageMap = new HashMap<>();
+
+                                audioImageMap.put("commentID", commentID);
+                                audioImageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                                audioImageMap.put("userID", firebaseUser.getUid());
+                                audioImageMap.put("commentImage", imageDownloadLink.toString());
+                                audioImageMap.put("postID", itemID);
+                                audioImageMap.put("commentType", "audioImageComment");
+                                audioImageMap.put("audioUrl", audioDownloadLink.toString());
+
+                                if(!commentsLocationTV.getText().toString().equals("No Location")){
+                                    audioImageMap.put("latitude", locationServices.getLatitude());
+                                    audioImageMap.put("longitude", locationServices.getLongitude());
+                                }
+
+                                commentReference.child(itemID).child(commentID).setValue(audioImageMap)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                resetLayout();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(CommentsActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+    }
+
+    private void uploadTextComment() {
+        HashMap<String, Object> commentMap = new HashMap<>();
+
+        commentMap.put("commentID", commentID);
+        commentMap.put("comment", commentET.getText().toString());
+        commentMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        commentMap.put("userID", firebaseUser.getUid());
+        commentMap.put("postID", itemID);
+        commentMap.put("commentType", "textComment");
+
+        if(!commentsLocationTV.getText().toString().equals("No Location")){
+            commentMap.put("latitude", locationServices.getLatitude());
+            commentMap.put("longitude", locationServices.getLongitude());
+        }
+
+        commentReference.child(itemID).child(commentID).setValue(commentMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        resetLayout();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(CommentsActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void uploadImageTextComment() {
+        final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
+                + "." + uploadFunctions.getFileExtension(imageUri));
+
+        uploadTask = fileReference.putFile(imageUri);
+        uploadTask.continueWithTask(
+                new Continuation() {
+                    @Override
+                    public Object then(@NonNull Task task) throws Exception {
+                        if (!task.isSuccessful())
+                            throw task.getException();
+
+                        return fileReference.getDownloadUrl();
+                    }
+                }
+        ).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri downloadUri = task.getResult();
+
+                    HashMap<String, Object> commentMap = new HashMap<>();
+
+                    commentMap.put("commentID", commentID);
+                    commentMap.put("comment", commentET.getText().toString());
+                    commentMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    commentMap.put("userID", firebaseUser.getUid());
+                    commentMap.put("commentImage", String.valueOf(downloadUri));
+                    commentMap.put("postID", itemID);
+                    commentMap.put("commentType", "imageComment");
+
+                    if (!commentsLocationTV.getText().toString().equals("No Location")){
+                        commentMap.put("latitude", locationServices.getLatitude());
+                        commentMap.put("longitude", locationServices.getLongitude());
+                    }
+
+                    commentReference.child(itemID).child(commentID).setValue(commentMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    resetLayout();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+
+                                }
+                            });
+
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(CommentsActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void resetLayout() {
+
+        if (!userID.equals(firebaseUser.getUid()))
+            if (TextUtils.isEmpty(commentET.getText().toString()))
+                notifications.addPostCommentNotification(userID, itemID, "recorded a comment");
+            else
+                notifications.addPostCommentNotification(userID, itemID, commentET.getText().toString());
+
+        if (imageUri != null) {
+            commentPostImage.setImageURI(null);
+            commentPostImage.setVisibility(View.GONE);
+        }
+
+        if (audioRecorder.getRecordingFilePath() != null){
+            audioRecorder.resetRecorder();
+        }
+
+        commentET.setText("");
+
+        if (!commentsLocationTV.getText().toString().equals("No Location"))
+            commentsLocationTV.setText("No Location");
+
+        uploadDialog.dismiss();
     }
 
     private void showLikesDialog() {
@@ -549,188 +785,6 @@ public class CommentsActivity extends AppCompatActivity {
         });
     }
 
-    private void uploadAudioComment() {
-        StorageReference audioPath = audioReference.child("AudioComments").child(commentID + ".3gp");
-        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
-
-        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
-
-        audioTask.continueWithTask(new Continuation() {
-            @Override
-            public Object then(@NonNull Task task) throws Exception {
-                if (!task.isSuccessful())
-                    throw task.getException();
-                return audioPath.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()){
-                    Uri audioDownloadLink = task.getResult();
-
-                    if (imageUri != null){
-                        final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
-                                + "." + uploadFunctions.getFileExtension(imageUri));
-
-                        uploadTask = imageReference.putFile(imageUri);
-                        uploadTask.continueWithTask(new Continuation() {
-                            @Override
-                            public Object then(@NonNull Task task) throws Exception {
-                                if (!task.isSuccessful())
-                                    throw task.getException();
-                                return imageReference.getDownloadUrl();
-                            }
-                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                if (task.isSuccessful()){
-                                    Uri imageDownloadLink = task.getResult();
-
-                                    HashMap<String, Object> audioImageMap = new HashMap<>();
-
-                                    audioImageMap.put("commentID", commentID);
-                                    audioImageMap.put("comment", "");
-                                    audioImageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-                                    audioImageMap.put("userID", firebaseUser.getUid());
-                                    audioImageMap.put("commentImage", imageDownloadLink.toString());
-                                    audioImageMap.put("postID", itemID);
-                                    audioImageMap.put("commentType", "audioImageComment");
-                                    audioImageMap.put("audioUrl", audioDownloadLink.toString());
-
-                                    if(!commentsLocationTV.getText().toString().equals("No Location")){
-                                        audioImageMap.put("latitude", locationServices.getLatitude());
-                                        audioImageMap.put("longitude", locationServices.getLongitude());
-                                    }
-
-                                    commentReference.child(itemID).child(commentID).setValue(audioImageMap)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    resetLayout();
-                                                }
-                                            }).addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                }
-                            }
-                        });
-                    }else{
-                        HashMap<String, Object> audioMap = new HashMap<>();
-
-                        audioMap.put("commentID", commentID);
-                        audioMap.put("comment", "");
-                        audioMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-                        audioMap.put("userID", firebaseUser.getUid());
-                        audioMap.put("commentImage", "noImage");
-                        audioMap.put("postID", itemID);
-                        audioMap.put("commentType", "audioComment");
-                        audioMap.put("audioUrl", audioDownloadLink.toString());
-
-                        if(!commentsLocationTV.getText().toString().equals("No Location")){
-                            audioMap.put("latitude", locationServices.getLatitude());
-                            audioMap.put("longitude", locationServices.getLongitude());
-                        }
-
-                        commentReference.child(itemID).child(commentID).setValue(audioMap)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        resetLayout();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(CommentsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                }
-            }
-        });
-    }
-
-    private void resetLayout() {
-        if (imageUri != null) {
-            commentPostImage.setImageURI(null);
-            commentPostImage.setVisibility(View.GONE);
-        }
-
-        if (audioRecorder.getRecordingFilePath() != null){
-            audioRecorder.resetRecorder();
-        }
-
-        /*if (!userID.equals(firebaseUser.getUid()))
-            notifications.addCommentNotification(itemID, userID);*/
-
-        commentET.setText("");
-
-        if (!commentsLocationTV.getText().toString().equals("No Location"))
-            commentsLocationTV.setText("No Location");
-
-        uploadDialog.dismiss();
-    }
-
-    private void addImageComment() {
-        final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
-                + "." + uploadFunctions.getFileExtension(imageUri));
-
-        uploadTask = fileReference.putFile(imageUri);
-        uploadTask.continueWithTask(new Continuation() {
-            @Override
-            public Object then(@NonNull Task task) throws Exception {
-                if (!task.isSuccessful()){
-                    throw task.getException();
-                }
-                return fileReference.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()){
-                    Uri downloadUri = task.getResult();
-                    myUri = downloadUri.toString();
-
-                    addComment("imageComment", myUri);
-                }
-            }
-        });
-    }
-
-    private void addComment(String commentType, String commentImage) {
-
-        HashMap<String, Object> commentMap = new HashMap<>();
-        commentMap.put("commentID", commentID);
-        commentMap.put("comment", commentET.getText().toString());
-        commentMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-        commentMap.put("userID", firebaseUser.getUid());
-        commentMap.put("commentImage", commentImage);
-        commentMap.put("postID", itemID);
-        commentMap.put("commentType", commentType);
-
-        if(!commentsLocationTV.getText().toString().equals("No Location")){
-            commentMap.put("latitude", locationServices.getLatitude());
-            commentMap.put("longitude", locationServices.getLongitude());
-        }
-
-        assert commentID != null;
-        commentReference.child(itemID).child(commentID).setValue(commentMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        resetLayout();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(CommentsActivity.this, "Comment Unsuccessful", Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-    }
-
     private void readComments() {
         commentReference.child(itemID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -754,33 +808,22 @@ public class CommentsActivity extends AppCompatActivity {
 
     private void getPostDetails() {
 
-        postReference.addValueEventListener(new ValueEventListener() {
+        postReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel model = ds.getValue(PostModel.class);
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        PostModel model = ds.getValue(PostModel.class);
 
-                    assert model != null;
-                    if (model.getPostID().equals(itemID)){
-                        displayPostDetails(model);
-                    }else{
-                        storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot ds : snapshot.getChildren()){
-                                    if (ds.child(itemID).exists()){
-                                        shareCounter.setVisibility(View.GONE);
-                                        displayStoryDetails(ds);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
+                        assert model != null;
+                        if (model.getPostID().equals(itemID)){
+                            displayPostDetails(model);
+                        }else{
+                            getOthersCategories();
+                        }
                     }
+                }else{
+                    getOthersCategories();
                 }
             }
 
@@ -791,80 +834,125 @@ public class CommentsActivity extends AppCompatActivity {
         });
     }
 
-    private void displayStoryDetails(DataSnapshot ds) {
-        Story story = ds.child(itemID).getValue(Story.class);
-
-        assert story != null;
-        userID = story.getUserID();
-
-        if (story.getStoryType().equals("textStory")){
-            postCaption.setText(story.getStoryCaption());
-
-        }else if(story.getStoryType().equals("audioStory")){
-            postCaption.setVisibility(View.GONE);
-            commentMediaPlayer.setVisibility(View.VISIBLE);
-
-            playBTN.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    if (!audioPlayer.isPlaying()){
-                        audioPlayer.startPlayingAudio(story.getStoryAudioUrl());
-                    }else{
-                        audioPlayer.stopPlayingAudio();
-                    }
-                }
-            });
-
-        }
-
-        try{
-            universalFunctions.findAddress(story.getLatitude(), story.getLongitude(), postLocation, locationArea);
-        }catch (Exception ignored){}
-
-        try {
-            postTimestamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(story.getStoryTimeStamp()), CommentsActivity.this));
-        } catch (NumberFormatException ignored) {}
-
-        storyReference.child(story.getUserID()).child(story.getStoryID()).child("taggedFriends")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()){
-
-                            if (snapshot.getChildrenCount() == 1)
-                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friend");
-                            else
-                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friends");
-
-                            tagsArea.setVisibility(View.VISIBLE);
-                        }else {
-                            tagsArea.setVisibility(View.GONE);
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
-        userReference.addValueEventListener(new ValueEventListener() {
+    private void getOthersCategories() {
+        videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    User user = ds.getValue(User.class);
+                if (snapshot.exists()){
+                    for (DataSnapshot data : snapshot.getChildren()){
+                        PostModel video = data.getValue(PostModel.class);
 
-                    assert user != null;
-                    if (user.getUSER_ID().equals(story.getUserID())) {
-                        hisName.setText(user.getUsername());
+                        assert video != null;
+                        if (video.getPostID().equals(itemID))
+                            displayPostDetails(video);
+                        else
+                            getStoryDetails();
+                    }
+                }else{
+                    getStoryDetails();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getStoryDetails() {
+        storyReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    if (ds.child(itemID).exists()){
+                        shareCounter.setVisibility(View.GONE);
+                        Story story = ds.child(itemID).getValue(Story.class);
+
+                        assert story != null;
+                        userID = story.getUserID();
+
+                        if (story.getStoryType().equals("textStory")){
+                            postCaption.setText(story.getStoryCaption());
+
+                        }else if(story.getStoryType().equals("audioStory")){
+                            postCaption.setVisibility(View.GONE);
+                            commentMediaPlayer.setVisibility(View.VISIBLE);
+
+                            playBTN.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+
+                                    if (!audioPlayer.isPlaying()){
+                                        audioPlayer.startPlayingAudio(story.getStoryAudioUrl());
+                                    }else{
+                                        audioPlayer.stopPlayingAudio();
+                                    }
+                                }
+                            });
+
+                        }
+
+                        try{
+                            universalFunctions.findAddress(story.getLatitude(), story.getLongitude(), postLocation, locationArea);
+                        }catch (Exception ignored){}
 
                         try {
-                            Picasso.get().load(user.getImageURL()).into(hisProPic);
-                        } catch (NullPointerException e) {
-                            Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProPic);
-                        }
+                            postTimestamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(story.getStoryTimeStamp()), CommentsActivity.this));
+                        } catch (NumberFormatException ignored) {}
+
+                        storyReference.child(story.getUserID()).child(story.getStoryID()).child("taggedFriends")
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()){
+
+                                            if (snapshot.getChildrenCount() == 1)
+                                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friend");
+                                            else
+                                                taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friends");
+
+                                            tagsArea.setVisibility(View.VISIBLE);
+                                        }else {
+                                            tagsArea.setVisibility(View.GONE);
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+
+                        userReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot ds : snapshot.getChildren()) {
+                                    User user = ds.getValue(User.class);
+
+                                    assert user != null;
+                                    if (user.getUserID().equals(story.getUserID())) {
+
+                                        if (user.getUserID().equals(firebaseUser.getUid()))
+                                            hisName.setText("Me");
+                                        else
+                                            hisName.setText(user.getUsername());
+
+                                        try {
+                                            Picasso.get().load(user.getImageURL()).into(hisProPic);
+                                        } catch (NullPointerException e) {
+                                            Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProPic);
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                     }
                 }
             }
@@ -951,14 +1039,17 @@ public class CommentsActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(model.getUserID())){
+                    if (user.getUserID().equals(model.getUserID())){
                         try {
                             Picasso.get().load(user.getImageURL()).into(hisProPic);
                         }catch (NullPointerException e){
                             Picasso.get().load(R.drawable.default_profile_display_pic).into(hisProPic);
                         }
 
-                        hisName.setText(user.getUsername());
+                        if (user.getUserID().equals(firebaseUser.getUid()))
+                            hisName.setText("Me");
+                        else
+                            hisName.setText(user.getUsername());
                     }
                 }
             }
@@ -977,7 +1068,7 @@ public class CommentsActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    if (user.getUserID().equals(firebaseUser.getUid())){
                         try{
                             Picasso.get().load(user.getImageURL()).into(myProPic);
                         }catch (NullPointerException e){

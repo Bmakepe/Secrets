@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.GroupDetailsActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -248,17 +247,14 @@
                                     android:id="@+id/groupAboutTV"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/roboto_regular"
-                                    android:text="About"
                                     android:textColor="@color/colorBlack"
-                                    android:textSize="16sp"
+                                    android:textSize="14sp"
                                     android:textStyle="bold" />
 
                                 <LinearLayout
                                     android:layout_below="@+id/groupAboutTV"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
                                     android:orientation="vertical">
 
                                     <TextView
@@ -271,31 +267,19 @@
                                         android:textSize="12sp"
                                         android:padding="2dp"
                                         android:layout_marginTop="2dp"
-                                        android:textStyle="bold"/>
-
-                                    <TextView
-                                        android:id="@+id/groupTimeCreated"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:fontFamily="sans-serif"
-                                        android:singleLine="true"
-                                        android:padding="2dp"
-                                        android:textColor="@color/colorBlack"
-                                        android:textSize="12sp"
-                                        android:textStyle="bold"
-                                        android:layout_marginTop="2dp" />
+                                        android:textStyle="normal"/>
 
                                     <TextView
                                         android:id="@+id/groupDescription"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:fontFamily="sans-serif"
-                                        android:maxLines="3"
                                         android:padding="2dp"
+                                        android:lineSpacingExtra="5sp"
                                         android:layout_marginTop="2dp"
                                         android:textColor="@color/colorBlack"
                                         android:textSize="12sp"
-                                        android:textStyle="bold" />
+                                        android:textStyle="normal" />
 
                                 </LinearLayout>
 

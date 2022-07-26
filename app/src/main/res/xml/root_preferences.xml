@@ -31,6 +31,15 @@
         </Preference>
 
         <Preference
+            app:key="advertising"
+            app:title="Create an Ad Campaign"
+            android:icon="@drawable/ic_baseline_ad_units_24"
+            app:useSimpleSummaryProvider="true">
+
+
+        </Preference>
+
+        <Preference
             app:key="account"
             app:title="Deactivate My Account"
             android:icon="@drawable/ic_baseline_phonelink_erase_24"

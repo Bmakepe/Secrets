@@ -1,50 +1,26 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.text.format.DateFormat;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PostActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PosteActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -80,11 +56,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.MyHolder
                 if (!holder.selector.isChecked()){
                     holder.selector.setChecked(true);
                     taggedFriends.add(contact);
-                    //posteActivity.taggedUsers.add(contact);
                 }else{
                     holder.selector.setChecked(false);
                     taggedFriends.remove(contact);
-                    //posteActivity.taggedUsers.remove(contact);
                 }
             }
         });
@@ -99,7 +73,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.MyHolder
                     User contactsModel = ds.getValue(User.class);
 
                     assert contactsModel != null;
-                    if (contactsModel.getUSER_ID().equals(contact.getUSER_ID())){
+                    if (contactsModel.getUserID().equals(contact.getUserID())){
                         holder.contactName.setText(contactsModel.getUsername());
                         try{
                             Picasso.get().load(contact.getImageURL()).into(holder.contactProPic);

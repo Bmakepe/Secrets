@@ -1,7 +1,5 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
-import static com.makepe.blackout.GettingStarted.OtherClasses.PaginationListener.PAGE_START;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,17 +14,13 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.os.Handler;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -37,15 +31,15 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.StoryAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.TimelineAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.MessagesActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.PosteActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.PostActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.OtherClasses.Permissions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -77,9 +71,9 @@ public class TimelineFragment extends Fragment {
     private RecyclerView postRecycler;
     private ArrayList<PostModel> postList;
     private TimelineAdapter postAdapter;
-    //private PostAdapter postAdapter;
 
     private ProgressBar timelineLoader;
+    private Permissions permissions;
 
     private ExtendedFloatingActionButton scrollFAB;
 
@@ -122,6 +116,8 @@ public class TimelineFragment extends Fragment {
 
         storyList = new ArrayList<>();
         postList = new ArrayList<>();
+        permissions = new Permissions(getContext());
+        permissions.verifyPermissions();
 
         //for post recycler view
         postRecycler.hasFixedSize();
@@ -161,14 +157,13 @@ public class TimelineFragment extends Fragment {
                     followingList.add(snapshot.getKey());
                 }
                 readStory();
-                //readAppropriatePosts();
+                readAppropriatePosts();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getActivity(), ""+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
+
     }
 
     private void readStory() {
@@ -201,7 +196,7 @@ public class TimelineFragment extends Fragment {
                 //Collections.shuffle(storyList);
                 storyAdapter.notifyDataSetChanged();
 
-                readAppropriatePosts();
+                //readAppropriatePosts();
             }
 
             @Override
@@ -222,27 +217,12 @@ public class TimelineFragment extends Fragment {
                     assert postModel != null;
                     for (String ID : followingList){
                         if (postModel.getUserID().equals(ID))
-
-                            if (!postModel.getPostType().equals("videoPost")
-                                    && !postModel.getPostType().equals("sharedVideoPost")
-                                    && !postModel.getPostType().equals("audioVideoPost")
-                                    && !postModel.getPostType().equals("sharedAudioTextVideoPost")
-                                    && !postModel.getPostType().equals("sharedTextAudioVideoPost")
-                                    && !postModel.getPostType().equals("sharedAudioAudioVideoPost")){
-                                postList.add(postModel);
-                            }
+                            postList.add(postModel);
 
                     }
 
                     if (postModel.getUserID().equals(firebaseUser.getUid()))
-                        if (!postModel.getPostType().equals("videoPost")
-                                && !postModel.getPostType().equals("sharedVideoPost")
-                                && !postModel.getPostType().equals("audioVideoPost")
-                                && !postModel.getPostType().equals("sharedAudioTextVideoPost")
-                                && !postModel.getPostType().equals("sharedTextAudioVideoPost")
-                                && !postModel.getPostType().equals("sharedAudioAudioVideoPost")){
-                            postList.add(postModel);
-                        }
+                        postList.add(postModel);
 
                 }
 
@@ -266,7 +246,7 @@ public class TimelineFragment extends Fragment {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    if (user.getUserID().equals(firebaseUser.getUid())){
                         try{
                             Picasso.get().load(user.getImageURL()).into(homeProPic);
                         }catch (NullPointerException e){
@@ -297,8 +277,9 @@ public class TimelineFragment extends Fragment {
                 startActivity(new Intent(getActivity(), MessagesActivity.class));
                 break;
             case R.id.newPostBTN:
-                //startActivity(new Intent(getActivity(), PostActivity.class));
-                startActivity(new Intent(getActivity(), PosteActivity.class));
+                startActivity(new Intent(getActivity(), PostActivity.class));
+
+                //throw new RuntimeException(("Test Crash"));
 
                 break;
 
@@ -345,4 +326,5 @@ public class TimelineFragment extends Fragment {
                     break;
         }
     }
+
 }

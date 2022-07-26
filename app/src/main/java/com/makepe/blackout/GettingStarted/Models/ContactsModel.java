@@ -2,52 +2,47 @@ package com.makepe.blackout.GettingStarted.Models;
 
 public class ContactsModel {
 
-    private String Username, Number, ImageURL, USER_ID;
+    private String username, phoneNumber, imageURL, userID;
 
     public ContactsModel() {
     }
 
-    public ContactsModel(String username, String number, String imageURL, String USER_ID) {
-        Username = username;
-        Number = number;
-        ImageURL = imageURL;
-        this.USER_ID = USER_ID;
-    }
-
-    public ContactsModel(String username, String number) {
-        Username = username;
-        Number = number;
+    public ContactsModel(String username, String phoneNumber, String imageURL, String userID) {
+        this.username = username;
+        this.phoneNumber = phoneNumber;
+        this.imageURL = imageURL;
+        this.userID = userID;
     }
 
     public String getUsername() {
-        return Username;
+        return username;
     }
 
     public void setUsername(String username) {
-        Username = username;
+        this.username = username;
     }
 
-    public String getNumber() {
-        return Number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setNumber(String number) {
-        Number = number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getImageURL() {
-        return ImageURL;
+        return imageURL;
     }
 
     public void setImageURL(String imageURL) {
-        ImageURL = imageURL;
+        this.imageURL = imageURL;
     }
 
-    public String getUSER_ID() {
-        return USER_ID;
+    public String getUserID() {
+        return userID;
     }
 
-    public void setUSER_ID(String USER_ID) {
-        this.USER_ID = USER_ID;
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 }

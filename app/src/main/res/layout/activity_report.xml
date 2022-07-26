@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.ReportActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -84,30 +83,28 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxLines="2"
-                    android:text="Do you wish to report any malpractice you have noticed? Please inform us of what you have realised"
-                    android:textAlignment="center"
-                    android:textSize="14sp"
-                    android:padding="5dp"
-                    android:layout_margin="5dp"
-                    android:textColor="@color/colorBlack"/>
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
+                    android:padding="10dp"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="2"
+                        android:text="Do you wish to report any malpractice you have noticed? Please inform us of what you have realised"
+                        android:textAlignment="center"
+                        android:textSize="14sp"
+                        android:padding="5dp"
+                        android:layout_margin="5dp"
+                        android:textColor="@color/colorBlack"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="30"
                         app:counterOverflowTextAppearance="@color/colorRed">
@@ -138,11 +135,8 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
-                        android:layout_marginTop="5dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="25"
                         app:counterOverflowTextAppearance="@color/colorRed">
@@ -173,11 +167,8 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
-                        android:layout_marginTop="5dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="200"
                         app:counterOverflowTextAppearance="@color/colorRed">

@@ -44,9 +44,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.InteractionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.PhoneCallActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SharePostActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
@@ -57,7 +55,6 @@ import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -91,7 +88,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private DatabaseReference postReference, userReference, commentsReference, likesReference;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications universalNotifications;
     private GetTimeAgo getTimeAgo;
 
     private boolean isLoaderVisible = false;
@@ -213,7 +209,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             likesReference = FirebaseDatabase.getInstance().getReference("Likes");
 
             universalFunctions = new UniversalFunctions(context);
-            universalNotifications = new UniversalNotifications(context);
             getTimeAgo = new GetTimeAgo();
 
             HolderPosts holderPosts = (HolderPosts) holder;
@@ -1099,7 +1094,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     User user = snapshot.getValue(User.class);
                     assert user != null;
 
-                    if (user.getUSER_ID().equals(firebaseUser.getUid()))
+                    if (user.getUserID().equals(firebaseUser.getUid()))
                         holder.postUsername.setText("Me");
                     else
                         holder.postUsername.setText(user.getUsername());
@@ -1128,7 +1123,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     User user = snapshot.getValue(User.class);
 
                     assert user != null;
-                    if(user.getUSER_ID().equals(firebaseUser.getUid()))
+                    if(user.getUserID().equals(firebaseUser.getUid()))
                         holder.sharedPostUsername.setText("Me");
                     else
                         holder.sharedPostUsername.setText(user.getUsername());
@@ -1240,7 +1235,10 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.likeCounter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showLikesDialog(post);
+                if (!holder.likeCounter.getText().toString().equals("0 Likes"))
+                    showLikesDialog(post);
+                else
+                    Toast.makeText(context, "This post has no likes", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1518,7 +1516,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(postModel.getUserID())){
+                    if (user.getUserID().equals(postModel.getUserID())){
 
                         try{
                             Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(superProPic);
@@ -1685,7 +1683,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return postList.size();
     }
 
-    class HolderPosts extends RecyclerView.ViewHolder{
+    static class HolderPosts extends RecyclerView.ViewHolder{
         //-----Views from row post.xml
         //---------------view for post owner details
         public CircleImageView postProPic;
@@ -1789,7 +1787,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    class HolderNativeAd extends RecyclerView.ViewHolder{
+    static class HolderNativeAd extends RecyclerView.ViewHolder{
 
         private ImageView ad_app_icon;
         private TextView ad_headline, ad_advertiser, ad_body, ad_price, ad_store;
@@ -1817,8 +1815,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemViewType(int position) {
-
-        if (position % 5 == 0){
+        /*if (position != 0 && position % 4 == 0){
             return VIEW_TYPE_AD;
         }else{
             switch (postList.get(position).getPostType()){
@@ -1831,7 +1828,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 case "sharedTextPost":
                     return SHARED_TEXT_POST_ITEM;
 
-                case "sharedImagePost":
+                case "sharedTextImagePost":
                     return SHARED_IMAGE_POST_ITEM;
 
                 case "audioPost":
@@ -1861,6 +1858,47 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 default:
                     throw new IllegalStateException("Unexpected value " + postList.get(position).getPostType());
             }
+        }*/
+
+        switch (postList.get(position).getPostType()){
+            case "textPost":
+                return TEXT_POST_ITEM;
+
+            case "imagePost":
+                return IMAGE_POST_ITEM;
+
+            case "sharedTextPost":
+                return SHARED_TEXT_POST_ITEM;
+
+            case "sharedTextImagePost":
+                return SHARED_IMAGE_POST_ITEM;
+
+            case "audioPost":
+                return AUDIO_POST_ITEM;
+
+            case "audioImagePost":
+                return AUDIO_IMAGE_POST_ITEM;
+
+            case "sharedAudioTextPost":
+                return SHARED_AUDIO_TEXT_POST;
+
+            case "sharedAudioImagePost":
+                return SHARED_AUDIO_IMAGE_POST;
+
+            case "sharedTextAudioPost":
+                return SHARED_TEXT_AUDIO_POST;
+
+            case "sharedTextAudioImagePost":
+                return SHARED_TEXT_AUDIO_IMAGE_POST;
+
+            case "sharedAudioAudioPost":
+                return SHARED_AUDIO_AUDIO_POST;
+
+            case "sharedAudioAudioImagePost":
+                return SHARED_AUDIO_AUDIO_IMAGE_POST;
+
+            default:
+                throw new IllegalStateException("Unexpected value " + postList.get(position).getPostType());
         }
 
     }

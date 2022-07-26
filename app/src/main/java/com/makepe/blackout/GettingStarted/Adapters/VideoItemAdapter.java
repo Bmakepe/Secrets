@@ -55,10 +55,11 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
 
         PostModel post = videoList.get(position);
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
         universalFunctions = new UniversalFunctions(context);
 
         universalFunctions.checkVideoViewCount(holder.videoViews, post);
+        universalFunctions.seenNumber(post.getPostID(), holder.videoViews);
 
         if (post.getPostType().equals("videoPost") || post.getPostType().equals("audioVideoPost")){
             getVideoOwnerDetails(post, holder);
@@ -71,9 +72,9 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
             @Override
             public void onClick(View view) {
 
-                /*Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
+                Intent videoIntent = new Intent(context, FullScreenVideoActivity.class);
                 videoIntent.putExtra("videoID", post.getPostID());
-                context.startActivity(videoIntent);*/
+                context.startActivity(videoIntent);
 
             }
         });
@@ -112,7 +113,7 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(post.getUserID()))
+                    if (user.getUserID().equals(post.getUserID()))
                         try{
                             Picasso.get().load(user.getImageURL()).into(holder.videoOwnPic);
                         }catch (NullPointerException ignored){}

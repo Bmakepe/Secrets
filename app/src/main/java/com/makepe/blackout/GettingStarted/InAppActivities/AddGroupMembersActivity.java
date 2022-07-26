@@ -42,7 +42,7 @@ public class AddGroupMembersActivity extends AppCompatActivity {
     private DatabaseReference groupReference, followingReference, userReference;
     private FirebaseUser firebaseUser;
 
-    ProgressDialog membersDialog;
+    private ProgressDialog membersDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +95,7 @@ public class AddGroupMembersActivity extends AppCompatActivity {
 
                             for (String ID : followingList){
                                 assert user != null;
-                                if (user.getUSER_ID().equals(ID)){
+                                if (user.getUserID().equals(ID)){
                                     userList.add(user);
                                 }
                             }

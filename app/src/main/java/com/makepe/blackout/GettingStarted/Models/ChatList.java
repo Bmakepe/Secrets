@@ -1,29 +1,20 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class ChatList {
-    String id, timeStamp;
-
-    public ChatList(String id, String timeStamp) {
-        this.id = id;
-        this.timeStamp = timeStamp;
-    }
+    String userID;
 
     public ChatList() {
     }
 
-    public String getTimeStamp() {
-        return timeStamp;
+    public ChatList(String userID) {
+        this.userID = userID;
     }
 
-    public void setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
+    public String getUserID() {
+        return userID;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 }

@@ -53,10 +53,11 @@
                 android:layout_centerVertical="true"
                 android:background="@drawable/rounded_edittext"
                 android:backgroundTint="@color/white_greyish"
-                android:padding="8dp"
+                android:padding="5dp"
                 android:textAllCaps="true"
                 android:textColor="@color/colorBlack"
-                android:textStyle="bold"
+                android:textStyle="normal"
+                android:textSize="12sp"
                 android:singleLine="true"
                 android:visibility="gone" />
 

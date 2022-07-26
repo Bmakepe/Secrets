@@ -64,7 +64,7 @@ public class TaggedFriendsAdapter extends RecyclerView.Adapter<TaggedFriendsAdap
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ViewProfileActivity.class);
-                intent.putExtra("uid", user.getUSER_ID());
+                intent.putExtra("uid", user.getUserID());
                 context.startActivity(intent);
             }
         });
@@ -78,7 +78,7 @@ public class TaggedFriendsAdapter extends RecyclerView.Adapter<TaggedFriendsAdap
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User myUser = ds.getValue(User.class);
 
-                    if (myUser.getUSER_ID().equals(user.getUSER_ID())){
+                    if (myUser.getUserID().equals(user.getUserID())){
                         holder.userName.setText(myUser.getUsername());
 
                         try{

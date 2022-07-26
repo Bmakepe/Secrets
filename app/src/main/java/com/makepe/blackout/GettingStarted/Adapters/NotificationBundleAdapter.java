@@ -74,29 +74,6 @@ public class NotificationBundleAdapter extends RecyclerView.Adapter<Notification
         notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        getNotificationBundle(notification, holder);
-    }
-
-    private void getNotificationBundle(NotiModel notification, ViewHolder holder) {
-        if (notification.isLiked()){
-            if (notification.isComment()){
-
-            }else if (notification.isStory()){
-
-            }else if (notification.isPost()){
-
-            }
-        }else if (notification.isComment()){
-            if (notification.isPost()){
-
-            }else if (notification.isStory()){
-
-            }
-        }else if (notification.isFollowing()){
-
-        }else if (notification.isShared()){
-
-        }
     }
 
     @Override
@@ -122,39 +99,5 @@ public class NotificationBundleAdapter extends RecyclerView.Adapter<Notification
             post_picture = itemView.findViewById(R.id.notification_post_image);
 
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-
-        if (notifications.get(position).isPost()){
-
-            if (notifications.get(position).isLiked())
-                return IS_POST_LIKE_NOTIFICATION;
-            else if (notifications.get(position).isComment())
-                return IS_POST_COMMENT_NOTIFICATION;
-
-        }else if (notifications.get(position).isComment()){
-
-            if (notifications.get(position).isLiked())
-                return IS_COMMENT_LIKE_NOTIFICATION;
-
-        }else if (notifications.get(position).isShared()){
-
-            return IS_SHARED_NOTIFICATION;
-
-        }else if (notifications.get(position).isFollowing()){
-
-            return IS_FOLLOWING_NOTIFICATION;
-
-        }else if (notifications.get(position).isStory()){
-
-            if (notifications.get(position).isLiked())
-                return IS_STORY_LIKE_NOTIFICATION;
-            else if (notifications.get(position).isComment())
-                return IS_STORY_COMMENT_NOTIFICATION;
-        }
-
-        return super.getItemViewType(position);
     }
 }

@@ -71,7 +71,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
 
         getContactDetails(user, holder);
         checkGroupAttendance(user, holder);
-        universalFunctions.checkActiveStories(holder.contactProPic, user.getUSER_ID());
+        universalFunctions.checkActiveStories(holder.contactProPic, user.getUserID());
 
         holder.contactProPic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,11 +80,11 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                 if (holder.contactProPic.getTag().equals("storyActive")){
 
                     Intent intent = new Intent(context, StoryActivity.class);
-                    intent.putExtra("userid", user.getUSER_ID());
+                    intent.putExtra("userid", user.getUserID());
                     context.startActivity(intent);
                 }else{
                     Intent picIntent = new Intent(context, FullScreenImageActivity.class);
-                    picIntent.putExtra("itemID", user.getUSER_ID());
+                    picIntent.putExtra("itemID", user.getUserID());
                     picIntent.putExtra("reason", "userImage");
                     context.startActivity(picIntent);
                 }
@@ -94,7 +94,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                groupReference.child(groupID).child("Participants").child(user.getUSER_ID())
+                groupReference.child(groupID).child("Participants").child(user.getUserID())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -122,9 +122,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                                         removeParticipant(user);
 
                                                     }else{
-                                                        if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                                        if(!user.getUserID().equals(firebaseUser.getUid())){
                                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                                            intent.putExtra("uid", user.getUSER_ID());
+                                                            intent.putExtra("uid", user.getUserID());
                                                             context.startActivity(intent);
                                                         }
                                                     }
@@ -147,9 +147,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                                         removeParticipant(user);
 
                                                     }else{
-                                                        if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                                        if(!user.getUserID().equals(firebaseUser.getUid())){
                                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                                            intent.putExtra("uid", user.getUSER_ID());
+                                                            intent.putExtra("uid", user.getUserID());
                                                             context.startActivity(intent);
                                                         }
                                                     }
@@ -160,9 +160,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                     }
                                     else if(myGroupRole.equals("admin")){
                                         if(hisPreviousRole.equals("creator")){
-                                            if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                            if(!user.getUserID().equals(firebaseUser.getUid())){
                                                 Intent intent = new Intent(context, ViewProfileActivity.class);
-                                                intent.putExtra("uid", user.getUSER_ID());
+                                                intent.putExtra("uid", user.getUserID());
                                                 context.startActivity(intent);
                                             }
                                         }
@@ -180,9 +180,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                                         removeParticipant(user);
 
                                                     }else{
-                                                        if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                                        if(!user.getUserID().equals(firebaseUser.getUid())){
                                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                                            intent.putExtra("uid", user.getUSER_ID());
+                                                            intent.putExtra("uid", user.getUserID());
                                                             context.startActivity(intent);
                                                         }
                                                     }
@@ -204,9 +204,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                                         removeParticipant(user);
 
                                                     }else{
-                                                        if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                                        if(!user.getUserID().equals(firebaseUser.getUid())){
                                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                                            intent.putExtra("uid", user.getUSER_ID());
+                                                            intent.putExtra("uid", user.getUserID());
                                                             context.startActivity(intent);
                                                         }
                                                     }
@@ -215,9 +215,9 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                                             }).show();
                                         }
                                     }else if(myGroupRole.equals("participant")){
-                                        if(!user.getUSER_ID().equals(firebaseUser.getUid())){
+                                        if(!user.getUserID().equals(firebaseUser.getUid())){
                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                            intent.putExtra("uid", user.getUSER_ID());
+                                            intent.putExtra("uid", user.getUserID());
                                             context.startActivity(intent);
                                         }
                                     }
@@ -254,12 +254,12 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
         //setup user data
 
         HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("userID", user.getUSER_ID());
+        hashMap.put("userID", user.getUserID());
         hashMap.put("groupRole", "participant");
         hashMap.put("timestamp", String.valueOf(System.currentTimeMillis()));
         hashMap.put("groupID", groupID);
 
-        groupReference.child(groupID).child("Participants").child(user.getUSER_ID()).setValue(hashMap)
+        groupReference.child(groupID).child("Participants").child(user.getUserID()).setValue(hashMap)
                 //ref.push().setValue(hashMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -279,7 +279,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("groupRole", "admin");
 
-        groupReference.child(groupID).child("Participants").child(user.getUSER_ID()).updateChildren(hashMap)
+        groupReference.child(groupID).child("Participants").child(user.getUserID()).updateChildren(hashMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -294,7 +294,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
     }
 
     private void removeParticipant(User user) {
-        groupReference.child(groupID).child("Participants").child(user.getUSER_ID()).removeValue()
+        groupReference.child(groupID).child("Participants").child(user.getUserID()).removeValue()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -313,7 +313,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("groupRole", "participant");
 
-        groupReference.child(groupID).child("Participants").child(user.getUSER_ID()).updateChildren(hashMap)
+        groupReference.child(groupID).child("Participants").child(user.getUserID()).updateChildren(hashMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -329,7 +329,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
     }
 
     private void checkGroupAttendance(User user, ViewHolder holder) {
-        groupReference.child(groupID).child("Participants").child(user.getUSER_ID())
+        groupReference.child(groupID).child("Participants").child(user.getUserID())
                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -365,7 +365,7 @@ public class GroupContactsAdapter extends RecyclerView.Adapter<GroupContactsAdap
                     User user1 = ds.getValue(User.class);
 
                     assert user1 != null;
-                    if (user1.getUSER_ID().equals(user.getUSER_ID())){
+                    if (user1.getUserID().equals(user.getUserID())){
                         holder.contactName.setText(user1.getUsername());
 
                         try{

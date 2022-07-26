@@ -35,33 +35,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.HisTabAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.ProfileTabAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
-import com.makepe.blackout.GettingStarted.Fragments.HisPostsFragment;
-import com.makepe.blackout.GettingStarted.Fragments.HisVideosFragment;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
+import com.makepe.blackout.GettingStarted.Fragments.UserPostsFragment;
+import com.makepe.blackout.GettingStarted.Fragments.UserVideosFragment;
+import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
+import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
-    private String hisUserID, hisPhoneName;
+    private String hisUserID;
 
     private CircleImageView hisProfilePic;
-    private ImageView hisCoverPic;
+    private ImageView hisCoverPic, hisVerification;
     private TextView hisUsername, hisBiography, followersNo, followingNo, postsNo,
             sendDM, followBTN, hisLocationDetails, aboutTV;
     private LinearLayout otherUserButtons, hisProfileLocationArea;
+    private TabLayout hisTabLayout;
+    private ViewPager hisViewPager;
 
     private ProgressBar coverLoader, picLoader;
 
@@ -69,11 +69,11 @@ public class ViewProfileActivity extends AppCompatActivity {
     private Dialog picDialog;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, followReference;
+    private DatabaseReference userReference, followReference, postReference, videoReference;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
     private FollowInteraction followInteraction;
+    private GetTimeAgo getTimeAgo;
 
     private double latitude, longitude;
 
@@ -102,8 +102,9 @@ public class ViewProfileActivity extends AppCompatActivity {
         otherUserButtons = findViewById(R.id.otherUserButtons);
         aboutTV = findViewById(R.id.hisProfileAboutTV);
         hisProfileLocationArea = findViewById(R.id.hisProfileLocationArea);
-        TabLayout hisTabLayout = findViewById(R.id.hisProfileTabs);
-        ViewPager hisViewPager = findViewById(R.id.hisProfileViewPager);
+        hisVerification = findViewById(R.id.hisVerification);
+        hisTabLayout = findViewById(R.id.hisProfileTabs);
+        hisViewPager = findViewById(R.id.hisProfileViewPager);
 
         final Intent intent = getIntent();
         hisUserID = intent.getStringExtra("uid");
@@ -114,16 +115,18 @@ public class ViewProfileActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         followReference = FirebaseDatabase.getInstance().getReference("Follow");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
-        HisPostsFragment postsFragment = new HisPostsFragment();
+        UserPostsFragment postsFragment = new UserPostsFragment();
         postsFragment.setArguments(bundle);
 
-        HisVideosFragment videoFragment = new HisVideosFragment();
+        UserVideosFragment videoFragment = new UserVideosFragment();
         videoFragment.setArguments(bundle);
 
         universalFunctions = new UniversalFunctions(this);
-        notifications = new UniversalNotifications(this);
         followInteraction = new FollowInteraction(this);
+        getTimeAgo = new GetTimeAgo();
 
         iniPicPopUp(hisUserID);
         getUserInfo();
@@ -134,12 +137,7 @@ public class ViewProfileActivity extends AppCompatActivity {
 
         universalFunctions.getNrPosts(hisUserID, postsNo);
         universalFunctions.checkActiveStories(hisProfilePic, hisUserID);
-
-        HisTabAdapter viewPagerAdapter = new HisTabAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new HisPostsFragment(), "Posts", hisUserID);
-        viewPagerAdapter.addFragment(new HisVideosFragment(), "Videos", hisUserID);
-        hisViewPager.setAdapter(viewPagerAdapter);
-        hisTabLayout.setupWithViewPager(hisViewPager);
+        setupFragments();
 
         if(hisUserID.equals(firebaseUser.getUid())){
             otherUserButtons.setVisibility(View.GONE);
@@ -217,6 +215,54 @@ public class ViewProfileActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void setupFragments() {
+        ProfileTabAdapter viewPagerAdapter = new ProfileTabAdapter(getSupportFragmentManager());
+        postReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int postCounter = 0;
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel model = ds.getValue(PostModel.class);
+
+                    assert model != null;
+                    if (model.getUserID().equals(hisUserID))
+                        postCounter++;
+                }
+                if (postCounter != 0)
+                    viewPagerAdapter.addFragment(new UserPostsFragment(), "Posts [" + postCounter + "]", hisUserID);
+
+                videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        int videoCounter = 0;
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            PostModel postModel = ds.getValue(PostModel.class);
+
+                            assert postModel != null;
+                            if (postModel.getUserID().equals(hisUserID))
+                                videoCounter++;
+                        }
+                        if (videoCounter != 0)
+                            viewPagerAdapter.addFragment(new UserVideosFragment(), "Videos [" + videoCounter + "]", hisUserID);
+
+                        hisViewPager.setAdapter(viewPagerAdapter);
+                        hisTabLayout.setupWithViewPager(hisViewPager);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void showFollowingDialog() {
@@ -336,7 +382,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(hisUserID)) {
+                    if (user.getUserID().equals(hisUserID)) {
                         try {
                             //load pro pic into imageView
                             Picasso.get().load(user.getImageURL()).placeholder(R.drawable.default_profile_display_pic).into(proPicPopUp);
@@ -420,18 +466,20 @@ public class ViewProfileActivity extends AppCompatActivity {
                         User user = snapshot.getValue(User.class);
 
                         assert user != null;
-                        if (user.getUSER_ID().equals(hisUserID)){
+                        if (user.getUserID().equals(hisUserID)){
                             hisUsername.setVisibility(View.VISIBLE);
                             hisBiography.setVisibility(View.VISIBLE);
 
-                            hisBiography.setText(user.getBio());
                             aboutTV.setText("About " + user.getUsername());
+                            hisBiography.setText(user.getBiography() + "\n" + "Joined: " + getTimeAgo.getTimeAgo(Long.parseLong(user.getTimeStamp()), ViewProfileActivity.this));
 
                             if(hisUserID.equals(firebaseUser.getUid())){
                                 hisUsername.setText("Me");
                             }else {
                                 hisUsername.setText(user.getUsername());
                             }
+
+                            hisVerification.setVisibility(!user.isVerified() ? View.GONE : View.VISIBLE);
 
                             try{
                                 Picasso.get().load(user.getImageURL()).into(hisProfilePic);

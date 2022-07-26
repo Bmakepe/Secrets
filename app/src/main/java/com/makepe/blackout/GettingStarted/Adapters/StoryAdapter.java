@@ -124,7 +124,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.MyHolder> {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(story.getUserID())){
+                    if (user.getUserID().equals(story.getUserID())){
 
                         viewHolder.story_username.setText(user.getUsername());
 

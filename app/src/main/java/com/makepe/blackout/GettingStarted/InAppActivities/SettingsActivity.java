@@ -79,7 +79,7 @@ public class SettingsActivity extends AppCompatActivity  {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    if (user.getUserID().equals(firebaseUser.getUid())){
                         settingsName.setText(user.getUsername());
 
                         try{

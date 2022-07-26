@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseException;
+import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -160,17 +161,20 @@ public class VerifyPhoneActivity extends AppCompatActivity {
         @Override
         public void onVerificationFailed(@NonNull FirebaseException e) {
 
-            //toast error message if number can not be verified
-            Toast.makeText(VerifyPhoneActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            if (e instanceof FirebaseAuthInvalidCredentialsException){
+                Toast.makeText(VerifyPhoneActivity.this, "Invalid Request", Toast.LENGTH_SHORT).show();
+            }else if (e instanceof FirebaseTooManyRequestsException){
+                Toast.makeText(VerifyPhoneActivity.this, "The sms quota for the project has been exceeded", Toast.LENGTH_SHORT).show();
+            }
 
         }
 
         @Override
-        public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-            super.onCodeSent(s, forceResendingToken);
+        public void onCodeSent(@NonNull String verificationID, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+            super.onCodeSent(verificationID, forceResendingToken);
 
             //this is for resending the generated verification code
-            mVerificationId = s;
+            mVerificationId = verificationID;
             mResendToken = forceResendingToken;
 
         }
@@ -215,6 +219,7 @@ public class VerifyPhoneActivity extends AppCompatActivity {
 
                                 }
                             });
+
                         }else{
                             String message = "Something is wrong, we will fix it soon...";
 

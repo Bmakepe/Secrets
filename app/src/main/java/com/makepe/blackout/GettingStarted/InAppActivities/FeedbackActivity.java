@@ -145,10 +145,11 @@ public class FeedbackActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    assert user != null;
+                    if (user.getUserID().equals(firebaseUser.getUid())){
 
                         nameET.setText(user.getUsername());
-                        numberET.setText(user.getNumber());
+                        numberET.setText(user.getPhoneNumber());
 
                         try{
                             Picasso.get().load(user.getImageURL()).into(feedbackPic);

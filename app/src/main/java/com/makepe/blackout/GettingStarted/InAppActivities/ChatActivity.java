@@ -309,26 +309,13 @@ public class ChatActivity extends AppCompatActivity {
                         User user = snapshot.getValue(User.class);
 
                         assert user != null;
-                        if (user.getUSER_ID().equals(receiverID)){
+                        if (user.getUserID().equals(receiverID)){
 
                             for(ContactsModel cm : myContacts){
-                                if(cm.getNumber().equals(user.getNumber())){
+                                if(cm.getPhoneNumber().equals(user.getPhoneNumber())){
                                     username.setText(cm.getUsername());
                                 }else{
                                     username.setText(user.getUsername());
-                                }
-                            }
-
-                            if(user.getOnlineStatus().equals("online")){
-                                onlineStatusTV.setText(user.getOnlineStatus());
-                                onlineStatusTV.setVisibility(View.VISIBLE);
-                            }else{
-                                try{//convert timestamp to dd/MM/yyyy hh:mm am/pm & set it to textview
-                                    String pTime = getTimeAgo.getTimeAgo(Long.parseLong(user.getOnlineStatus()), ChatActivity.this);
-                                    onlineStatusTV.setVisibility(View.VISIBLE);
-                                    onlineStatusTV.setText("Last seen: " + pTime);
-                                }catch (NumberFormatException n){
-                                    Toast.makeText(ChatActivity.this, "Could not format time", Toast.LENGTH_SHORT).show();
                                 }
                             }
 
@@ -358,7 +345,7 @@ public class ChatActivity extends AppCompatActivity {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     Chat chat = ds.getValue(Chat.class);
                     try{
-                        if(chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(receiverID)){
+                        if(chat.getReceiverID().equals(firebaseUser.getUid()) && chat.getSenderID().equals(receiverID)){
                             HashMap<String, Object> hasSeenHashMap = new HashMap<>();
                             hasSeenHashMap.put("isSeen", true);
                             ds.getRef().updateChildren(hasSeenHashMap);
@@ -380,8 +367,8 @@ public class ChatActivity extends AppCompatActivity {
 
         HashMap<String, Object> messageMap = new HashMap<>();
         messageMap.put("chatID", chatID);
-        messageMap.put("sender", firebaseUser.getUid());
-        messageMap.put("receiver", receiverID);
+        messageMap.put("senderID", firebaseUser.getUid());
+        messageMap.put("receiverID", receiverID);
         messageMap.put("isSeen", false);
         messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
 
@@ -445,8 +432,8 @@ public class ChatActivity extends AppCompatActivity {
                     HashMap<String, Object> messageMap = new HashMap<>();
 
                     messageMap.put("chatID", chatID);
-                    messageMap.put("sender", firebaseUser.getUid());
-                    messageMap.put("receiver", receiverID);
+                    messageMap.put("senderID", firebaseUser.getUid());
+                    messageMap.put("receiverID", receiverID);
                     messageMap.put("isSeen", false);
                     messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
                     messageMap.put("audio", audioDownloadLink.toString());
@@ -477,6 +464,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void updateChatList() {
         //create chatlist node/child in firebase database
+
         final DatabaseReference senderReference = FirebaseDatabase.getInstance()
                 .getReference("ChatList")
                 .child(firebaseUser.getUid())
@@ -485,8 +473,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    senderReference.child("id").setValue(receiverID);
-                    senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
+                    senderReference.child("userID").setValue(receiverID);
                 }
             }
 
@@ -504,8 +491,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    receiverReference.child("id").setValue(firebaseUser.getUid());
-                    senderReference.child("timeStamp").setValue(String.valueOf(System.currentTimeMillis()));
+                    receiverReference.child("userID").setValue(firebaseUser.getUid());
                 }
             }
 
@@ -525,8 +511,8 @@ public class ChatActivity extends AppCompatActivity {
         HashMap<String, Object> imageMap = new HashMap<>();
 
         imageMap.put("chatID", chatID);
-        imageMap.put("sender", firebaseUser.getUid());
-        imageMap.put("receiver", receiverID);
+        imageMap.put("senderID", firebaseUser.getUid());
+        imageMap.put("receiverID", receiverID);
         imageMap.put("isSeen", false);
         imageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
         imageMap.put("message_type", "imageMessage");
@@ -630,8 +616,8 @@ public class ChatActivity extends AppCompatActivity {
                 HashMap<String, Object> videoMap = new HashMap<>();
 
                 videoMap.put("chatID", chatID);
-                videoMap.put("sender", firebaseUser.getUid());
-                videoMap.put("receiver", receiverID);
+                videoMap.put("senderID", firebaseUser.getUid());
+                videoMap.put("receiverID", receiverID);
                 videoMap.put("isSeen", false);
                 videoMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
                 videoMap.put("message_type", "videoMessage");
@@ -666,8 +652,8 @@ public class ChatActivity extends AppCompatActivity {
                     Chat chat = ds.getValue(Chat.class);
 
                     assert chat != null;
-                    if(chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(receiverID) ||
-                            chat.getReceiver().equals(receiverID) && chat.getSender().equals(firebaseUser.getUid())){
+                    if(chat.getReceiverID().equals(firebaseUser.getUid()) && chat.getSenderID().equals(receiverID) ||
+                            chat.getReceiverID().equals(receiverID) && chat.getSenderID().equals(firebaseUser.getUid())){
                         mChat.add(chat);
                     }
                 }

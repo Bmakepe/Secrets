@@ -5,12 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/background_gradient"
-        android:alpha=".7"/>
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/hisProfileToolbar"
         android:layout_width="match_parent"
@@ -132,8 +126,8 @@
                                             android:layout_alignParentStart="true"
                                             android:layout_centerVertical="true"
                                             android:padding="2dp"
-                                            android:visibility="visible"
                                             android:src="@drawable/ic_verified_user_black_24dp"
+                                            android:visibility="gone"
                                             app:tint="@color/colorGold" />
 
                                         <TextView
@@ -304,9 +298,7 @@
                                     android:id="@+id/hisProfileAboutTV"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/roboto_regular"
-                                    android:textColor="@color/colorBlack"
-                                    android:textSize="16sp"
+                                    android:textSize="14sp"
                                     android:textStyle="bold" />
 
                                 <LinearLayout
@@ -326,13 +318,11 @@
                                             android:id="@+id/hisLocationDetails"
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
-                                            android:fontFamily="sans-serif"
-                                            android:maxLines="3"
+                                            android:singleLine="true"
                                             android:padding="2dp"
-                                            android:layout_marginTop="2dp"
-                                            android:textColor="@color/colorBlack"
+                                            android:lineSpacingExtra="5sp"
                                             android:textSize="12sp"
-                                            android:textStyle="bold"  />
+                                            android:textStyle="normal"  />
 
                                     </LinearLayout>
 
@@ -340,13 +330,10 @@
                                         android:id="@+id/hisProfileBio"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:fontFamily="sans-serif"
-                                        android:maxLines="2"
                                         android:padding="2dp"
-                                        android:layout_marginTop="2dp"
-                                        android:textColor="@color/colorBlack"
                                         android:textSize="12sp"
-                                        android:textStyle="bold" />
+                                        android:textStyle="normal"
+                                        android:lineSpacingExtra="5sp" />
 
                                 </LinearLayout>
 

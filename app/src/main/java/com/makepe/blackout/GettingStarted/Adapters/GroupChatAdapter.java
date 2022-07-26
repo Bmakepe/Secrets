@@ -236,7 +236,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
             Toast.makeText(context, "Could not format time", Toast.LENGTH_SHORT).show();
         }
 
-        switch(chat.getMsg_type()){
+        switch(chat.getMessage_type()){
             case "text":
                 holder.showMessages.setText(chat.getMessage());
                 break;
@@ -269,7 +269,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                 break;
 
             default:
-                Toast.makeText(context, "Unknown message type identified " + chat.getMsg_type(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Unknown message type identified " + chat.getMessage_type(), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -319,7 +319,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
             @Override
             public void onClick(View view) {
                 if (!audioPlayer.isPlaying()){
-                    audioPlayer.startPlayingAudio(chat.getAudio());
+                    audioPlayer.startPlayingAudio(chat.getAudioURL());
                 }else{
                     audioPlayer.stopPlayingAudio();
                 }
@@ -379,7 +379,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(chat.getSenderID())){
+                    if (user.getUserID().equals(chat.getSenderID())){
                         holder.chatUsername.setVisibility(View.VISIBLE);
                         holder.chatUsername.setText(user.getUsername());
 
@@ -452,7 +452,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if(groupChats.get(position).getSenderID().equals(firebaseUser.getUid())){
-            switch (groupChats.get(position).getMsg_type()) {
+            switch (groupChats.get(position).getMessage_type()) {
                 case "audioMessage":
                     return MSG_TYPE_AUDIO_RIGHT;
                 case "imageMessage":
@@ -465,7 +465,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                     return MSG_TYPE_LOCATION_RIGHT;
             }
         }else {
-            switch (groupChats.get(position).getMsg_type()) {
+            switch (groupChats.get(position).getMessage_type()) {
                 case "audioMessage":
                     return MSG_TYPE_AUDIO_LEFT;
                 case "imageMessage":

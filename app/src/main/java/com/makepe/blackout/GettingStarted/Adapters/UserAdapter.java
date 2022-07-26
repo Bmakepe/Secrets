@@ -25,7 +25,6 @@ import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -43,7 +42,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private FirebaseUser firebaseUser;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
     private FollowInteraction followInteraction;
 
     public UserAdapter(Context context, ArrayList<String> userList, String choice) {
@@ -64,7 +62,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         universalFunctions = new UniversalFunctions(context);
-        notifications = new UniversalNotifications(context);
         followInteraction = new FollowInteraction(context);
 
         if (userID.equals(firebaseUser.getUid())){
@@ -104,10 +101,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                                     User user = snap.getValue(User.class);
 
                                     assert user != null;
-                                    if (user.getUSER_ID().equals(userID)) {
-                                        if (!user.getUSER_ID().equals(firebaseUser.getUid())) {
+                                    if (user.getUserID().equals(userID)) {
+                                        if (!user.getUserID().equals(firebaseUser.getUid())) {
                                             Intent intent = new Intent(context, ViewProfileActivity.class);
-                                            intent.putExtra("uid", user.getUSER_ID());
+                                            intent.putExtra("uid", user.getUserID());
                                             context.startActivity(intent);
                                         }
                                     }
@@ -175,7 +172,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                     User user1 = ds.getValue(User.class);
 
                     assert user1 != null;
-                    if (user1.getUSER_ID().equals(userID)){
+                    if (user1.getUserID().equals(userID)){
 
                         if (userID.equals(firebaseUser.getUid())){
                             holder.usernameTV.setText("Me");

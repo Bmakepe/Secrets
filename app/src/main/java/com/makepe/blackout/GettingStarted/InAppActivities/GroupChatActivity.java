@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -73,7 +71,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private DatabaseReference groupReference, groupChatsReference;
     private FirebaseUser firebaseUser;
-    private StorageReference groupImageReference, audioReference;
+    private StorageReference groupImageReference, audioReference, groupVideoReference;
 
     private String myGroupRole, groupMessage, chatID, videoURL;
 
@@ -144,7 +142,8 @@ public class GroupChatActivity extends AppCompatActivity {
         audioReference = FirebaseStorage.getInstance().getReference("group_voice_notes");
         groupReference = FirebaseDatabase.getInstance().getReference("SecretGroups");
         groupChatsReference = FirebaseDatabase.getInstance().getReference("GroupChats");
-        groupImageReference = FirebaseStorage.getInstance().getReference().child("groupChatImages");
+        groupImageReference = FirebaseStorage.getInstance().getReference().child("group_chat_images");
+        groupVideoReference = FirebaseStorage.getInstance().getReference().child("group_chat_videos");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         locationServices = new LocationServices(GroupChatActivity.this, groupID);
 
@@ -204,7 +203,7 @@ public class GroupChatActivity extends AppCompatActivity {
                     if (audioRecorder.getRecordingFilePath() != null)
                         sendGroupAudioMessage();
                 }else{
-                    sendGroupMessage("text");
+                    sendGroupMessage();
                 }
             }
         });
@@ -295,7 +294,7 @@ public class GroupChatActivity extends AppCompatActivity {
         });
     }
 
-    private void sendGroupMessage(String msg_type) {
+    private void sendGroupMessage() {
 
         chatID = groupChatsReference.push().getKey();
 
@@ -304,7 +303,7 @@ public class GroupChatActivity extends AppCompatActivity {
         groupMap.put("chatID", chatID);
         groupMap.put("senderID", firebaseUser.getUid());
         groupMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-        groupMap.put("msg_type", msg_type);
+        groupMap.put("message_type", "text");
 
         if (!TextUtils.isEmpty(groupMessage))
             groupMap.put("message", groupMessage);
@@ -358,7 +357,7 @@ public class GroupChatActivity extends AppCompatActivity {
                     groupMap.put("chatID", chatID);
                     groupMap.put("senderID", firebaseUser.getUid());
                     groupMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-                    groupMap.put("msg_type", "audioMessage");
+                    groupMap.put("message_type", "audioMessage");
                     audioMap.put("audio", audioDownloadLink.toString());
 
                     groupChatsReference.child(chatID).setValue(audioMap)
@@ -390,7 +389,7 @@ public class GroupChatActivity extends AppCompatActivity {
         chatMap.put("chatID", chatID);
         chatMap.put("senderID", firebaseUser.getUid());
         chatMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-        chatMap.put("msg_type", "imageMessage");
+        chatMap.put("message_type", "imageMessage");
 
         groupChatsReference.child(chatID).setValue(chatMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -403,7 +402,7 @@ public class GroupChatActivity extends AppCompatActivity {
                     String mediaID = groupChatsReference.child("images").push().getKey();
                     mediaIdList.add(mediaID);
 
-                    final StorageReference filePath = groupImageReference.child(System.currentTimeMillis()
+                    final StorageReference filePath = groupImageReference.child(mediaID
                             + "." + uploadFunctions.getFileExtension(Uri.parse(mediaUri)));
 
                     UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
@@ -450,11 +449,8 @@ public class GroupChatActivity extends AppCompatActivity {
     private void sendVideoMessage() {
         messageDialog.show();
 
-        long systemMillis = System.currentTimeMillis();
-
-        StorageReference videoReference = FirebaseStorage.getInstance().getReference()
-                .child("Group_Chat_Videos")
-                .child(systemMillis + "." + uploadFunctions.getFileExtension(videoURI));
+        StorageReference videoReference = groupVideoReference
+                .child(groupChatsReference.push().getKey() + "." + uploadFunctions.getFileExtension(videoURI));
 
         UploadTask uploadTask = videoReference.putFile(videoURI);
 
@@ -493,7 +489,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 videoMap.put("senderID", firebaseUser.getUid());
                 videoMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
                 videoMap.put("videoURL", videoURL);
-                videoMap.put("msg_type", "videoMessage");
+                videoMap.put("message_type", "videoMessage");
 
                 groupChatsReference.child(chatID).setValue(videoMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -605,7 +601,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
             case R.id.sendGroupAlert:
                 groupMessage = "Haibo!!!";
-                sendGroupMessage("text");
+                sendGroupMessage();
                 break;
 
             case R.id.groupSearchBTN:

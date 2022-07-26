@@ -128,7 +128,7 @@ public class ReportActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(reported)){
+                    if (user.getUserID().equals(reported)){
                         reportedPersonET.setText(user.getUsername());
                     }else{
                         groupReference.addValueEventListener(new ValueEventListener() {
@@ -168,7 +168,7 @@ public class ReportActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
+                    if (user.getUserID().equals(firebaseUser.getUid())){
                         myNameET.setText(user.getUsername());
 
                         try{

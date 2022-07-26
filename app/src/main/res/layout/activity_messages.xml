@@ -8,12 +8,6 @@
     android:layout_height="match_parent"
     tools:context=".GettingStarted.InAppActivities.MessagesActivity">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/background_gradient"
-        android:alpha=".7"/>
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/messagesToolbar"
         android:layout_width="match_parent"

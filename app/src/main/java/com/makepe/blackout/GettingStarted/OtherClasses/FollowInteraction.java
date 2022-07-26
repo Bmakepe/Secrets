@@ -21,10 +21,9 @@ import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 public class FollowInteraction {
 
     private Context context;
-    private DatabaseReference followReference = FirebaseDatabase.getInstance().getReference("Follow");
-    private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
-    private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-    private SendNotifications notifications = new SendNotifications();
+    private final DatabaseReference followReference = FirebaseDatabase.getInstance().getReference("Follow");
+    private final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    private final SendNotifications notifications = new SendNotifications();
 
     private boolean isFollowing = false, isFollower = false;
 
@@ -36,15 +35,13 @@ public class FollowInteraction {
     }
 
     public boolean checkFollowing(String hisUserID){
+        assert firebaseUser != null;
         followReference.child(firebaseUser.getUid()).child("following")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            if (snapshot.child(hisUserID).exists())
-                                isFollowing = true;
-                            else
-                                isFollowing = false;
+                            isFollowing = snapshot.child(hisUserID).exists();
                         }else
                             isFollowing = false;
                     }
@@ -63,6 +60,7 @@ public class FollowInteraction {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
+                            assert firebaseUser != null;
                             if (snapshot.child(firebaseUser.getUid()).exists()) {
                                 isFollower = true;
                             }
@@ -78,6 +76,7 @@ public class FollowInteraction {
     }//is the user following me
 
     public void updateFollowing(String hisUserID, TextView followTV){
+        assert firebaseUser != null;
         followReference.child(firebaseUser.getUid()).child("following")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -101,6 +100,7 @@ public class FollowInteraction {
     }//check if i follow the user and updates follow textview
 
     public void followUser(String hisUserID){
+        assert firebaseUser != null;
         followReference.
                 child(firebaseUser.getUid())
                 .child("following")
@@ -109,7 +109,7 @@ public class FollowInteraction {
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        notifications.addFollowNotification(hisUserID);
+                        notifications.addFollowingNotification(hisUserID);
                     }
                 });
 
@@ -130,7 +130,8 @@ public class FollowInteraction {
                 .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        Toast.makeText(context, "Notification will be removed", Toast.LENGTH_SHORT).show();
+                        notifications.removeFollowingNotification(hisUserID);
+
                     }
                 });
         

@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.ImageListActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
@@ -66,7 +67,7 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, CommentsActivity.class);
+                Intent intent = new Intent(context, ImageListActivity.class);
                 intent.putExtra("postID", modelPost.getPostID());
                 context.startActivity(intent);
 
@@ -94,7 +95,6 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
                                         for (DataSnapshot data : snapshot.getChildren()){
                                             String imageURL = data.getValue().toString();
                                             try{
-                                                holder.multipleMediaIcon.setVisibility(View.GONE);
                                                 holder.multipleMediaIcon.setImageResource(R.drawable.ic_image_black_24dp);
                                                 Picasso.get().load(imageURL).into(holder.post_image);
                                                 holder.mediaLoader.setVisibility(View.GONE);
@@ -107,7 +107,6 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
                                         }
 
                                         try{
-                                            holder.multipleMediaIcon.setVisibility(View.VISIBLE);
                                             holder.multipleMediaIcon.setImageResource(R.drawable.ic_baseline_collections_24);
                                             Picasso.get().load(imageURLs.get(0)).into(holder.post_image);
                                             holder.mediaLoader.setVisibility(View.GONE);
@@ -153,7 +152,6 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
                                         for (DataSnapshot data : snapshot.getChildren()){
                                             String imageURL = data.getValue().toString();
                                             try{
-                                                holder.multipleMediaIcon.setVisibility(View.GONE);
                                                 holder.multipleMediaIcon.setImageResource(R.drawable.ic_image_black_24dp);
                                                 Picasso.get().load(imageURL).into(holder.post_image);
                                                 holder.mediaLoader.setVisibility(View.GONE);
@@ -166,7 +164,6 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.ViewHolder> 
                                         }
 
                                         try{
-                                            holder.multipleMediaIcon.setVisibility(View.VISIBLE);
                                             holder.multipleMediaIcon.setImageResource(R.drawable.ic_baseline_collections_24);
                                             Picasso.get().load(imageURLs.get(0)).into(holder.post_image);
                                             holder.mediaLoader.setVisibility(View.GONE);

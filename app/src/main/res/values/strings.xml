@@ -14,11 +14,11 @@
     <string name="register">Register</string>
     <string name="verification">Verification Code</string>
     <string name="verify">Verify</string>
-    <string name="sms_data_rates">By clicking \"Sign Up\", an sms may or will be sent to you. Standard SMS and Data rates may apply. Please check with your local service provider</string>
+    <string name="sms_data_rates">By clicking \"Continue\", an sms may or will be sent to you. Standard SMS and Data rates may apply. Please check with your local service provider</string>
     <string name="verification_request">Please enter the 6 digit verification code below</string>
     <string name="welcome_text">Let Us Help You Setup Your Profile</string>
     <string name="username">Username</string>
-    <string name="please_select_your_gender">Please Select Your Gender</string>
+    <string name="please_select_your_gender">Select Your Gender</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="propic_request">Click To Upload Profile Pic</string>

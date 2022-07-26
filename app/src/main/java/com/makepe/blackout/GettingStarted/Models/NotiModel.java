@@ -1,60 +1,20 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class NotiModel {
-    private String notificationID, userID, text, postID, commentID, timeStamp, notificationType;
-    private boolean isPost, isStory, isComment, isFollowing, isShared, isLiked;
+    private String notificationID, userID, postID, timeStamp, text, notificationType,
+            commentID, storyID;
 
-    public NotiModel() {
-    }
-
-    public NotiModel(String notificationID, String userID, String text, String postID, String commentID,
-                     String timeStamp, String notificationType, boolean isPost, boolean isStory,
-                     boolean isComment, boolean isFollowing, boolean isShared, boolean isLiked) {
+    public NotiModel(String notificationID, String userID, String postID,
+                     String timeStamp, String text, String notificationType,
+                     String commentID, String storyID) {
         this.notificationID = notificationID;
         this.userID = userID;
-        this.text = text;
         this.postID = postID;
-        this.commentID = commentID;
         this.timeStamp = timeStamp;
+        this.text = text;
         this.notificationType = notificationType;
-        this.isPost = isPost;
-        this.isStory = isStory;
-        this.isComment = isComment;
-        this.isFollowing = isFollowing;
-        this.isShared = isShared;
-        this.isLiked = isLiked;
-    }
-
-    public boolean isLiked() {
-        return isLiked;
-    }
-
-    public void setLiked(boolean liked) {
-        isLiked = liked;
-    }
-
-    public String getNotificationType() {
-        return notificationType;
-    }
-
-    public void setNotificationType(String notificationType) {
-        this.notificationType = notificationType;
-    }
-
-    public boolean isFollowing() {
-        return isFollowing;
-    }
-
-    public void setFollowing(boolean following) {
-        isFollowing = following;
-    }
-
-    public boolean isShared() {
-        return isShared;
-    }
-
-    public void setShared(boolean shared) {
-        isShared = shared;
+        this.commentID = commentID;
+        this.storyID = storyID;
     }
 
     public String getNotificationID() {
@@ -73,28 +33,12 @@ public class NotiModel {
         this.userID = userID;
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public String getPostID() {
         return postID;
     }
 
     public void setPostID(String postID) {
         this.postID = postID;
-    }
-
-    public String getCommentID() {
-        return commentID;
-    }
-
-    public void setCommentID(String commentID) {
-        this.commentID = commentID;
     }
 
     public String getTimeStamp() {
@@ -105,27 +49,35 @@ public class NotiModel {
         this.timeStamp = timeStamp;
     }
 
-    public boolean isPost() {
-        return isPost;
+    public String getText() {
+        return text;
     }
 
-    public void setPost(boolean post) {
-        isPost = post;
+    public void setText(String text) {
+        this.text = text;
     }
 
-    public boolean isStory() {
-        return isStory;
+    public String getNotificationType() {
+        return notificationType;
     }
 
-    public void setStory(boolean story) {
-        isStory = story;
+    public void setNotificationType(String notificationType) {
+        this.notificationType = notificationType;
     }
 
-    public boolean isComment() {
-        return isComment;
+    public String getCommentID() {
+        return commentID;
     }
 
-    public void setComment(boolean comment) {
-        isComment = comment;
+    public void setCommentID(String commentID) {
+        this.commentID = commentID;
+    }
+
+    public String getStoryID() {
+        return storyID;
+    }
+
+    public void setStoryID(String storyID) {
+        this.storyID = storyID;
     }
 }

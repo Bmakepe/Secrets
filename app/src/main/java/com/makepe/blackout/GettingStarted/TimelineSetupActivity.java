@@ -67,7 +67,7 @@ public class TimelineSetupActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if(!user.getUSER_ID().equals(firebaseUser.getUid()))
+                    if(!user.getUserID().equals(firebaseUser.getUid()))
                         userList.add(user);
                 }
                 Collections.shuffle(userList);

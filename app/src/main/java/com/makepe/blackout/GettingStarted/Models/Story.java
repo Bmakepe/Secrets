@@ -1,23 +1,21 @@
 package com.makepe.blackout.GettingStarted.Models;
 
-import java.util.ArrayList;
-
 public class Story {
 
-    private String storyID, userID, storyTimeStamp, storyCaption, storyImage, storyType, storyAudioUrl;
+    private String storyID, userID, storyTimeStamp, storyCaption, imageURL, storyType, storyAudioUrl;
     private long timeStart, timeEnd;
     private double longitude, latitude;
 
     public Story() {
     }
 
-    public Story(String storyID, String userID, String storyTimeStamp, String storyCaption, String storyImage,
+    public Story(String storyID, String userID, String storyTimeStamp,String storyCaption, String imageURL,
                  String storyType, String storyAudioUrl, long timeStart, long timeEnd, double longitude, double latitude) {
         this.storyID = storyID;
         this.userID = userID;
         this.storyTimeStamp = storyTimeStamp;
         this.storyCaption = storyCaption;
-        this.storyImage = storyImage;
+        this.imageURL = imageURL;
         this.storyType = storyType;
         this.storyAudioUrl = storyAudioUrl;
         this.timeStart = timeStart;
@@ -90,12 +88,12 @@ public class Story {
         this.storyCaption = storyCaption;
     }
 
-    public String getStoryImage() {
-        return storyImage;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setStoryImage(String storyImage) {
-        this.storyImage = storyImage;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
     public long getTimeStart() {

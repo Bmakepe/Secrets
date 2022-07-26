@@ -27,24 +27,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenPictureActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
-import com.makepe.blackout.GettingStarted.Models.ContactsModel;
-import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
-import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -57,15 +51,14 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
     private Context context;
     private List<CommentModel> commentList;
 
-    private DatabaseReference userReference, commentsRef, likesReference;
+    private DatabaseReference userReference, likesReference;
     private FirebaseUser firebaseUser;
 
     private GetTimeAgo timeAgo;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
+    private SendNotifications notifications;
     private FollowInteraction followInteraction;
-    //private AudioPlayer audioPlayer;
 
     public static final int COMMENT_IMAGE_POST = 100;
     public static final int COMMENT_TEXT_POST = 200;
@@ -104,13 +97,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
         //get the data
         CommentModel comments = commentList.get(position);
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         likesReference = FirebaseDatabase.getInstance().getReference("Likes");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         timeAgo = new GetTimeAgo();
         universalFunctions = new UniversalFunctions(context);
-        notifications = new UniversalNotifications(context);
+        notifications = new SendNotifications(context);
         followInteraction = new FollowInteraction(context);
 
         switch (getItemViewType(position)){
@@ -226,11 +218,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                 if(holder.likesBTN.getTag().equals("like")){
                     likesReference.child(comments.getCommentID())
                             .child(firebaseUser.getUid()).setValue(true);
-                    /*if (!firebaseUser.getUid().equals(comments.getUserID()))
-                        notifications.addLikesNotifications(comments.getUserID(), comments.getCommentID());*/
+                    if (!firebaseUser.getUid().equals(comments.getUserID()))
+                        notifications.addCommentLikesNotification(comments);
                 }else{
                     likesReference.child(comments.getCommentID())
                             .child(firebaseUser.getUid()).removeValue();
+                    if (!firebaseUser.getUid().equals(comments.getUserID()))
+                        notifications.removeCommentLikesNotification(comments);
                 }
             }
         });
@@ -333,7 +327,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                             User user = ds.getValue(User.class);
 
                             assert user != null;
-                            if (user.getUSER_ID().equals(comments.getUserID()))
+                            if (user.getUserID().equals(comments.getUserID()))
                                 popupMenu.getMenu().add(Menu.NONE, 2, 0, "Unfollow " + user.getUsername());
                         }
                     }
@@ -351,7 +345,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                             User user = ds.getValue(User.class);
 
                             assert user != null;
-                            if (user.getUSER_ID().equals(comments.getUserID()))
+                            if (user.getUserID().equals(comments.getUserID()))
                                 popupMenu.getMenu().add(Menu.NONE, 2, 0, "Follow " + user.getUsername());
                         }
                     }
@@ -406,8 +400,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
                         User user = snapshot.getValue(User.class);
 
                         assert user != null;
-                        if (user.getUSER_ID().equals(comments.getUserID())) {
-                            if (user.getUSER_ID().equals(firebaseUser.getUid())) {
+                        if (user.getUserID().equals(comments.getUserID())) {
+                            if (user.getUserID().equals(firebaseUser.getUid())) {
                                 holder.commentOwner.setText("Me");
                             } else{
                                 holder.commentOwner.setText(user.getUsername());

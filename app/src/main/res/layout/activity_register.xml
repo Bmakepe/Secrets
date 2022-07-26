@@ -5,8 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GettingStarted.RegisterActivity"
-    android:background="@drawable/background_gradient">
+    tools:context=".GettingStarted.RegisterActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,17 +19,23 @@
             android:layout_gravity="center"
             android:padding="10dp">
 
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:src="@drawable/secrets_logo"
+                android:layout_gravity="center_horizontal"
+                android:id="@+id/appLogo"
+                app:tint="@color/colorPrimary" />
+
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
                 android:gravity="center"
                 android:padding="5dp"
-                android:fontFamily="@font/righteous_regular"
                 android:text="Welcome to Secrets"
-                android:textColor="@color/colorBlack"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:letterSpacing=".1"
+                android:textAllCaps="true"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -94,9 +99,7 @@
                     android:id="@+id/terms_conditions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="7dp"
                     android:text="@string/terms_conditions"
-                    android:textColor="@color/colorBlack"
                     android:padding="5dp"
                     android:textSize="12sp"
                     android:textIsSelectable="true"/>
@@ -116,7 +119,7 @@
                         android:layout_marginBottom="10dp"
                         android:background="@drawable/button_selector"
                         android:padding="3dp"
-                        android:text="Sign Up"
+                        android:text="Continue"
                         android:textColor="@color/white"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -135,7 +138,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sms_data_rates"
                     android:gravity="center"
-                    android:textColor="@color/colorBlack"
                     android:textSize="10sp"
                     android:textStyle="normal"
                     tools:ignore="SmallSp" />

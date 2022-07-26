@@ -56,6 +56,7 @@ import com.makepe.blackout.GettingStarted.Adapters.TaggedFriendsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
@@ -101,11 +102,11 @@ public class SharePostActivity extends AppCompatActivity{
     private RelativeLayout videoArea;
     private ProgressBar sharedVideoLoader;
 
-    private DatabaseReference postRef, userRef, notificationsRef, followingReference;
+    private DatabaseReference postRef, userRef, followingReference, videoReference;
     private FirebaseUser firebaseUser;
     private StorageReference audioReference;
 
-    private String sharePostID, userID, postType, postID;
+    private String sharePostID, postType, postID;
 
     private GetTimeAgo getTimeAgo;
     private UniversalFunctions universalFunctions;
@@ -127,11 +128,14 @@ public class SharePostActivity extends AppCompatActivity{
     public TextView audioSeekTimer, postTotalTime;
 
     private ProgressDialog uploadProgress;
+    private PostModel post;
 
     //for Location services & privacy settings
     private LocationServices locationServices;
     private TextView myLocationCheckIn, audiencePicker;
     private String privacyProtection = "Public";
+
+    private SendNotifications sendNotifications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,6 +195,7 @@ public class SharePostActivity extends AppCompatActivity{
         Intent intent = getIntent();
         sharePostID = intent.getStringExtra("postID");
 
+        sendNotifications = new SendNotifications(this);
         getTimeAgo = new GetTimeAgo();
         uploadProgress = new ProgressDialog(this);
         uploadProgress.setMessage("Loading... Please wait...");
@@ -203,8 +208,8 @@ public class SharePostActivity extends AppCompatActivity{
                 audioSeekTimer, postTotalTime, audioAnimation);
 
         postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
-        notificationsRef = FirebaseDatabase.getInstance().getReference("Notifications");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         audioReference = FirebaseStorage.getInstance().getReference();
         followingReference = FirebaseDatabase.getInstance().getReference("Follow")
@@ -308,11 +313,11 @@ public class SharePostActivity extends AppCompatActivity{
                                 break;
 
                             case "videoPost":
-                                uploadSharedPost("sharedVideoPost");
+                                uploadSharedPost("sharedTextVideoPost");
                                 break;
 
                             case "imagePost":
-                                uploadSharedPost("sharedImagePost");
+                                uploadSharedPost("sharedTextImagePost");
                                 break;
 
                             case "audioPost":
@@ -472,7 +477,7 @@ public class SharePostActivity extends AppCompatActivity{
 
                             for (String ID : idList){
                                 assert user != null;
-                                if (user.getUSER_ID().equals(ID))
+                                if (user.getUserID().equals(ID))
                                     userList.add(user);
                             }
 
@@ -522,16 +527,105 @@ public class SharePostActivity extends AppCompatActivity{
     }
 
     private void getSharedPostDescription() {
-        postRef.child(sharePostID).addValueEventListener(new ValueEventListener() {
+        postRef.child(sharePostID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
-                    PostModel postModel = snapshot.getValue(PostModel.class);
+                    post = snapshot.getValue(PostModel.class);
 
-                    if (postModel.getPostID().equals(sharePostID)){
-                        displaySharedPost(postModel);
+                    assert post != null;
+                    if (post.getPostID().equals(sharePostID)){
+
+                        postType = post.getPostType();
+
+                        getUniversalPostDetails(post);
+                        getUserDetails(post);
+                        checkPostTags(post);
+
+                        switch (post.getPostType()){
+
+                            case "audioPost":
+                                hisCaptionTV.setVisibility(View.GONE);
+                                mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                                mediaPlayer(post);
+                                break;
+
+                            case "audioImagePost":
+                                hisCaptionTV.setVisibility(View.GONE);
+                                mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                                mediaPlayer(post);
+                                getPostImages(post);
+
+                                break;
+
+                            case "textPost":
+                                hisCaptionTV.setVisibility(View.VISIBLE);
+                                hisCaptionTV.setText(post.getPostCaption());
+                                picArea.setVisibility(View.GONE);
+
+                                break;
+
+                            case "imagePost":
+                                hisCaptionTV.setVisibility(View.VISIBLE);
+                                hisCaptionTV.setText(post.getPostCaption());
+
+                                getPostImages(post);
+
+                                break;
+
+                            default:
+                                Toast.makeText(SharePostActivity.this, "Unidentified Post Type: " + post.getPostType(), Toast.LENGTH_SHORT).show();
+                        }
                     }
 
+                }else{
+                    videoReference.child(sharePostID).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                post = snapshot.getValue(PostModel.class);
+
+                                assert post != null;
+                                if (post.getPostID().equals(sharePostID)){
+
+                                    postType = post.getPostType();
+
+                                    getUniversalPostDetails(post);
+                                    getUserDetails(post);
+                                    checkVideoPostTags(post);
+
+                                    switch (post.getPostType()){
+
+                                        case "videoPost":
+                                            hisCaptionTV.setVisibility(View.VISIBLE);
+                                            hisCaptionTV.setText(post.getPostCaption());
+
+                                            getVideoDetails(post);
+                                            break;
+
+                                        case "audioVideoPost":
+                                            hisCaptionTV.setVisibility(View.GONE);
+                                            mediaPlayerArea.setVisibility(View.VISIBLE);
+
+                                            getVideoDetails(post);
+                                            mediaPlayer(post);
+                                            break;
+
+                                        default:
+                                            Toast.makeText(SharePostActivity.this, "Unknown post type identified: " + post.getPostType(), Toast.LENGTH_SHORT).show();
+
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                 }
             }
 
@@ -542,66 +636,28 @@ public class SharePostActivity extends AppCompatActivity{
         });
     }
 
-    private void displaySharedPost(PostModel post) {
+    private void checkVideoPostTags(PostModel post) {
+        videoReference.child(post.getPostID()).child("taggedFriends")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            if (snapshot.getChildrenCount() == 1)
+                                hisTaggedUsers.setText("with: " + snapshot.getChildrenCount() + " friend");
+                            else
+                                hisTaggedUsers.setText("with: " + snapshot.getChildrenCount() + " friends");
 
-        postType = post.getPostType();
-        userID = post.getUserID();
+                            hisTaggedUsers.setVisibility(View.VISIBLE);
+                        }else{
+                            hisTaggedUsers.setVisibility(View.GONE);
+                        }
+                    }
 
-        getUniversalPostDetails(post);
-        getUserDetails(post);
-        checkPostTags(post);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-        switch (post.getPostType()){
-            case "videoPost":
-                hisCaptionTV.setVisibility(View.VISIBLE);
-                hisCaptionTV.setText(post.getPostCaption());
-
-                getVideoDetails(post);
-                break;
-
-            case "audioVideoPost":
-                hisCaptionTV.setVisibility(View.GONE);
-                mediaPlayerArea.setVisibility(View.VISIBLE);
-
-                getVideoDetails(post);
-                mediaPlayer(post);
-                break;
-
-            case "audioPost":
-                hisCaptionTV.setVisibility(View.GONE);
-                mediaPlayerArea.setVisibility(View.VISIBLE);
-
-                mediaPlayer(post);
-                break;
-
-            case "audioImagePost":
-                hisCaptionTV.setVisibility(View.GONE);
-                mediaPlayerArea.setVisibility(View.VISIBLE);
-
-                mediaPlayer(post);
-                getPostImages(post);
-
-                break;
-
-            case "textPost":
-                hisCaptionTV.setVisibility(View.VISIBLE);
-                hisCaptionTV.setText(post.getPostCaption());
-                picArea.setVisibility(View.GONE);
-
-                break;
-
-            case "imagePost":
-                hisCaptionTV.setVisibility(View.VISIBLE);
-                hisCaptionTV.setText(post.getPostCaption());
-
-                getPostImages(post);
-
-                break;
-
-            default:
-                Toast.makeText(this, "Unidentified Post Type: " + post.getPostType(), Toast.LENGTH_SHORT).show();
-        }
-
+                    }
+                });
     }
 
     private void checkPostTags(PostModel post) {
@@ -695,7 +751,7 @@ public class SharePostActivity extends AppCompatActivity{
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(postModel.getUserID())){
+                    if (user.getUserID().equals(postModel.getUserID())){
                         try{
                             Picasso.get().load(user.getImageURL()).into(hisProfilePic);
                         }catch (NullPointerException e){
@@ -703,6 +759,41 @@ public class SharePostActivity extends AppCompatActivity{
                         }
 
                         hisNameTV.setText(user.getUsername());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getUniversalPostDetails(PostModel post) {
+
+        try{
+            universalFunctions.findAddress(post.getLatitude(), post.getLongitude(), hisLocationTV, myLocationArea);
+        }catch (Exception ignored){}
+
+        try{
+            hisPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), SharePostActivity.this));
+        }catch (NumberFormatException ignored){}
+
+    }
+
+    private void getMyDetails() {
+        userRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    User user = ds.getValue(User.class);
+
+                    assert user != null;
+                    if (user.getUserID().equals(firebaseUser.getUid())){
+                        try{
+                            Picasso.get().load(user.getImageURL()).into(myProfilePic);
+                        }catch (NullPointerException ignored){}
                     }
                 }
             }
@@ -754,7 +845,6 @@ public class SharePostActivity extends AppCompatActivity{
 
                     sharedMap.put("userID", firebaseUser.getUid());//usersID
                     sharedMap.put("postID", postID);
-                    sharedMap.put("postCaption", myCaptionET.getText().toString());
                     sharedMap.put("postTime", String.valueOf(System.currentTimeMillis()));
                     sharedMap.put("postPrivacy", privacyProtection);//post security
                     sharedMap.put("postType", postType);//post security
@@ -776,12 +866,7 @@ public class SharePostActivity extends AppCompatActivity{
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
 
-                                    if (!taggedUsers.isEmpty()) {
-                                        for (int i = 0; i < taggedUsers.size(); i++) {
-                                            postRef.child(postID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
-                                        }
-                                        taggedUsers.clear();
-                                    }
+                                    checkSharedPostTags();
 
                                     postRef.child(sharePostID).child("sharedBy").child(firebaseUser.getUid()).setValue(true)
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -791,7 +876,7 @@ public class SharePostActivity extends AppCompatActivity{
                                                     Toast.makeText(SharePostActivity.this, "Shared Successfully", Toast.LENGTH_SHORT).show();
                                                     uploadProgress.dismiss();
 
-                                                    sendShareNotification(myCaptionET.getText().toString());
+                                                    sendNotifications.addPostShareNotification(post, myCaptionET.getText().toString());
 
                                                     finish();
                                                 }
@@ -836,12 +921,7 @@ public class SharePostActivity extends AppCompatActivity{
                     @Override
                     public void onSuccess(Void aVoid) {
 
-                        if (!taggedUsers.isEmpty()) {
-                            for (int i = 0; i < taggedUsers.size(); i++) {
-                                postRef.child(postID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
-                            }
-                            taggedUsers.clear();
-                        }
+                        checkSharedPostTags();
 
                         postRef.child(sharePostID).child("sharedBy").child(firebaseUser.getUid()).setValue(true)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -851,7 +931,7 @@ public class SharePostActivity extends AppCompatActivity{
                                                 Toast.makeText(SharePostActivity.this, "Shared Successfully", Toast.LENGTH_SHORT).show();
                                                 uploadProgress.dismiss();
 
-                                                sendShareNotification(myCaptionET.getText().toString());
+                                                sendNotifications.addPostShareNotification(post, myCaptionET.getText().toString());
                                                 myCaptionET.setText("");
 
                                                 finish();
@@ -869,56 +949,14 @@ public class SharePostActivity extends AppCompatActivity{
 
     }
 
-    private void sendShareNotification(String caption) {
-        String timeStamp = String.valueOf(System.currentTimeMillis());
-        String notificationID = notificationsRef.push().getKey();
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-
-        hashMap.put("notificationID", notificationID);
-        hashMap.put("userid", firebaseUser.getUid());
-        hashMap.put("text", "Shared your post: " + caption);
-        hashMap.put("postid", sharePostID);
-        hashMap.put("ispost", true);
-        hashMap.put("timeStamp", timeStamp);
-
-        assert notificationID != null;
-        notificationsRef.child(userID).child(notificationID).setValue(hashMap);
-    }
-
-    private void getUniversalPostDetails(PostModel post) {
-
-        try{
-            universalFunctions.findAddress(post.getLatitude(), post.getLongitude(), hisLocationTV, myLocationArea);
-        }catch (Exception ignored){}
-
-        try{
-            hisPostDate.setText(getTimeAgo.getTimeAgo(Long.parseLong(post.getPostTime()), SharePostActivity.this));
-        }catch (NumberFormatException ignored){}
-
-    }
-
-    private void getMyDetails() {
-        userRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    User user = ds.getValue(User.class);
-
-                    assert user != null;
-                    if (user.getUSER_ID().equals(firebaseUser.getUid())){
-                        try{
-                            Picasso.get().load(user.getImageURL()).into(myProfilePic);
-                        }catch (NullPointerException ignored){}
-                    }
-                }
+    private void checkSharedPostTags() {
+        if (!taggedUsers.isEmpty()) {
+            for (int i = 0; i < taggedUsers.size(); i++) {
+                postRef.child(postID).child("taggedFriends").child(taggedUsers.get(i).getUserID()).setValue(true);
+                sendNotifications.addTaggedUserNotification(taggedUsers.get(i), postID);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+            taggedUsers.clear();
+        }
     }
 
     @Override

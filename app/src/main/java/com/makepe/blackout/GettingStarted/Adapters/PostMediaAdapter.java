@@ -7,13 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.makepe.blackout.GettingStarted.InAppActivities.PosteActivity;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 

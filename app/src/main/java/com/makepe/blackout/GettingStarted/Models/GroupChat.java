@@ -1,50 +1,26 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class GroupChat {
-    String groupID, chatID, senderID, message, timeStamp, media, audio, msg_type, videoURL;
+    String groupID, chatID, senderID, message, timeStamp, mediaURL, audioURL, message_type, videoURL;
     private double latitude, longitude;
 
     public GroupChat() {
     }
 
     public GroupChat(String groupID, String chatID, String senderID, String message, String timeStamp,
-                     String media, String audio, String msg_type, String videoURL, double latitude,
-                     double longitude) {
+                     String mediaURL, String audioURL, String message_type, String videoURL,
+                     double latitude, double longitude) {
         this.groupID = groupID;
         this.chatID = chatID;
         this.senderID = senderID;
         this.message = message;
         this.timeStamp = timeStamp;
-        this.media = media;
-        this.audio = audio;
-        this.msg_type = msg_type;
+        this.mediaURL = mediaURL;
+        this.audioURL = audioURL;
+        this.message_type = message_type;
         this.videoURL = videoURL;
         this.latitude = latitude;
         this.longitude = longitude;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public String getVideoURL() {
-        return videoURL;
-    }
-
-    public void setVideoURL(String videoURL) {
-        this.videoURL = videoURL;
     }
 
     public String getGroupID() {
@@ -87,27 +63,51 @@ public class GroupChat {
         this.timeStamp = timeStamp;
     }
 
-    public String getMedia() {
-        return media;
+    public String getMediaURL() {
+        return mediaURL;
     }
 
-    public void setMedia(String media) {
-        this.media = media;
+    public void setMediaURL(String mediaURL) {
+        this.mediaURL = mediaURL;
     }
 
-    public String getAudio() {
-        return audio;
+    public String getAudioURL() {
+        return audioURL;
     }
 
-    public void setAudio(String audio) {
-        this.audio = audio;
+    public void setAudioURL(String audioURL) {
+        this.audioURL = audioURL;
     }
 
-    public String getMsg_type() {
-        return msg_type;
+    public String getMessage_type() {
+        return message_type;
     }
 
-    public void setMsg_type(String msg_type) {
-        this.msg_type = msg_type;
+    public void setMessage_type(String message_type) {
+        this.message_type = message_type;
+    }
+
+    public String getVideoURL() {
+        return videoURL;
+    }
+
+    public void setVideoURL(String videoURL) {
+        this.videoURL = videoURL;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }

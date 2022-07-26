@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,13 +18,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
-import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.FollowInteraction;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -42,7 +38,6 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
     private FirebaseUser firebaseUser;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
     private FollowInteraction followInteraction;
 
     public UserInteractionAdapter(ArrayList<User> userList, Context context) {
@@ -62,20 +57,19 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         universalFunctions = new UniversalFunctions(context);
-        notifications = new UniversalNotifications(context);
         followInteraction = new FollowInteraction(context);
 
         getUserDetails(user, holder);
         checkFollow(user, holder);
-        universalFunctions.checkActiveStories(holder.userProPic, user.getUSER_ID());
+        universalFunctions.checkActiveStories(holder.userProPic, user.getUserID());
 
         holder.followBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (followInteraction.checkFollowing(user.getUSER_ID()))
-                    followInteraction.unFollowUser(user.getUSER_ID());
+                if (followInteraction.checkFollowing(user.getUserID()))
+                    followInteraction.unFollowUser(user.getUserID());
                 else
-                    followInteraction.followUser(user.getUSER_ID());
+                    followInteraction.followUser(user.getUserID());
             }
         });
 
@@ -83,34 +77,8 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ViewProfileActivity.class);
-                intent.putExtra("uid", user.getUSER_ID());
+                intent.putExtra("uid", user.getUserID());
                 context.startActivity(intent);
-            }
-        });
-
-        holder.userProPic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (holder.userProPic.getTag().equals("storyActive")){
-                    Intent storyIntent = new Intent(context, StoryActivity.class);
-                    storyIntent.putExtra("userid", user.getUSER_ID());
-                    context.startActivity(storyIntent);
-                } else if (holder.userProPic.getTag().equals("noStories")) {
-                    Intent imageIntent = new Intent(context, FullScreenImageActivity.class);
-                    imageIntent.putExtra("itemID", user.getUSER_ID());
-                    imageIntent.putExtra("reason", "userImage");
-                    context.startActivity(imageIntent);
-                }
-            }
-        });
-
-        holder.userCoverPic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent coverIntent = new Intent(context, FullScreenImageActivity.class);
-                coverIntent.putExtra("itemID", user.getUSER_ID());
-                coverIntent.putExtra("reason", "coverImage");
-                context.startActivity(coverIntent);
             }
         });
 
@@ -123,7 +91,7 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
         followRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.child(user.getUSER_ID()).exists()){
+                if (snapshot.child(user.getUserID()).exists()){
                     holder.followBTN.setText("Following");
                 }else{
                     holder.followBTN.setText("Follow");
@@ -144,7 +112,7 @@ public class UserInteractionAdapter extends RecyclerView.Adapter<UserInteraction
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User myUser = ds.getValue(User.class);
 
-                    if (myUser.getUSER_ID().equals(user.getUSER_ID())){
+                    if (myUser.getUserID().equals(user.getUserID())){
                         holder.userName.setText(myUser.getUsername());
 
                         try{

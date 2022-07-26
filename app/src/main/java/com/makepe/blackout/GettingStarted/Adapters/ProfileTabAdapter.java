@@ -8,19 +8,19 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import com.makepe.blackout.GettingStarted.Fragments.HisPostsFragment;
-import com.makepe.blackout.GettingStarted.Fragments.HisVideosFragment;
+import com.makepe.blackout.GettingStarted.Fragments.UserPostsFragment;
+import com.makepe.blackout.GettingStarted.Fragments.UserVideosFragment;
 
 import java.util.ArrayList;
 
-public class HisTabAdapter extends FragmentPagerAdapter {
+public class ProfileTabAdapter extends FragmentPagerAdapter {
 
 
     private ArrayList<Fragment> fragments;
     private ArrayList<String> titles;
     private String userID;
 
-    public HisTabAdapter(@NonNull FragmentManager fm){
+    public ProfileTabAdapter(@NonNull FragmentManager fm){
         super(fm);
         this.fragments = new ArrayList<>();
         this.titles = new ArrayList<>();
@@ -39,14 +39,14 @@ public class HisTabAdapter extends FragmentPagerAdapter {
 
         switch (position){
             case 0:
-                fragment = new HisPostsFragment();
+                fragment = new UserPostsFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("hisUserID", userID);
                 fragment.setArguments(bundle);
                 break;
 
             case 1:
-                fragment = new HisVideosFragment();
+                fragment = new UserVideosFragment();
                 Bundle bundle1 = new Bundle();
                 bundle1.putString("hisUserID", userID);
                 fragment.setArguments(bundle1);

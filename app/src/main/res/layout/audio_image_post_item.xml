@@ -6,14 +6,12 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="@color/white_greyish"
     android:layout_margin="2dp"
     tools:ignore="UnusedAttribute">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/cardView_color"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -218,6 +216,10 @@
                 layout="@layout/post_item_social_buttons"/>
 
         </LinearLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

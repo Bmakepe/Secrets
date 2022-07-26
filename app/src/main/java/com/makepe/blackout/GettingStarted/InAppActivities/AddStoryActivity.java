@@ -30,6 +30,7 @@ import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputLayout;
@@ -48,6 +49,7 @@ import com.makepe.blackout.GettingStarted.Adapters.TaggedFriendsAdapter;
 import com.makepe.blackout.GettingStarted.MainActivity;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
@@ -68,11 +70,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class AddStoryActivity extends AppCompatActivity {
 
     private Uri mImageUri;
-    private String myUri = "", userID, storyID;
+    private String userID, storyID;
     private StorageTask storageTask;
     private StorageReference storageReference, audioReference;
     private DatabaseReference userReference, storyReference, followingReference;
     private UploadFunctions uploadFunctions;
+    private SendNotifications sendNotifications;
 
     private CircleImageView storyProPic;
     private ImageView storyPic;
@@ -124,7 +127,7 @@ public class AddStoryActivity extends AppCompatActivity {
 
         userID = getIntent().getStringExtra("userid");
 
-        storageReference = FirebaseStorage.getInstance().getReference("Story");
+        storageReference = FirebaseStorage.getInstance().getReference("user_story_images");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story");
         audioReference = FirebaseStorage.getInstance().getReference();
@@ -135,6 +138,7 @@ public class AddStoryActivity extends AppCompatActivity {
         audioRecorder = new AudioRecorder(lavPlaying, AddStoryActivity.this,
                 AddStoryActivity.this, playAudioArea, voicePlayBTN, seekTimer);
         uploadFunctions = new UploadFunctions(AddStoryActivity.this);
+        sendNotifications = new SendNotifications(this);
 
         taggedFriendsRecycler.hasFixedSize();
         taggedFriendsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -272,7 +276,8 @@ public class AddStoryActivity extends AppCompatActivity {
                             User user = ds.getValue(User.class);
 
                             for (String ID : idList){
-                                if (user.getUSER_ID().equals(ID))
+                                assert user != null;
+                                if (user.getUserID().equals(ID))
                                     userList.add(user);
                             }
 
@@ -282,6 +287,7 @@ public class AddStoryActivity extends AppCompatActivity {
                                     return o1.getUsername().compareTo(o2.getUsername());
                                 }
                             });
+                            friendsAdapter.notifyDataSetChanged();
                         }
                     }
 
@@ -323,7 +329,7 @@ public class AddStoryActivity extends AppCompatActivity {
     private void publishAudioStory() {
         pd.show();
 
-        StorageReference audioPath = audioReference.child("StatusAudios").child(storyID + ".3gp");
+        StorageReference audioPath = audioReference.child("user_story_audios").child(storyID + ".3gp");
         Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
 
         StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
@@ -340,7 +346,6 @@ public class AddStoryActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Uri> task) {
                 if (task.isSuccessful()){
                     Uri audioDownloadLink = task.getResult();
-                    String audioLink = audioDownloadLink.toString();
 
                     if (mImageUri != null){
                         final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
@@ -359,20 +364,19 @@ public class AddStoryActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<Uri> task) {
                                 if (task.isSuccessful()){
                                     Uri downloadUri = task.getResult();
-                                    myUri  = downloadUri.toString();
 
                                     long timeEnd = System.currentTimeMillis() + 86400000; //1 day
 
                                     HashMap<String, Object> hashMap = new HashMap<>();
 
-                                    hashMap.put("storyImage", myUri);
+                                    hashMap.put("imageURL", downloadUri.toString());
                                     hashMap.put("timeStart", ServerValue.TIMESTAMP);
                                     hashMap.put("timeEnd", timeEnd);
                                     hashMap.put("storyID", storyID);
                                     hashMap.put("userID", userID);
                                     hashMap.put("storyTimeStamp", String.valueOf(System.currentTimeMillis()));
                                     hashMap.put("storyType", "audioStory");
-                                    hashMap.put("storyAudioUrl", audioLink);
+                                    hashMap.put("storyAudioUrl", audioDownloadLink.toString());
 
                                     if (!locationTV.getText().toString().equals("No Location")) {
                                         hashMap.put("latitude", locationServices.getLatitude());
@@ -389,11 +393,7 @@ public class AddStoryActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
 
-                                                    if (!taggedUsers.isEmpty()) {
-                                                        for (int i = 0; i < taggedUsers.size(); i++) {
-                                                            storyReference.child(userID).child(storyID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
-                                                        }
-                                                    }
+                                                    checkStoryTags();
 
                                                     storyFAB.setVisibility(View.VISIBLE);
                                                     pd.dismiss();
@@ -424,7 +424,7 @@ public class AddStoryActivity extends AppCompatActivity {
                     User user = ds.getValue(User.class);
 
                     assert user != null;
-                    if (user.getUSER_ID().equals(userID)){
+                    if (user.getUserID().equals(userID)){
 
                         storyUser.setText(user.getUsername());
 
@@ -466,13 +466,12 @@ public class AddStoryActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if(task.isSuccessful()){
                         Uri downloadUri = task.getResult();
-                        myUri = downloadUri.toString();
 
                         long timeEnd = System.currentTimeMillis() + 86400000; //1 day
 
                         HashMap<String, Object> hashMap = new HashMap<>();
 
-                        hashMap.put("storyImage", myUri);
+                        hashMap.put("imageURL", downloadUri.toString());
                         hashMap.put("timeStart", ServerValue.TIMESTAMP);
                         hashMap.put("timeEnd", timeEnd);
                         hashMap.put("storyID", storyID);
@@ -491,11 +490,7 @@ public class AddStoryActivity extends AppCompatActivity {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
 
-                                        if (!taggedUsers.isEmpty()) {
-                                            for (int i = 0; i < taggedUsers.size(); i++) {
-                                                storyReference.child(userID).child(storyID).child("taggedFriends").child(taggedUsers.get(i).getUSER_ID()).setValue(true);
-                                            }
-                                        }
+                                        checkStoryTags();
 
                                         storyFAB.setVisibility(View.VISIBLE);
                                         pd.dismiss();
@@ -513,6 +508,16 @@ public class AddStoryActivity extends AppCompatActivity {
                     Toast.makeText(AddStoryActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+    }
+
+    private void checkStoryTags() {
+        if (!taggedUsers.isEmpty()) {
+            for (int i = 0; i < taggedUsers.size(); i++) {
+                storyReference.child(userID).child(storyID).child("taggedFriends").child(taggedUsers.get(i).getUserID()).setValue(true);
+                sendNotifications.addStoryTaggedUserNotification(taggedUsers.get(i), storyID);
+            }
+            taggedUsers.clear();
         }
     }
 
@@ -568,7 +573,7 @@ public class AddStoryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.tagFriendsItem:
-                Toast.makeText(this, "You will be able to tag friends", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "You will be able to add more items to your story soon", Toast.LENGTH_SHORT).show();
                 break;
 
         }

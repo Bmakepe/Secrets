@@ -20,19 +20,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.NotificationAdapter;
-import com.makepe.blackout.GettingStarted.Models.NotiModel;
+import com.makepe.blackout.GettingStarted.Adapters.BundledNotificationAdapter;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class NotificationsFragment extends Fragment {
 
     private RecyclerView notiRecycler;
-    private List<NotiModel> notificationList;
     private ProgressBar notificationsLoader;
+    private ArrayList<String> bundledNotifications;
 
     private FirebaseUser firebaseUser;
     private DatabaseReference notificationsReference;
@@ -52,41 +49,59 @@ public class NotificationsFragment extends Fragment {
         notificationsLoader = view.findViewById(R.id.notificationsLoader);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
-
-        notificationList = new ArrayList<>();
+        notificationsReference = FirebaseDatabase.getInstance().getReference("SecretNotifications")
+                .child(firebaseUser.getUid());
 
         notiRecycler.setHasFixedSize(true);
         notiRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        getNotifications();
+        bundledNotifications = new ArrayList<>();
+
+        getMyNotifications();
 
         return view;
+
     }
 
-    private void getNotifications() {
-        notificationsReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+    private void getMyNotifications() {
+        notificationsReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    notificationList.clear();
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        NotiModel notiModel = snapshot.getValue(NotiModel.class);
-                        notificationList.add(notiModel);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    bundledNotifications.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+
+                        notificationsReference.child(ds.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                if (snapshot.exists()){
+                                    for (DataSnapshot data : snapshot.getChildren()){
+                                        bundledNotifications.add(data.getKey());
+                                    }
+                                    notiRecycler.setAdapter(new BundledNotificationAdapter(getActivity(), bundledNotifications));
+                                    notificationsLoader.setVisibility(View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+
                     }
 
-                    Collections.reverse(notificationList);
-                    notiRecycler.setAdapter(new NotificationAdapter(getActivity(), notificationList));
                 }else{
-                    Toast.makeText(getActivity(), "You don't have any notifications", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "You have no notifications", Toast.LENGTH_SHORT).show();
                 }
-                notificationsLoader.setVisibility(View.GONE);
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
+
     }
+
 }

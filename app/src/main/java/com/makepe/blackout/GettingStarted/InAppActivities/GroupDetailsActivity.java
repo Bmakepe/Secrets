@@ -49,7 +49,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
     private ImageView groupCoverPic;
     private CircleImageView groupProfilePic;
     private TextView groupDetailsName, sendMessageBTN, leaveGroupBTN, groupDescription,
-            groupMembersCount, groupCreatedDate, groupPrivacy, aboutTV;
+            groupMembersCount, groupPrivacy, aboutTV;
 
     private ProgressBar coverLoader, profilePicLoader;
     private String groupID, myGroupRole, groupIcon, groupCoverIcon;
@@ -83,7 +83,6 @@ public class GroupDetailsActivity extends AppCompatActivity {
         groupDescription = findViewById(R.id.groupDescription);
         membersRecycler = findViewById(R.id.groupMembersRecycler);
         groupMembersCount = findViewById(R.id.groupMembersCount);
-        groupCreatedDate = findViewById(R.id.groupTimeCreated);
         groupPrivacy = findViewById(R.id.groupPrivacy);
         aboutTV = findViewById(R.id.groupAboutTV);
 
@@ -240,7 +239,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
                                         assert user != null;
                                         assert model != null;
-                                        if (user.getUSER_ID().equals(model.getUserID())){
+                                        if (user.getUserID().equals(model.getUserID())){
                                             groupMembers.add(user);
                                         }
 
@@ -279,10 +278,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
                         groupDetailsName.setText(group.getGroupName());
                         groupDescription.setText(group.getGroupPurpose());
                         groupPrivacy.setText(group.getGroupPrivacy() + " group");
-                        aboutTV.setText("About " + group.getGroupName());
-
-                        String timeStamp = getTimeAgo.getTimeAgo(Long.parseLong(group.getTimeStamp()), GroupDetailsActivity.this);
-                        groupCreatedDate.setText("Created: " + timeStamp);
+                        aboutTV.setText("About " + group.getGroupName() + "\n" + "Created: " + getTimeAgo.getTimeAgo(Long.parseLong(group.getTimeStamp()), GroupDetailsActivity.this));
 
                         try{
                             Picasso.get().load(group.getGroupCoverPic()).into(groupCoverPic);

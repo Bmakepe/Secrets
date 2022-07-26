@@ -5,11 +5,10 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     android:layout_gravity="center">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/edit_profile_toolbar"
+        android:id="@+id/user_details_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="5dp"
@@ -88,7 +87,7 @@
                             android:layout_gravity="top|center"
                             android:src="@drawable/default_profile_display_pic"
                             app:civ_border_color="@color/colorBlack"
-                            app:civ_border_width="3dp" />
+                            app:civ_border_width="2dp" />
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:layout_width="25dp"
@@ -119,10 +118,8 @@
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:id="@+id/usernameTIL"
-                    android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
                     app:counterMaxLength="30"
-                    android:padding="5dp"
                     app:counterOverflowTextAppearance="@color/colorRed">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -152,12 +149,9 @@
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:id="@+id/biographyTIL"
-                    android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
                     app:counterMaxLength="150"
-                    android:padding="5dp"
-                    app:counterOverflowTextAppearance="@color/colorRed"
-                    android:layout_marginTop="5dp">
+                    app:counterOverflowTextAppearance="@color/colorRed" >
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
@@ -188,10 +182,7 @@
                     android:layout_height="wrap_content"
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:padding="5dp"
-                    android:background="@drawable/rounded_edittext"
-                    app:counterOverflowTextAppearance="@color/colorRed"
-                    android:layout_marginTop="5dp">
+                    app:counterOverflowTextAppearance="@color/colorRed">
 
                     <EditText
                         android:layout_width="match_parent"
@@ -218,10 +209,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:boxStrokeColor="@color/colorPrimary"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:background="@drawable/rounded_edittext"
-                    android:padding="5dp"
-                    android:layout_marginTop="5dp">
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
 
                     <EditText
                         android:layout_width="match_parent"

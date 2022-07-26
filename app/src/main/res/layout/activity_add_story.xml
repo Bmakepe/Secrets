@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GettingStarted.InAppActivities.AddStoryActivity"
-    android:background="@drawable/background_gradient">
+    tools:context=".GettingStarted.InAppActivities.AddStoryActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/add_story_toolbar"
@@ -91,7 +90,7 @@
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:id="@+id/storyCaptionET"
                     android:layout_gravity="center"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:singleLine="true"
                     android:paddingStart="10dp"
                     android:paddingEnd="20dp"

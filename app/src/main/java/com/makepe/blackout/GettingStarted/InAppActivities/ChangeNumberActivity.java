@@ -267,7 +267,7 @@ public class ChangeNumberActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User myUser = ds.getValue(User.class);
                     assert myUser != null;
-                    if (myUser.getUSER_ID().equals(user.getUid())) {
+                    if (myUser.getUserID().equals(user.getUid())) {
                         try {
                             Picasso.get().load(myUser.getImageURL()).into(propic);
                         } catch (NullPointerException ignored) {}

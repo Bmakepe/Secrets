@@ -180,7 +180,7 @@ public class FullScreenImageActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(itemID))
+                    if (user.getUserID().equals(itemID))
                         try{
                             Picasso.get().load(user.getCoverURL()).into(fullScreenImage);
                         }catch (NullPointerException ignored){}
@@ -201,7 +201,7 @@ public class FullScreenImageActivity extends AppCompatActivity {
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(itemID))
+                    if (user.getUserID().equals(itemID))
                         try{
                             Picasso.get().load(user.getImageURL()).into(fullScreenImage);
                         }catch (NullPointerException ignored){}

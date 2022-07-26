@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,7 +20,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -52,7 +52,7 @@ public class ExploreFootageFragment extends Fragment {
         videoLoader = view.findViewById(R.id.followingVideosLoader);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        postReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
         followReference = FirebaseDatabase.getInstance().getReference("Follow")
                 .child(firebaseUser.getUid())
                 .child("following");
@@ -87,25 +87,31 @@ public class ExploreFootageFragment extends Fragment {
         postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                videoList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
+                if (snapshot.exists()) {
+                    videoList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        PostModel postModel = ds.getValue(PostModel.class);
 
-                    for (String id : followingList){
-                        assert postModel != null;
-                        if (postModel.getUserID().equals(id)){
-                            if (postModel.getPostType().equals("videoPost")
-                                    || postModel.getPostType().equals("sharedVideoPost")
-                                    || postModel.getPostType().equals("sharedAudioTextVideoPost")
-                                    || postModel.getPostType().equals("audioVideoPost")
-                                    || postModel.getPostType().equals("sharedTextAudioVideoPost")
-                                    || postModel.getPostType().equals("sharedAudioAudioVideoPost")){
+                        for (String id : followingList) {
+                            assert postModel != null;
+                            if (postModel.getUserID().equals(id)) {
                                 videoList.add(postModel);
+
+                                /*if (postModel.getPostType().equals("videoPost")
+                                        || postModel.getPostType().equals("sharedAudioVideoPost")
+                                        || postModel.getPostType().equals("sharedTextVideoPost")
+                                        || postModel.getPostType().equals("audioVideoPost")
+                                        || postModel.getPostType().equals("sharedAudioAudioVideoPost")
+                                        || postModel.getPostType().equals("sharedTextAudioVideoPost"))
+                                    videoList.add(postModel);*/
                             }
                         }
+                        Collections.shuffle(videoList);
+                        videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));
+                        videoLoader.setVisibility(View.GONE);
                     }
-                    Collections.shuffle(videoList);
-                    videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));
+                }else{
+                    Toast.makeText(getActivity(), "No videos", Toast.LENGTH_SHORT).show();
                     videoLoader.setVisibility(View.GONE);
                 }
             }

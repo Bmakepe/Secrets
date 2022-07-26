@@ -4,8 +4,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -20,7 +18,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -55,7 +52,7 @@ public class ExploreVideosFragment extends Fragment {
         videoPager = view.findViewById(R.id.videoPager);
         videoLoader = view.findViewById(R.id.videoPostLoader);
 
-        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
         videoList = new ArrayList<>();
 
         getVideos();
@@ -69,16 +66,18 @@ public class ExploreVideosFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 videoList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel videos = ds.getValue(PostModel.class);
+                    PostModel postModel = ds.getValue(PostModel.class);
 
-                    assert videos != null;
-                    if (videos.getPostType().equals("videoPost")
-                            || videos.getPostType().equals("sharedVideoPost")
-                            || videos.getPostType().equals("sharedAudioTextVideoPost")
-                            || videos.getPostType().equals("audioVideoPost")
-                            || videos.getPostType().equals("sharedTextAudioVideoPost")
-                            || videos.getPostType().equals("sharedAudioAudioVideoPost"))
-                        videoList.add(videos);
+                    assert postModel != null;
+                    videoList.add(postModel);
+
+                    /*if (postModel.getPostType().equals("videoPost")
+                            || postModel.getPostType().equals("sharedAudioVideoPost")
+                            || postModel.getPostType().equals("sharedTextVideoPost")
+                            || postModel.getPostType().equals("audioVideoPost")
+                            || postModel.getPostType().equals("sharedAudioAudioVideoPost")
+                            || postModel.getPostType().equals("sharedTextAudioVideoPost"))
+                        videoList.add(postModel);*/
 
                     Collections.shuffle(videoList);
                     videoPager.setAdapter(new VideoAdapter(videoList, getActivity()));

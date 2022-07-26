@@ -36,7 +36,7 @@ public class ChatListFragment extends Fragment {
     private ProgressBar chatlistLoader;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference chatListRef, chatsReference, userReference;
+    private DatabaseReference chatListRef, chatsReference;
 
     private ChatlistAdapter chatlistAdapter;
 
@@ -57,7 +57,6 @@ public class ChatListFragment extends Fragment {
         chatListRef = FirebaseDatabase.getInstance().getReference("ChatList")
                 .child(firebaseUser.getUid());
         chatsReference = FirebaseDatabase.getInstance().getReference("Chats");
-        userReference = FirebaseDatabase.getInstance().getReference("Users");
 
         chatListRecycler.hasFixedSize();
         chatListRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -80,10 +79,11 @@ public class ChatListFragment extends Fragment {
                     }
                     //set last message
                     for (int i = 0; i < chatList.size(); i++){
-                        lastMessage(chatList.get(i).getId());
+                        lastMessage(chatList.get(i).getUserID());
                     }
                     chatlistAdapter = new ChatlistAdapter(getContext(), chatList);
                     chatListRecycler.setAdapter(chatlistAdapter);
+                    chatlistAdapter.notifyDataSetChanged();
                 }else{
                     chatlistLoader.setVisibility(View.GONE);
                     Toast.makeText(getContext(), "You have no active chats", Toast.LENGTH_SHORT).show();
@@ -98,7 +98,7 @@ public class ChatListFragment extends Fragment {
         });
     }
 
-    private void lastMessage(String user_id) {
+    private void lastMessage(String userID) {
         chatsReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -111,16 +111,16 @@ public class ChatListFragment extends Fragment {
                     if (chat == null)
                         continue;
 
-                    String sender = chat.getSender();
-                    String receiver = chat.getReceiver();
+                    String sender = chat.getSenderID();
+                    String receiver = chat.getReceiverID();
 
                     if (sender == null || receiver == null)
                         continue;
 
-                    if(chat.getReceiver().equals(firebaseUser.getUid()) &&
-                            chat.getSender().equals(user_id) ||
-                            chat.getReceiver().equals(user_id) &&
-                                    chat.getSender().equals(firebaseUser.getUid())) {
+                    if(chat.getReceiverID().equals(firebaseUser.getUid()) &&
+                            chat.getSenderID().equals(userID) ||
+                            chat.getReceiverID().equals(userID) &&
+                                    chat.getSenderID().equals(firebaseUser.getUid())) {
                         theLastMessage = chat.getMessage();
                         lastTimeStamp = chat.getTimeStamp();
 
@@ -134,8 +134,8 @@ public class ChatListFragment extends Fragment {
                         }catch (NullPointerException ignored){}*/
                     }
                 }
-                chatlistAdapter.setLastMessageMap(user_id, theLastMessage);
-                chatlistAdapter.setLastTimeStampMap(user_id, lastTimeStamp);
+                chatlistAdapter.setLastMessageMap(userID, theLastMessage);
+                chatlistAdapter.setLastTimeStampMap(userID, lastTimeStamp);
 
                 chatlistLoader.setVisibility(View.GONE);
             }

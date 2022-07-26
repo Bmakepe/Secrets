@@ -1,12 +1,13 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
+import static com.makepe.blackout.GettingStarted.OtherClasses.PaginationListener.PAGE_START;
+
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,8 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,28 +33,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MyPostsFragment extends Fragment {
+public class UserPostsFragment extends Fragment {
 
-    //for media posts
-    private TextView mediaCounter, seeMore;
-    private int mediaCount;
-    private RecyclerView mediaRecycler;
-    private MediaAdapter mediaAdapter;
+    private String hisUserID;
+
+    //for his media posts
+    private RecyclerView hisMediaRecycler;
     private List<PostModel> mediaList;
-    private LinearLayout myMediaArea, myPostsArea;
+    private MediaAdapter mediaAdapter;
+    private int mediaCount;
+    private TextView mediaCounter, seeMore;
+    private LinearLayout hisMediaArea, hisPostsArea;
 
-    //for regular posts
-    private TextView postsCounter;
-    private RecyclerView postRecycler;
-    //private PostAdapter timelineAdapter;
-    private TimelineAdapter timelineAdapter;
+    //for his normal posts
+    private RecyclerView hisPostsRecycler;
     private List<PostModel> postList;
+    private TimelineAdapter timelineAdapter;
+    private TextView postCounter;
 
     //firebase dependencies
-    private DatabaseReference userRef, postsRef;
-    private FirebaseUser firebaseUser;
+    private DatabaseReference postReference;
 
-    public MyPostsFragment() {
+    private int currentPage = PAGE_START;
+    private final boolean isLastPage = false;
+    private final int totalPage = 10;
+    private boolean isLoading = false;
+
+    public UserPostsFragment() {
         // Required empty public constructor
     }
 
@@ -63,25 +67,25 @@ public class MyPostsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_posts, container, false);
+        View view = inflater.inflate(R.layout.fragment_his_posts, container, false);
+
+        hisUserID = getArguments().getString("hisUserID");
 
         //for media posts
-        mediaCounter = view.findViewById(R.id.MediaNo);
-        seeMore = view.findViewById(R.id.viewMyMedia);
-        mediaRecycler = view.findViewById(R.id.myMediaRecycler);
-        myMediaArea = view.findViewById(R.id.myMediaArea);
+        mediaCounter = view.findViewById(R.id.hisMediaNo);
+        seeMore = view.findViewById(R.id.viewHisMedia);
+        hisMediaRecycler = view.findViewById(R.id.hisMedia);
+        hisMediaArea = view.findViewById(R.id.hisMediaArea);
 
-        //for regular posts
-        postsCounter = view.findViewById(R.id.PostsNo);
-        postRecycler = view.findViewById(R.id.myPostsRecycler);
-        myPostsArea = view.findViewById(R.id.myPostsArea);
+        //for normal posts
+        postCounter = view.findViewById(R.id.hisPostsNo);
+        hisPostsRecycler = view.findViewById(R.id.hisPostsRecycler);
+        hisPostsArea = view.findViewById(R.id.hisPostsArea);
 
-        userRef = FirebaseDatabase.getInstance().getReference("Users");
-        postsRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
-        getMyMedia();
-        getMyPosts();
+        getMedia();
+        getPosts();
 
         seeMore.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +93,7 @@ public class MyPostsFragment extends Fragment {
                 try{
                     if(mediaCount != 0) {
                         Intent seeMoreIntent = new Intent(getActivity(), InteractionsActivity.class);
-                        seeMoreIntent.putExtra("userID", firebaseUser.getUid());
+                        seeMoreIntent.putExtra("userID", hisUserID);
                         seeMoreIntent.putExtra("interactionType", "seeMoreMedia");
                         startActivity(seeMoreIntent);
                     }else
@@ -101,79 +105,72 @@ public class MyPostsFragment extends Fragment {
         return view;
     }
 
-    private void getMyPosts() {
-        postRecycler.setHasFixedSize(true);
-        postRecycler.hasFixedSize();
+    private void getPosts() {
+        hisPostsRecycler.setHasFixedSize(true);
+        hisPostsRecycler.setNestedScrollingEnabled(false);
+        hisPostsRecycler.hasFixedSize();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        postRecycler.setLayoutManager(linearLayoutManager);
+        hisPostsRecycler.setLayoutManager(linearLayoutManager);
 
         postList = new ArrayList<>();
 
-        timelineAdapter = new TimelineAdapter(getActivity(), postList);
-        //timelineAdapter = new PostAdapter(getActivity(), postList);
-        postRecycler.setAdapter(timelineAdapter);
-        timelineAdapter.notifyDataSetChanged();
+        timelineAdapter = new TimelineAdapter(getContext(), postList);
+        hisPostsRecycler.setAdapter(timelineAdapter);
 
-        loadPosts();
+        loadHisPosts();
     }
 
-    private void loadPosts() {
-        postsRef.addValueEventListener(new ValueEventListener() {
+    private void loadHisPosts() {
+        postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 postList.clear();
-                int postCounter = 0;
+                int i = 0;
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     PostModel postModel = snapshot.getValue(PostModel.class);
                     assert postModel != null;
 
-                    if (postModel.getUserID().equals(firebaseUser.getUid()))
-                        if (!postModel.getPostType().equals("videoPost")
-                                && !postModel.getPostType().equals("sharedVideoPost")
-                                && !postModel.getPostType().equals("audioVideoPost")
-                                && !postModel.getPostType().equals("sharedAudioTextVideoPost")
-                                && !postModel.getPostType().equals("sharedTextAudioVideoPost")
-                                && !postModel.getPostType().equals("sharedAudioAudioVideoPost")
-                                && !postModel.getPostType().equals("imagePost")
-                                && !postModel.getPostType().equals("audioImagePost")){
+
+                    if (postModel.getUserID().equals(hisUserID))
+                        if (!postModel.getPostType().equals("imagePost")
+                                && !postModel.getPostType().equals("audioImagePost")) {
                             postList.add(postModel);
-                            postCounter++;
+                            i++;
                         }
                 }
 
-                if (postCounter == 0)
-                    myPostsArea.setVisibility(View.GONE);
+                if (i ==0)
+                    hisPostsArea.setVisibility(View.GONE);
 
-                postsCounter.setText("Posts [" + postCounter + "]");
+                postCounter.setText("Posts [" + i + "]");
                 Collections.reverse(postList);
                 timelineAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getActivity(), ""+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void getMyMedia() {
-        mediaRecycler.setHasFixedSize(true);
-        mediaRecycler.hasFixedSize();
+    private void getMedia() {
+        hisMediaRecycler.setHasFixedSize(true);
+        hisMediaRecycler.setNestedScrollingEnabled(false);
+        hisMediaRecycler.hasFixedSize();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
-        mediaRecycler.setLayoutManager(linearLayoutManager);
-        mediaRecycler.setItemAnimator(new DefaultItemAnimator());
+        hisMediaRecycler.setLayoutManager(linearLayoutManager);
+        hisMediaRecycler.setItemAnimator(new DefaultItemAnimator());
 
         mediaList = new ArrayList<>();
 
-        mediaAdapter = new MediaAdapter(getActivity(), mediaList);
-        mediaRecycler.setAdapter(mediaAdapter);
+        mediaAdapter = new MediaAdapter(getContext(), mediaList);
+        hisMediaRecycler.setAdapter(mediaAdapter);
 
-        loadMedia();
-
+        loadHisMedia();
     }
 
-    private void loadMedia() {
-        postsRef.addValueEventListener(new ValueEventListener() {
+    private void loadHisMedia() {
+        postReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mediaList.clear();
@@ -182,17 +179,19 @@ public class MyPostsFragment extends Fragment {
                     PostModel modelPost = snapshot.getValue(PostModel.class);
                     assert modelPost != null;
 
-                    if (modelPost.getUserID().equals(firebaseUser.getUid())){
+                    if (modelPost.getUserID().equals(hisUserID)){
                         if (modelPost.getPostType().equals("imagePost")
                                 || modelPost.getPostType().equals("audioImagePost")){
                             mediaList.add(modelPost);
                             mediaCount++;
                         }
                     }
+
                 }
 
-                if (mediaCount == 0)
-                    myMediaArea.setVisibility(View.GONE);
+                if (mediaCount == 0){
+                    hisMediaArea.setVisibility(View.GONE);
+                }
 
                 mediaCounter.setText("Media [" + mediaCount + "]");
                 Collections.reverse(mediaList);
@@ -200,9 +199,7 @@ public class MyPostsFragment extends Fragment {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getActivity(), ""+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
     }
 }

@@ -69,11 +69,11 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
         universalFunctions = new UniversalFunctions(context);
         userReference = FirebaseDatabase.getInstance().getReference("Users");
 
-        String lastmessage = lastMessageMap.get(chats.getId());
-        String lastTime = lastTimeStampMap.get(chats.getId());
+        String lastmessage = lastMessageMap.get(chats.getUserID());
+        String lastTime = lastTimeStampMap.get(chats.getUserID());
 
-        getUserDetails(chats.getId(), holder);
-        universalFunctions.checkActiveStories(holder.chatlistProPic, chats.getId());
+        getUserDetails(chats.getUserID(), holder);
+        universalFunctions.checkActiveStories(holder.chatlistProPic, chats.getUserID());
 
         //set Data
 
@@ -83,8 +83,7 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
             holder.chatlistMessage.setVisibility(View.VISIBLE);
             holder.chatlistMessage.setText(lastmessage);
 
-            String postTime = getTimeAgo.getTimeAgo(Long.parseLong(lastTime), context);
-            holder.timestamp.setText("-" + postTime);
+            holder.timestamp.setText("- " + getTimeAgo.getTimeAgo(Long.parseLong(lastTime), context));
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -92,7 +91,7 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
             public void onClick(View v) {
                 //start chat activity with that user
                 Intent intent = new Intent(context, ChatActivity.class);
-                intent.putExtra("userid", chats.getId());
+                intent.putExtra("userid", chats.getUserID());
                 context.startActivity(intent);
             }
         });
@@ -103,11 +102,11 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
                 if (holder.chatlistProPic.getTag().equals("storyActive")){
 
                     Intent intent = new Intent(context, StoryActivity.class);
-                    intent.putExtra("userid", chats.getId());
+                    intent.putExtra("userid", chats.getUserID());
                     context.startActivity(intent);
                 }else{
                     Intent picIntent = new Intent(context, FullScreenImageActivity.class);
-                    picIntent.putExtra("itemID", chats.getId());
+                    picIntent.putExtra("itemID", chats.getUserID());
                     picIntent.putExtra("reason", "userImage");
                     context.startActivity(picIntent);
                 }
@@ -116,10 +115,6 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
     }
 
     private void getUserDetails(String hisUid, final MyHolder holder) {
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList = new ContactsList(phoneBook, context);
-        contactsList.readContacts();
-        final List<ContactsModel> phoneNumbers = contactsList.getContactsList();
 
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -129,15 +124,9 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
                         User user = ds.getValue(User.class);
 
                         assert user != null;
-                        if (user.getUSER_ID().equals(hisUid)) {
+                        if (user.getUserID().equals(hisUid)) {
 
-                            for (ContactsModel cm : phoneNumbers) {
-                                if (cm.getNumber().equals(user.getNumber())) {
-                                    holder.chatListUser.setText(cm.getUsername());
-                                }else{
-                                    holder.chatListUser.setText(user.getUsername());
-                                }
-                            }
+                            holder.chatListUser.setText(user.getUsername());
 
                             try {
                                 Picasso.get().load(user.getImageURL()).into(holder.chatlistProPic);
@@ -172,7 +161,7 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
     class MyHolder extends RecyclerView.ViewHolder {
 
         CircleImageView chatlistProPic;// chatlistCover;
-        TextView chatListUser, chatlistMessage, onlineStatus, timestamp;// unreadTexts;
+        TextView chatListUser, chatlistMessage, timestamp;// unreadTexts;
 
         MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -180,7 +169,6 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
             chatlistProPic = itemView.findViewById(R.id.chatListPropic);;
             chatListUser = itemView.findViewById(R.id.chatlistUsername);
             chatlistMessage = itemView.findViewById(R.id.chatlistMessage);
-            onlineStatus = itemView.findViewById(R.id.chatlistLastSeen);
             timestamp = itemView.findViewById(R.id.cl_message_timeStamp);
         }
     }

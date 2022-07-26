@@ -3,7 +3,7 @@ package com.makepe.blackout.GettingStarted.Models;
 import java.util.ArrayList;
 
 public class Chat {
-    private String sender, receiver, message, audio, timeStamp, message_type, media, chatID, videoURL, storyID;
+    private String senderID, receiverID, message, audioURL, timeStamp, message_type, mediaURL, chatID, videoURL, storyID;
     private ArrayList<String> mediaUriList;
     private boolean isSeen;
     private double latitude, longitude;
@@ -11,16 +11,16 @@ public class Chat {
     public Chat() {
     }
 
-    public Chat(String sender, String receiver, String message, String audio, String timeStamp,
-                String message_type, String media, String chatID, String videoURL, String storyID,
-                ArrayList<String> mediaUriList, boolean isSeen, double latitude, double longitude) {
-        this.sender = sender;
-        this.receiver = receiver;
+    public Chat(String senderID, String receiverID, String message, String audioURL, String timeStamp, String message_type,
+                String mediaURL, String chatID, String videoURL, String storyID, ArrayList<String> mediaUriList,
+                boolean isSeen, double latitude, double longitude) {
+        this.senderID = senderID;
+        this.receiverID = receiverID;
         this.message = message;
-        this.audio = audio;
+        this.audioURL = audioURL;
         this.timeStamp = timeStamp;
         this.message_type = message_type;
-        this.media = media;
+        this.mediaURL = mediaURL;
         this.chatID = chatID;
         this.videoURL = videoURL;
         this.storyID = storyID;
@@ -28,6 +28,78 @@ public class Chat {
         this.isSeen = isSeen;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public String getSenderID() {
+        return senderID;
+    }
+
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
+    }
+
+    public String getReceiverID() {
+        return receiverID;
+    }
+
+    public void setReceiverID(String receiverID) {
+        this.receiverID = receiverID;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getAudioURL() {
+        return audioURL;
+    }
+
+    public void setAudioURL(String audioURL) {
+        this.audioURL = audioURL;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public String getMessage_type() {
+        return message_type;
+    }
+
+    public void setMessage_type(String message_type) {
+        this.message_type = message_type;
+    }
+
+    public String getMediaURL() {
+        return mediaURL;
+    }
+
+    public void setMediaURL(String mediaURL) {
+        this.mediaURL = mediaURL;
+    }
+
+    public String getChatID() {
+        return chatID;
+    }
+
+    public void setChatID(String chatID) {
+        this.chatID = chatID;
+    }
+
+    public String getVideoURL() {
+        return videoURL;
+    }
+
+    public void setVideoURL(String videoURL) {
+        this.videoURL = videoURL;
     }
 
     public String getStoryID() {
@@ -38,12 +110,20 @@ public class Chat {
         this.storyID = storyID;
     }
 
-    public String getVideoURL() {
-        return videoURL;
+    public ArrayList<String> getMediaUriList() {
+        return mediaUriList;
     }
 
-    public void setVideoURL(String videoURL) {
-        this.videoURL = videoURL;
+    public void setMediaUriList(ArrayList<String> mediaUriList) {
+        this.mediaUriList = mediaUriList;
+    }
+
+    public boolean isSeen() {
+        return isSeen;
+    }
+
+    public void setSeen(boolean seen) {
+        isSeen = seen;
     }
 
     public double getLatitude() {
@@ -60,85 +140,5 @@ public class Chat {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
-    }
-
-    public String getChatID() {
-        return chatID;
-    }
-
-    public void setChatID(String chatID) {
-        this.chatID = chatID;
-    }
-
-    public String getMessage_type() {
-        return message_type;
-    }
-
-    public void setMessage_type(String message_type) {
-        this.message_type = message_type;
-    }
-
-    public ArrayList<String> getMediaUriList() {
-        return mediaUriList;
-    }
-
-    public void setMediaUriList(ArrayList<String> mediaUriList) {
-        this.mediaUriList = mediaUriList;
-    }
-
-    public String getMedia() {
-        return media;
-    }
-
-    public void setMedia(String media) {
-        this.media = media;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getAudio() {
-        return audio;
-    }
-
-    public void setAudio(String audio) {
-        this.audio = audio;
-    }
-
-    public String getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
-    public boolean isSeen() {
-        return isSeen;
-    }
-
-    public void setSeen(boolean seen) {
-        isSeen = seen;
     }
 }

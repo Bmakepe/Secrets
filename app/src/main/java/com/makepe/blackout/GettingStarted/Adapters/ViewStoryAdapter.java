@@ -1,6 +1,5 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
@@ -33,10 +31,10 @@ import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
-import com.makepe.blackout.GettingStarted.OtherClasses.UniversalNotifications;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
@@ -63,7 +61,7 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
     private DatabaseReference userReference, storyReference;
 
     private UniversalFunctions universalFunctions;
-    private UniversalNotifications notifications;
+    private SendNotifications sendNotifications;
     private GetTimeAgo getTimeAgo;
 
     private double latitude, longitude;
@@ -107,7 +105,6 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story").child(story.getUserID());
         universalFunctions = new UniversalFunctions(context);
-        notifications = new UniversalNotifications(context);
         getTimeAgo = new GetTimeAgo();
 
         audioPlayer = new AudioPlayer(context, holder.playBTN,
@@ -173,8 +170,8 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
                 if(holder.likeBTN.getTag().equals("like")){
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).setValue(true);
-                    if (!firebaseUser.getUid().equals(story.getUserID()))
-                        notifications.addLikesNotifications(story.getUserID(), storyID);
+                    /*if (!firebaseUser.getUid().equals(story.getUserID()))
+                        notifications.addLikesNotifications(story.getUserID(), storyID);*/
                 }else{
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).removeValue();
@@ -216,9 +213,10 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(story.getUserID())){
+                    assert user != null;
+                    if (user.getUserID().equals(story.getUserID())){
 
-                        if (user.getUSER_ID().equals(firebaseUser.getUid()))
+                        if (user.getUserID().equals(firebaseUser.getUid()))
                             holder.storyUsername.setText("Me");
                         else
                             holder.storyUsername.setText(user.getUsername());
@@ -296,7 +294,7 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
             });
         }
 
-        Picasso.get().load(storyList.get(counter).getStoryImage()).into(holder.storyPhoto);
+        Picasso.get().load(storyList.get(counter).getImageURL()).into(holder.storyPhoto);
         holder.storyTimeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(storyList.get(counter).getStoryTimeStamp()), context));
         checkInteractions(storyList.get(counter), holder);
         universalFunctions.addView(storyList.get(counter).getStoryID());

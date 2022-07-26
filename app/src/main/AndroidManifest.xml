@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.makepe.blackout">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.hardware.camera.any"
@@ -47,7 +46,10 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator"
         tools:targetApi="m">
         <activity
-            android:name=".GettingStarted.InAppActivities.PosteActivity"
+            android:name=".GettingStarted.InAppActivities.ImageListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GettingStarted.InAppActivities.PostActivity"
             android:exported="false" />
 
         <meta-data
@@ -162,33 +164,6 @@
             android:name=".GettingStarted.InAppActivities.ViewProfileActivity"
             android:screenOrientation="portrait"
             tools:ignore="InnerclassSeparator" />
-        <activity
-            android:name=".GettingStarted.InAppActivities.PostActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            tools:ignore="InnerclassSeparator">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="image/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="video/*" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".GettingStarted.UserDetailsActivity"
             android:parentActivityName=".GettingStarted.VerifyPhoneActivity"

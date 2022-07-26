@@ -6,11 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".GettingStarted.MainActivity">
 
-    <ImageView
+    <!--<ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha=".7"
-        android:src="@drawable/background_gradient" />
+        android:visibility="visible"
+        android:src="@drawable/background_gradient" />-->
 
     <fragment
         android:id="@+id/homeFragmentContainerView"

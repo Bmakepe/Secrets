@@ -37,10 +37,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     private List<ContactsModel> contactsList;
     private Context context;
 
-    private FirebaseUser user;
-    private DatabaseReference reference;
-
-    String fireName, fireNumber, fireID, fireProPic;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference userReference, followReference;
 
     public ContactsAdapter(List<ContactsModel> contactsList, Context context) {
         this.contactsList = contactsList;
@@ -50,106 +48,77 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.contact_display_item, parent, false);
-
-        return new ViewHolder(view);
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.contact_display_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
+        ContactsModel contactsModel = contactsList.get(position);
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        userReference = FirebaseDatabase.getInstance().getReference("Users");
+        followReference = FirebaseDatabase.getInstance().getReference("Follow");
 
-        final String name = contactsList.get(position).getUsername();
-        final String number = contactsList.get(position).getNumber();
-        final String userid = contactsList.get(position).getUSER_ID();
-
-        holder.contactName.setText(name);
-        holder.contactNumber.setText(number);
-
-        checkOnlineStatus(userid, holder);
-
-        holder.nameLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try{
-                    if(fireNumber.equals(number)){
-                        if(fireID.equals(user.getUid()))
-                            Toast.makeText(context, "can not chat to yourself", Toast.LENGTH_SHORT).show();
-                        else{
-                            Intent intent = new Intent(context, ChatActivity.class);
-                            intent.putExtra("userid", fireID);
-                            intent.putExtra("name", name);
-                            context.startActivity(intent);
-                        }
-                    }else{
-                        Toast.makeText(context, "invite " + name + " to join", Toast.LENGTH_SHORT).show();
-                    }
-                }catch(NullPointerException ignored){}
-
-            }
-        });
+        getContactDetails(holder, contactsModel);
 
         holder.inviteBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, name + " has been invited to join", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, contactsModel.getUsername() + " will be invited to join", Toast.LENGTH_SHORT).show();
             }
         });
 
     }
 
-    private void getAllUserList(List<ContactsModel> contactsList, ViewHolder holder) {
+    private void getContactDetails(ViewHolder holder, ContactsModel contactsModel) {
 
-        reference = FirebaseDatabase.getInstance().getReference().child("Users");
-        reference.keepSynced(true);
-        for(int i = 0; i < contactsList.size(); i++){
-            checkingMatchedData(contactsList.get(i).getNumber(), holder);
-        }
-    }
+        holder.contactName.setText(contactsModel.getUsername());
+        holder.contactNumber.setText(contactsModel.getPhoneNumber());
 
-    private void checkingMatchedData(final String number, final ViewHolder holder) {
-        try{
-            Query query = reference.orderByChild("Number").equalTo(holder.contactNumber.getText().toString());
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.exists()){
-                        if(number.equals(holder.contactNumber.getText().toString())){
-                            holder.contactFollowBTN.setVisibility(View.VISIBLE);
-                            holder.inviteBTN.setVisibility(View.GONE);
+        userReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    ContactsModel contacts = ds.getValue(ContactsModel.class);
 
-                            for(DataSnapshot ds : dataSnapshot.getChildren()){
-                                fireID = "" + ds.child("USER_ID").getValue();
-                                fireName = "" + ds.child("Username").getValue();
-                                fireNumber = "" + ds.child("Number").getValue();
-                                fireProPic = "" + ds.child("ImageURL").getValue();
+                    assert contacts != null;
+                    if (contacts.getPhoneNumber().equals(contactsModel.getPhoneNumber())){
 
-                                try{
-                                    Picasso.get().load(fireProPic).into(holder.contactProPic);
-                                }catch (NullPointerException e){
-                                    Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.contactProPic);
-                                }
-                            }
+                        try{
+                            Picasso.get().load(contacts.getImageURL()).into(holder.contactProPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.contactProPic);
                         }
 
-                    }else {
-                        holder.contactFollowBTN.setVisibility(View.GONE);
-                        holder.inviteBTN.setVisibility(View.VISIBLE);
+                        followReference.child(contacts.getPhoneNumber()).child("following")
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()){
+                                            if (snapshot.child(firebaseUser.getUid()).exists()){
+                                                holder.inviteBTN.setText("Following");
+                                            }else{
+                                                holder.inviteBTN.setText("Follow");
+                                            }
+                                        }
+                                    }
 
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+                    }else{
+                        holder.inviteBTN.setText("INVITE");
                     }
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-                }
-            });
-
-        }catch (NumberFormatException e){
-
-        }
-
+            }
+        });
     }
 
     @Override
@@ -164,8 +133,6 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
 
         TextView contactName, contactNumber, inviteBTN;
         CircleImageView contactProPic;
-        ImageView contactFollowBTN, onlineStatus;
-        LinearLayout nameLayout;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -173,37 +140,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             contactName = itemView.findViewById(R.id.contactName);
             contactNumber = itemView.findViewById(R.id.personalNumber);
             contactProPic = itemView.findViewById(R.id.contactProPic);
-            contactFollowBTN = itemView.findViewById(R.id.contactFollowBTN);
-            nameLayout = itemView.findViewById(R.id.nameLayout);
-            onlineStatus = itemView.findViewById(R.id.contactOnlineStatus);
             inviteBTN = itemView.findViewById(R.id.invitationBTN);
         }
-    }
-
-
-    private void checkOnlineStatus(String uid, final ViewHolder holder) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByChild("USER_ID").equalTo(uid);
-        //display and retrieve current user info
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-
-                    String userOnline = "" + ds.child("onlineStatus").getValue();
-
-                    if(userOnline.equals("online")){
-                        holder.onlineStatus.setVisibility(View.VISIBLE);
-                    }else{
-                        holder.onlineStatus.setVisibility(View.GONE);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 }

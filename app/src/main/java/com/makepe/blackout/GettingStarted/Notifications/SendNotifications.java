@@ -5,6 +5,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -12,23 +14,21 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makepe.blackout.GettingStarted.Adapters.NotificationAdapter;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
+import com.makepe.blackout.GettingStarted.Models.NotiModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
+import com.makepe.blackout.GettingStarted.Models.User;
 
 import java.util.HashMap;
 
 public class SendNotifications {
 
-    Context context;
+    private Context context;
 
-    private DatabaseReference notificationsReference = FirebaseDatabase.getInstance().getReference("Notifications");
-    private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-    private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("Posts");
-    private DatabaseReference storyReference = FirebaseDatabase.getInstance().getReference("Story");
-    private DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
-
-    private String key = notificationsReference.push().getKey();
+    private final DatabaseReference notificationsReference = FirebaseDatabase.getInstance().getReference("SecretNotifications");
+    private final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public SendNotifications() {
     }
@@ -37,268 +37,249 @@ public class SendNotifications {
         this.context = context;
     }
 
-    //-----------------for post/video/story/comment likes notifications
+    //-----------------for post/video likes and comments notifications
+    public void addPostLikeNotification(PostModel postModel){
+        String notificationID = notificationsReference.push().getKey();
 
-    public void addLikesNotification(String postID, String userID) {
-        postReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel model = ds.getValue(PostModel.class);
-
-                    assert model != null;
-                    if (model.getPostID().equals(postID)){
-                        sendPostLikesNotification(postID, userID);
-                    }else{
-                        storyReference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot snap : snapshot.getChildren()){
-                                    Story story = snap.getValue(Story.class);
-
-                                    assert story != null;
-                                    if (story.getStoryID().equals(postID)){
-                                        sendStoryLikesNotification(postID, userID);
-                                    }else{
-                                        commentsReference.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                for (DataSnapshot data : snapshot.getChildren()){
-                                                    CommentModel comment = data.getValue(CommentModel.class);
-
-                                                    assert comment != null;
-                                                    if (comment.getPostID().equals(postID)){
-                                                        sendCommentLikeNotification(postID, userID);
-                                                    }
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
-
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void sendCommentLikeNotification(String postID, String userID) {
+        assert firebaseUser != null;
+        assert notificationID != null;
 
         HashMap<String, Object> notificationMap = new HashMap<>();
 
-        notificationMap.put("notificationID", key);
-        notificationMap.put("commentID", postID);
+        notificationMap.put("notificationID", notificationID);
         notificationMap.put("userID", firebaseUser.getUid());
-        notificationMap.put("text", "Liked your comment");
-        notificationMap.put("isLiked", true);
-        notificationMap.put("isComment", true);
+        notificationMap.put("postID", postModel.getPostID());
         notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("text", "Liked Your Post");
+        notificationMap.put("notificationType", "likesNotification");
 
-        notificationsReference.child(userID).child(key).setValue(notificationMap);
+        notificationsReference.child(postModel.getUserID()).child("LikesNotifications").child(postModel.getPostID())
+                .child(notificationID).setValue(notificationMap);
     }
 
-    private void sendStoryLikesNotification(String postID, String userID) {
+    public void removePostLikeNotification(PostModel postModel){
+        notificationsReference.child(postModel.getUserID()).child("LikesNotifications").child(postModel.getPostID())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            NotiModel notiModel = ds.getValue(NotiModel.class);
 
-        HashMap<String, Object> notificationMap = new HashMap<>();
-
-        notificationMap.put("notificationID", key);
-        notificationMap.put("postID", postID);
-        notificationMap.put("userID", firebaseUser.getUid());
-        notificationMap.put("text", "Liked your story");
-        notificationMap.put("isLiked", true);
-        notificationMap.put("isStory", true);
-        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-
-        notificationsReference.child(userID).child(key).setValue(notificationMap);
-    }
-
-    private void sendPostLikesNotification(String postID, String userID) {
-
-        HashMap<String, Object> notificationMap = new HashMap<>();
-
-        notificationMap.put("notificationID", key);
-        notificationMap.put("postID", postID);
-        notificationMap.put("userID", firebaseUser.getUid());
-        notificationMap.put("text", "Liked your post");
-        notificationMap.put("isLiked", true);
-        notificationMap.put("isPost", true);
-        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-
-        notificationsReference.child(userID).child(key).setValue(notificationMap);
-    }
-
-    //-----------------for post/story comment notifications
-
-    public void addCommentNotification(String postID, String userID){
-        postReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel postModel = ds.getValue(PostModel.class);
-
-                    assert postModel != null;
-                    if (postModel.getPostID().equals(postID)){
-
-                        switch (postModel.getPostType()) {
-                            case "textPost":
-                            case "sharedTextPost":
-                            case "audioPost":
-                            case "sharedAudioTextPost":
-                            case "sharedTextAudioPost":
-                            case "sharedImagePost":
-                            case "sharedAudioImagePost":
-                            case "sharedTextAudioImagePost":
-                            case "sharedAudioAudioImagePost":
-                            case "sharedAudioAudioPost":
-                                sendPostCommentNotification(postModel.getPostID(), userID);
-                                break;
-                            case "imagePost":
-                            case "audioImagePost":
-                                sendImagePostNotification(postModel.getPostID(), userID);
-                                break;
-                            case "videoPost":
-                            case "audioVideoPost":
-                            case "sharedAudioAudioVideoPost":
-                            case "sharedAudioVideoPost":
-                            case "sharedAudioTextVideoPost":
-                            case "sharedVideoPost":
-                                sendVideoPostNotification(postModel.getPostID(), userID);
-                                break;
-
-                            default:
-                                Toast.makeText(context, "Unidentified post type " + postModel.getPostType() , Toast.LENGTH_SHORT).show();
+                            assert notiModel != null;
+                            assert firebaseUser != null;
+                            if (notiModel.getUserID().equals(firebaseUser.getUid()))
+                                ds.getRef().removeValue();
                         }
-
-                    }else{
-                        storyReference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot ds : snapshot.getChildren()){
-                                    Story story = ds.getValue(Story.class);
-
-                                    assert story != null;
-                                    if (story.getStoryID().equals(postID)){
-                                        sendStoryCommentNotification(story.getStoryID(), userID);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
                     }
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                    }
+                });
     }
 
-    private void sendStoryCommentNotification(String storyID, String userID) {
-        HashMap<String, Object> postMap = new HashMap<>();
-        postMap.put("notificationID", key);
-        postMap.put("userID", firebaseUser.getUid());
-        postMap.put("text", "commented on your story");
-        postMap.put("postID", storyID);
-        postMap.put("isStory", true);
-        postMap.put("isComment", true);
-        postMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+    public void addPostCommentNotification(String owner, String postID, String commentText){
+        String notificationID = notificationsReference.push().getKey();
 
-        notificationsReference.child(userID).child(key).setValue(postMap);
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("postID", postID);
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("text", commentText);
+        notificationMap.put("notificationType", "commentNotification");
+
+        notificationsReference.child(owner).child("CommentNotifications").child(postID)
+                .child(notificationID).setValue(notificationMap);
     }
 
-    private void sendVideoPostNotification(String postID, String userID) {
+    public void addFollowingNotification(String followedUser){
+        String notificationID = notificationsReference.push().getKey();
 
-        HashMap<String, Object> postMap = new HashMap<>();
-        postMap.put("notificationID", key);
-        postMap.put("userID", firebaseUser.getUid());
-        postMap.put("text", "commented on your video post");
-        postMap.put("postID", postID);
-        postMap.put("isPost", true);
-        postMap.put("isComment", true);
-        postMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        assert firebaseUser != null;
+        assert notificationID != null;
 
-        notificationsReference.child(userID).child(key).setValue(postMap);
-    }
-
-    private void sendImagePostNotification(String postID, String userID) {
-
-        HashMap<String, Object> postMap = new HashMap<>();
-        postMap.put("notificationID", key);
-        postMap.put("userID", firebaseUser.getUid());
-        postMap.put("text", "commented on your post");
-        postMap.put("postID", postID);
-        postMap.put("isPost", true);
-        postMap.put("isComment", true);
-        postMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-
-        notificationsReference.child(userID).child(key).setValue(postMap);
-    }
-
-    private void sendPostCommentNotification(String postID, String userID) {
-        HashMap<String, Object> postMap = new HashMap<>();
-
-        postMap.put("notificationID", key);
-        postMap.put("userID", firebaseUser.getUid());
-        postMap.put("text", "commented on your post");
-        postMap.put("postID", postID);
-        postMap.put("isPost", true);
-        postMap.put("isComment", true);
-        postMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-
-        notificationsReference.child(userID).child(key).setValue(postMap);
-    }
-
-    //-----------------for interactions notifications
-
-    public void addFollowNotification(String userID){
         HashMap<String, Object> followMap = new HashMap<>();
 
-        followMap.put("notificationID", key);
+        followMap.put("notificationID", notificationID);
         followMap.put("userID", firebaseUser.getUid());
         followMap.put("text", "started following you");
-        followMap.put("isFollowing", true);
         followMap.put("notificationType", "followingNotification");
         followMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
 
-        notificationsReference.child(userID).child(key).setValue(followMap);
+        notificationsReference.child(followedUser).child("FollowNotifications")
+                .child(notificationID).setValue(followMap);
+
     }
 
-    //------------------for shared posts/videos notifications
+    public void removeFollowingNotification(String followedUser){
+        notificationsReference.child(followedUser).child("FollowNotifications")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            NotiModel notiModel = ds.getValue(NotiModel.class);
 
-    public void addShareNotification(String postID, String userID){
-        HashMap <String, Object> sharedMap = new HashMap<>();
+                            assert notiModel != null;
+                            assert firebaseUser != null;
+                            if (notiModel.getUserID().equals(firebaseUser.getUid()))
+                                ds.getRef().removeValue();
+                        }
+                    }
 
-        sharedMap.put("notificationID", key);
-        sharedMap.put("userID", firebaseUser.getUid());
-        sharedMap.put("text", "shared your post");
-        sharedMap.put("postID", postID);
-        sharedMap.put("isShared", true);
-        sharedMap.put("notificationType", "sharedPostNotification");
-        sharedMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-        notificationsReference.child(userID).child(key).setValue(sharedMap);
+                    }
+                });
+    }
+
+    public void addCommentLikesNotification(CommentModel model){
+        String notificationID = notificationsReference.push().getKey();
+
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("commentID", model.getCommentID());
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("text", "Liked Your Comment");
+        notificationMap.put("notificationType", "likesNotification");
+
+        notificationsReference.child(model.getUserID()).child("LikesNotifications").child(model.getCommentID())
+                .child(notificationID).setValue(notificationMap);
+
+    }
+
+    public void removeCommentLikesNotification(CommentModel model){
+        notificationsReference.child(model.getUserID()).child("LikesNotifications").child(model.getCommentID())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            NotiModel notiModel = ds.getValue(NotiModel.class);
+
+                            assert notiModel != null;
+                            assert firebaseUser != null;
+                            if (notiModel.getUserID().equals(firebaseUser.getUid()))
+                                ds.getRef().removeValue();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+    public void addStoryLikeNotification(Story story){
+        String notificationID = notificationsReference.push().getKey();
+
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("storyID", story.getStoryID());
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("text", "Liked Your Post");
+        notificationMap.put("notificationType", "likesNotification");
+
+        notificationsReference.child(story.getUserID()).child("LikesNotifications").child(story.getStoryID())
+                .child(notificationID).setValue(notificationMap);
+    }
+
+    public void removeStoryLikeNotification(Story story){
+        notificationsReference.child(story.getUserID()).child("LikesNotifications").child(story.getStoryID())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()){
+                            NotiModel notiModel = ds.getValue(NotiModel.class);
+
+                            assert notiModel != null;
+                            assert firebaseUser != null;
+                            if (notiModel.getUserID().equals(firebaseUser.getUid()))
+                                ds.getRef().removeValue();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+    public void addPostShareNotification(PostModel postModel, String caption){
+        String notificationID = notificationsReference.push().getKey();
+
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("text", caption);
+        notificationMap.put("postID", postModel.getPostID());
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("notificationType", "shareNotification");
+
+        notificationsReference.child(postModel.getUserID()).child("PostShareNotifications").child(postModel.getPostID())
+                .child(notificationID).setValue(notificationMap);
+
+    }
+
+    public void addTaggedUserNotification(User user, String postID){
+        String notificationID = notificationsReference.push().getKey();
+
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("text", "Tagged you in a post");
+        notificationMap.put("postID", postID);
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("notificationType", "taggedNotification");
+
+        notificationsReference.child(user.getUserID()).child("TagNotifications")
+                .child(notificationID).setValue(notificationMap);
+
+    }
+
+    public void addStoryTaggedUserNotification(User user, String postID){
+        String notificationID = notificationsReference.push().getKey();
+
+        assert firebaseUser != null;
+        assert notificationID != null;
+
+        HashMap<String, Object> notificationMap = new HashMap<>();
+
+        notificationMap.put("notificationID", notificationID);
+        notificationMap.put("userID", firebaseUser.getUid());
+        notificationMap.put("text", "Tagged you in their story");
+        notificationMap.put("postID", postID);
+        notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        notificationMap.put("notificationType", "taggedNotification");
+
+        notificationsReference.child(user.getUserID()).child("TagNotifications").child(postID)
+                .child(notificationID).setValue(notificationMap);
+
     }
 
 }

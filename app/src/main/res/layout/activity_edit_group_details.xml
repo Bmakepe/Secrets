@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.EditGroupDetailsActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -110,7 +109,6 @@
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.core.widget.NestedScrollView
@@ -142,11 +140,9 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/usernameTIL"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="30"
                         app:counterOverflowTextAppearance="@color/colorRed">
@@ -176,12 +172,9 @@
                         android:layout_height="wrap_content"
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="150"
-                        android:padding="5dp"
-                        app:counterOverflowTextAppearance="@color/colorRed"
-                        android:layout_marginTop="5dp">
+                        app:counterOverflowTextAppearance="@color/colorRed">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:layout_width="match_parent"
@@ -211,7 +204,6 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/button_selector"
                         android:layout_gravity="end"
-                        android:padding="3dp"
                         android:text="Update"
                         android:layout_margin="15dp"
                         android:textColor="@color/white"
@@ -223,7 +215,6 @@
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>
-
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

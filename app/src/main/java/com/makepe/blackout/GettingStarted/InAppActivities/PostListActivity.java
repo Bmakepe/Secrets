@@ -79,6 +79,7 @@ public class PostListActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postList.clear();
+                int i = 0;
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
@@ -90,15 +91,13 @@ public class PostListActivity extends AppCompatActivity {
                             && !postModel.getPostType().equals("sharedTextAudioVideoPost")
                             && !postModel.getPostType().equals("sharedAudioAudioVideoPost")
                             && !postModel.getPostPrivacy().equals("Private")){
-
                         postList.add(postModel);
-
                     }
 
                     Collections.shuffle(postList);
 
-                    for (int i = 0; i < postList.size(); i++){
-                        PostModel model = postList.get(i);
+                    for (int j = 0; j < postList.size(); j++){
+                        PostModel model = postList.get(j);
                         if (model.getPostID().equals(postID)){
                             postList.remove(model);
                             postList.add(0, model);

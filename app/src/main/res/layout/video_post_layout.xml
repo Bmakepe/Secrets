@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#00FFFFFF"
     tools:ignore="UnusedAttribute">
 
     <RelativeLayout
@@ -193,11 +192,11 @@
                 </LinearLayout>
 
                 <include
-                    android:layout_alignParentEnd="true"
-                    android:layout_above="@+id/video_details_area"
                     layout="@layout/video_post_social_btns"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/video_details_area"
+                    android:layout_alignParentEnd="true" />
 
             </RelativeLayout>
 

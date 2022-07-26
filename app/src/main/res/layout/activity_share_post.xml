@@ -7,12 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".GettingStarted.InAppActivities.SharePostActivity">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/background_gradient"
-        android:alpha=".7"/>
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/sharingToolbar"
         android:layout_width="match_parent"

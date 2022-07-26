@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.CreateGroupActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -122,10 +121,8 @@
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:id="@+id/usernameTIL"
-                    android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
                     app:counterMaxLength="15"
-                    android:padding="5dp"
                     app:counterOverflowTextAppearance="@color/colorRed">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -154,12 +151,9 @@
                     android:layout_height="wrap_content"
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:background="@drawable/rounded_edittext"
                     app:counterEnabled="true"
                     app:counterMaxLength="100"
-                    android:padding="5dp"
-                    app:counterOverflowTextAppearance="@color/colorRed"
-                    android:layout_marginTop="5dp">
+                    app:counterOverflowTextAppearance="@color/colorRed">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
@@ -188,8 +182,7 @@
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
                     android:layout_marginTop="5dp"
-                    tools:ignore="RtlSymmetry"
-                    android:padding="5dp">
+                    tools:ignore="RtlSymmetry" >
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -202,7 +195,6 @@
                         android:singleLine="true"
                         android:textStyle="normal"
                         android:textColor="@color/colorBlack"/>
-
 
                     <RelativeLayout
                         android:layout_width="match_parent"

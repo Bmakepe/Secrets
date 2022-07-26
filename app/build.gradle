@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion 32
@@ -32,6 +34,7 @@ android {
         viewBinding false
 
     }
+    namespace 'com.makepe.blackout'
 }
 
 dependencies {
@@ -47,6 +50,9 @@ dependencies {
 
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-runtime:2.5.0'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.11'
+    implementation 'com.google.firebase:firebase-analytics:21.0.0'
+    implementation 'com.google.firebase:firebase-perf:20.1.0'
     annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.5.0'
 
     implementation 'pub.devrel:easypermissions:1.3.0'

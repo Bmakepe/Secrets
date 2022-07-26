@@ -12,8 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,67 +21,64 @@ import com.makepe.blackout.GettingStarted.Adapters.VideoItemAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MyVideosFragment extends Fragment {
 
+public class UserVideosFragment extends Fragment {
+
+    private String hisUserID;
+
+    private RecyclerView videosRecycler;
     private List<PostModel> videoList;
-    private RecyclerView videoRecycler;
     private VideoItemAdapter videoAdapter;
 
-    private FirebaseUser firebaseUser;
-    private DatabaseReference postReference;
+    private DatabaseReference videoReference;
 
-    public MyVideosFragment() {
+    public UserVideosFragment() {
         // Required empty public constructor
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_videos, container, false);
+        View view = inflater.inflate(R.layout.fragment_his_videos, container, false);
 
-        videoRecycler = view.findViewById(R.id.videoRecycler);
+        hisUserID = getArguments().getString("hisUserID");
+
+        videosRecycler = view.findViewById(R.id.hisVideosRecycler);
+
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
 
         videoList = new ArrayList<>();
 
-        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        videosRecycler.hasFixedSize();
+        videosRecycler.setLayoutManager(new GridLayoutManager(getContext(), 3, LinearLayoutManager.VERTICAL, false));
 
-        videoRecycler.hasFixedSize();
-        videoRecycler.setLayoutManager(new GridLayoutManager(getContext(), 3, LinearLayoutManager.VERTICAL, false));
-
-        getMyVideos();
+        getHisVideos();
 
         return view;
     }
 
-    private void getMyVideos() {
-        postReference.addValueEventListener(new ValueEventListener() {
+    private void getHisVideos() {
+        videoReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 videoList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
-                    assert postModel != null;
-                    if (postModel.getUserID().equals(firebaseUser.getUid())){
-                        if (postModel.getPostType().equals("videoPost")
-                                || postModel.getPostType().equals("sharedVideoPost")
-                                || postModel.getPostType().equals("sharedAudioTextVideoPost")
-                                || postModel.getPostType().equals("audioVideoPost")
-                                || postModel.getPostType().equals("sharedTextAudioVideoPost")
-                                || postModel.getPostType().equals("sharedAudioAudioVideoPost"))
+                    if (postModel.getUserID().equals(hisUserID)){
                             videoList.add(postModel);
                     }
+
+                    videoAdapter = new VideoItemAdapter(videoList, getActivity());
+                    Collections.reverse(videoList);
+                    videosRecycler.setAdapter(videoAdapter);
                 }
-                videoAdapter = new VideoItemAdapter(videoList, getActivity());
-                Collections.reverse(videoList);
-                videoRecycler.setAdapter(videoAdapter);
             }
 
             @Override

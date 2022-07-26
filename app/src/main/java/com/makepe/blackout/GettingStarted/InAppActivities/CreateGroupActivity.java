@@ -32,6 +32,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
+import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.theartofdev.edmodo.cropper.CropImage;
 
@@ -49,14 +50,14 @@ public class CreateGroupActivity extends AppCompatActivity {
     private RadioButton selectedPrivacy;
 
     private Uri imageUri, coverPicUri;
-    private String myUri = "", coverUri = "", groupId, groupRole = "creator", privacyLock, choice, groupName, groupPurpose;
+    private String groupId, groupRole = "creator", privacyLock, choice;
     private StorageTask uploadTask, coverUploadTask;
     private FirebaseUser firebaseUser;
     private DatabaseReference groupReference;
-    private StorageReference storageReference;
+    private StorageReference storageImageReference, storageCoverReference;
 
     private ProgressDialog progressDialog;
-
+    private UploadFunctions uploadFunctions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,8 @@ public class CreateGroupActivity extends AppCompatActivity {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         groupReference = FirebaseDatabase.getInstance().getReference("SecretGroups");
-        storageReference = FirebaseStorage.getInstance().getReference("GroupPictures");
+        storageImageReference = FirebaseStorage.getInstance().getReference("group_profile_pictures");
+        storageCoverReference = FirebaseStorage.getInstance().getReference("group_cover_pictures");
 
         groupPrivacyBTN.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @SuppressLint("NonConstantResourceId")
@@ -100,8 +102,13 @@ public class CreateGroupActivity extends AppCompatActivity {
                 }
             }
         });
+
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Creating Group...");
+
+        groupId = groupReference.push().getKey();
+
+        uploadFunctions = new UploadFunctions(this);
 
         addCoverPic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,141 +133,98 @@ public class CreateGroupActivity extends AppCompatActivity {
         createGroupBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                groupName = setupGroupName.getText().toString();
-                groupPurpose = setupGroupPurpose.getText().toString();
 
-                if (TextUtils.isEmpty(groupName)){
-                    setupGroupName.setError("Write Movement Name");
+                if (TextUtils.isEmpty(setupGroupName.getText().toString())){
+                    setupGroupName.setError("Write Group Name");
                     setupGroupName.requestFocus();
-                }else if (TextUtils.isEmpty(groupPurpose)){
-                    setupGroupPurpose.setError("Write Movement Purpose");
+                }else if (TextUtils.isEmpty(setupGroupPurpose.getText().toString())){
+                    setupGroupPurpose.setError("Write group Purpose");
                     setupGroupPurpose.requestFocus();
                 }else if (!validatePrivacy()){
                     Toast.makeText(CreateGroupActivity.this, "You need to select group privacy", Toast.LENGTH_SHORT).show();
+                }else if(imageUri == null || coverPicUri == null){
+                    Toast.makeText(CreateGroupActivity.this, "Please select both cover and profile pictures", Toast.LENGTH_SHORT).show();
                 }else{
-                    Toast.makeText(CreateGroupActivity.this, "You will be able to create the new group", Toast.LENGTH_SHORT).show();
                     progressDialog.show();
-                    uploadGroupCredentials();
+                    createGroup();
 
                 }
             }
         });
+
     }
 
-    private void uploadGroupCredentials() {
-        groupId = groupReference.push().getKey();
+    private void createGroup() {
         selectedPrivacy = findViewById(groupPrivacyBTN.getCheckedRadioButtonId());
         privacyLock = selectedPrivacy.getText().toString();
 
-        HashMap<String, Object> groupMap = new HashMap<>();
-        groupMap.put("groupID", groupId);
-        groupMap.put("groupAdmin", firebaseUser.getUid());
-        groupMap.put("groupName", groupName);
-        groupMap.put("groupPurpose", groupPurpose);
-        groupMap.put("groupRole", groupRole);
-        groupMap.put("groupPrivacy", privacyLock);
-        groupMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        final StorageReference picFileReference = storageImageReference.child(groupId
+                + "." + uploadFunctions.getFileExtension(imageUri));
 
-        groupReference.child(groupId).setValue(groupMap)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        uploadProfilePicOnly();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
+        uploadTask = picFileReference.putFile(imageUri);
+        uploadTask.continueWithTask(new Continuation() {
             @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(CreateGroupActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return picFileReference.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri picDownloadUri = task.getResult();
+
+                    final StorageReference coverFileReference = storageCoverReference.child(groupId
+                            + "." + uploadFunctions.getFileExtension(coverPicUri));
+
+                    coverUploadTask = coverFileReference.putFile(coverPicUri);
+                    coverUploadTask.continueWithTask(new Continuation() {
+                        @Override
+                        public Object then(@NonNull Task task) throws Exception {
+                            if (!task.isSuccessful())
+                                throw task.getException();
+                            return coverFileReference.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()){
+                                Uri coverDownloadUri = task.getResult();
+
+                                HashMap<String, Object> groupMap = new HashMap<>();
+
+                                groupMap.put("groupID", groupId);
+                                groupMap.put("groupAdmin", firebaseUser.getUid());
+                                groupMap.put("groupName", setupGroupName.getText().toString());
+                                groupMap.put("groupPurpose", setupGroupPurpose.getText().toString());
+                                groupMap.put("groupRole", groupRole);
+                                groupMap.put("groupPrivacy", selectedPrivacy.getText().toString());
+                                groupMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                                groupMap.put("groupCoverPic", coverDownloadUri.toString());
+                                groupMap.put("groupProPic", picDownloadUri.toString());
+
+                                groupReference.child(groupId).setValue(groupMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                loadMyParticipation();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+
+                                            }
+                                        });
+                            }
+                        }
+                    });
+                }
             }
         });
     }
 
-    private void uploadProfilePicOnly() {
-        if (myUri != null){
-            final StorageReference picFileReference = storageReference.child(System.currentTimeMillis()
-                    + "." +getFileExtension(imageUri));
-            uploadTask = picFileReference.putFile(imageUri);
-            uploadTask.continueWithTask(new Continuation() {
-                @Override
-                public Object then(@NonNull Task task) throws Exception {
-                    if (!task.isSuccessful()){
-                        throw task.getException();
-                    }
-                    return picFileReference.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()){
-                        Uri picDownLoadUri = task.getResult();
-                        myUri = picDownLoadUri.toString();
-
-                        HashMap<String, Object> picMap = new HashMap<>();
-                        picMap.put("groupProPic", myUri);
-
-                        groupReference.child(groupId).updateChildren(picMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        uploadCoverPicOnly();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(CreateGroupActivity.this, "Error Uploading Group Picture", Toast.LENGTH_SHORT).show();
-
-                            }
-                        });
-
-                    }
-                }
-            });
-        }
-    }
-
-    private void uploadCoverPicOnly() {
-        if (coverUri != null){
-            final StorageReference coverFileReference = storageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(coverPicUri));
-            coverUploadTask = coverFileReference.putFile(coverPicUri);
-            coverUploadTask.continueWithTask(new Continuation() {
-                @Override
-                public Object then(@NonNull Task task) throws Exception {
-                    if (!task.isSuccessful()){
-                        throw task.getException();
-                    }
-                    return coverFileReference.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()){
-                        Uri coverDownloadUri = task.getResult();
-                        coverUri = coverDownloadUri.toString();
-
-                        HashMap<String, Object> coverMap = new HashMap<>();
-                        coverMap.put("groupCoverPic", coverUri);
-
-                        groupReference.child(groupId).updateChildren(coverMap)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        LoadMyParticipation();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(CreateGroupActivity.this, "Failed to upload group profile pic", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                    }
-                }
-            });
-        }
-    }
-
-    private void LoadMyParticipation() {
+    private void loadMyParticipation() {
         HashMap<String, Object> participationMap = new HashMap<>();
         participationMap.put("userID", firebaseUser.getUid());
         participationMap.put("groupRole", groupRole);
@@ -292,12 +256,6 @@ public class CreateGroupActivity extends AppCompatActivity {
         }else{
             return true;
         }
-    }
-
-    private String getFileExtension(Uri uri){
-        ContentResolver contentResolver = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return  mime.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     @Override

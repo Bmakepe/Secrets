@@ -18,7 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
+import com.makepe.blackout.GettingStarted.Adapters.VideoAdapter;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.R;
 
@@ -32,9 +32,8 @@ public class FullScreenVideoActivity extends AppCompatActivity {
     private List<PostModel> videoList;
 
     private DatabaseReference videoReference;
-    private FirebaseUser firebaseUser;
 
-    private String videoID;
+    private String videoID, userID;
 
     private List<String> followingList;
     private Toolbar toolbar;
@@ -54,17 +53,67 @@ public class FullScreenVideoActivity extends AppCompatActivity {
         Intent intent = getIntent();
         videoID = intent.getStringExtra("videoID");
 
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        videoReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+        videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
 
         videoList = new ArrayList<>();
 
-        getUserVideos();
+        //getUserVideos();
+
+        getUsersVideos();
+    }
+
+    private void getUsersVideos() {
+        videoReference.child(videoID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    PostModel model = snapshot.getValue(PostModel.class);
+
+                    assert model != null;
+                    userID = model.getUserID();
+
+                    videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            videoList.clear();
+                            for (DataSnapshot ds : snapshot.getChildren()){
+                                PostModel postModel = ds.getValue(PostModel.class);
+
+                                if (postModel.getUserID().equals(userID)){
+                                    videoList.add(postModel);
+                                }
+
+                                for (int i = 0; i < videoList.size(); i++){
+                                    PostModel model = videoList.get(i);
+                                    if (model.getPostID().equals(videoID)){
+                                        videoList.remove(model);
+                                        videoList.add(0, model);
+                                    }
+                                }
+                                fullScreenLoader.setVisibility(View.GONE);
+                                fullScreenPager.setAdapter(new VideoAdapter(videoList, FullScreenVideoActivity.this));
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 
     private void getUserVideos() {
-        videoReference.addValueEventListener(new ValueEventListener() {
+        videoReference.child(videoID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 videoList.clear();
@@ -92,7 +141,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
                     fullScreenLoader.setVisibility(View.GONE);
                     Toast.makeText(FullScreenVideoActivity.this, "" + videoList.size() , Toast.LENGTH_SHORT).show();
                 }
-                fullScreenPager.setAdapter(new VideoFootageAdapter(videoList, FullScreenVideoActivity.this));
+                fullScreenPager.setAdapter(new VideoAdapter(videoList, FullScreenVideoActivity.this));
             }
 
             @Override
@@ -129,7 +178,7 @@ public class FullScreenVideoActivity extends AppCompatActivity {
                         fullScreenLoader.setVisibility(View.GONE);
                     }catch (NullPointerException ignored){}
                 }
-                fullScreenPager.setAdapter(new VideoFootageAdapter(videoList, FullScreenVideoActivity.this));
+                fullScreenPager.setAdapter(new VideoAdapter(videoList, FullScreenVideoActivity.this));
             }
 
             @Override

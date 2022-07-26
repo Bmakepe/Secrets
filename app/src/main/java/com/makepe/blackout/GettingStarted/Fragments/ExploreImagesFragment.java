@@ -196,8 +196,8 @@ public class ExploreImagesFragment extends Fragment {
                 for(DataSnapshot snap : snapshot.getChildren()){
                     User user = snap.getValue(User.class);
                     assert user != null;
-                    if (!user.getUSER_ID().equals(firebaseUser.getUid()))
-                        exploreItems.add(user.getUSER_ID());
+                    if (!user.getUserID().equals(firebaseUser.getUid()))
+                        exploreItems.add(user.getUserID());
                 }
 
                 updateRecycler();

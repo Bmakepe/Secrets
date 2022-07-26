@@ -30,8 +30,8 @@ import java.util.ArrayList;
 
 public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHolder> {
 
-    private ArrayList<String> exploreItems;
-    private Context context;
+    private final ArrayList<String> exploreItems;
+    private final Context context;
 
     private DatabaseReference postRef, userRef;
 
@@ -98,18 +98,20 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
         postRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    PostModel model = ds.getValue(PostModel.class);
+                if (snapshot.exists()) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        PostModel model = ds.getValue(PostModel.class);
 
-                    assert model != null;
-                    if (model.getPostID().equals(exploreItemID)){
-
-                        getPostItem(holder, model);
-
-                    }else{
-                        getUserItem(holder, exploreItemID);
+                        assert model != null;
+                        if (model.getPostID().equals(exploreItemID)) {
+                            getPostItem(holder, model);
+                        } else {
+                            getUserItem(holder, exploreItemID);
+                        }
                     }
-                 }
+                }else{
+                    getUserItem(holder, exploreItemID);
+                }
             }
 
             @Override
@@ -124,15 +126,14 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
-
                     for (DataSnapshot ds : snapshot.getChildren()){
                         User user = ds.getValue(User.class);
 
-                        if (user.getUSER_ID().equals(exploreItemID)){
+                        assert user != null;
+                        if (user.getUserID().equals(exploreItemID)){
                             holder.exploreItemOwner.setText(user.getUsername());
 
                             try{
-                                assert user != null;
                                 Picasso.get().load(user.getImageURL()).into(holder.exploreImage);
                                 holder.imageLoader.setVisibility(View.GONE);
                                 holder.multipleImageIcon.setImageResource(R.drawable.ic_baseline_person_24);
@@ -159,6 +160,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel myPost = ds.getValue(PostModel.class);
 
+                    assert myPost != null;
                     if (myPost.getPostID().equals(model.getPostID())){
 
                         postRef.child(myPost.getPostID()).child("images").addValueEventListener(new ValueEventListener() {
@@ -218,7 +220,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ViewHold
                 for (DataSnapshot data : snapshot.getChildren()){
                     User user = data.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(myPost.getUserID())){
+                    if (user.getUserID().equals(myPost.getUserID())){
                         holder.exploreItemOwner.setText(user.getUsername());
                     }
                 }

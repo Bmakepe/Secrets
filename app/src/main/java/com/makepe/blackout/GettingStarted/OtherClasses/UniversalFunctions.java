@@ -16,9 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,9 +33,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
-import com.makepe.blackout.GettingStarted.Adapters.VideoFootageAdapter;
-import com.makepe.blackout.GettingStarted.Fragments.ProfileFragment;
-import com.makepe.blackout.GettingStarted.InAppActivities.ConnectionsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
@@ -47,7 +41,6 @@ import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -55,12 +48,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UniversalFunctions {
     private Context context;
-    private UniversalNotifications universalNotifications = new UniversalNotifications();
     private SendNotifications sendNotifications = new SendNotifications();
 
     private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
     private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+    private DatabaseReference videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
     private DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
     private DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
     private DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
@@ -260,18 +253,23 @@ public class UniversalFunctions {
         storyReference.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    Story story = ds.getValue(Story.class);
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        Story story = ds.getValue(Story.class);
 
-                    long currentTime = System.currentTimeMillis();
+                        long currentTime = System.currentTimeMillis();
 
-                    assert story != null;
-                    if (currentTime > story.getTimeStart() && currentTime < story.getTimeEnd()){
-                        avatarIv.setBorderColor(context.getResources().getColor(R.color.colorGreen));
-                        avatarIv.setTag("storyActive");
-                    }else{
-                        avatarIv.setTag("noStories");
+                        assert story != null;
+                        if (currentTime > story.getTimeStart() && currentTime < story.getTimeEnd()){
+                            avatarIv.setBorderColor(context.getResources().getColor(R.color.colorGreen));
+                            avatarIv.setTag("storyActive");
+                        }else{
+                            avatarIv.setTag("noStories");
+                        }
                     }
+                }else {
+                    avatarIv.setTag("noStories");
+
                 }
             }
 
@@ -333,8 +331,8 @@ public class UniversalFunctions {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        /*if(!postModel.getUserID().equals(firebaseUser.getUid()))
-                            sendNotifications.addLikesNotification(postModel.getPostID(), postModel.getUserID());*/
+                        if(!postModel.getUserID().equals(firebaseUser.getUid()))
+                            sendNotifications.addPostLikeNotification(postModel);
                     }
                 });
     }
@@ -346,7 +344,8 @@ public class UniversalFunctions {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Toast.makeText(context, "Unliked post", Toast.LENGTH_SHORT).show();
+                        if (!model.getUserID().equals(firebaseUser.getUid()))
+                            sendNotifications.removePostLikeNotification(model);
                     }
                 });
     }
@@ -393,7 +392,7 @@ public class UniversalFunctions {
                             User user = ds.getValue(User.class);
 
                             assert user != null;
-                            if (user.getUSER_ID().equals(model.getUserID()))
+                            if (user.getUserID().equals(model.getUserID()))
                                 popupMenu.getMenu().add(Menu.NONE, 3, 0, "Unfollow " + user.getUsername());
                         }
                     }
@@ -411,7 +410,7 @@ public class UniversalFunctions {
                             User user = ds.getValue(User.class);
 
                             assert user != null;
-                            if (user.getUSER_ID().equals(model.getUserID()))
+                            if (user.getUserID().equals(model.getUserID()))
                                 popupMenu.getMenu().add(Menu.NONE, 3, 0, "Follow " + user.getUsername());
 
                         }
@@ -465,19 +464,42 @@ public class UniversalFunctions {
     }
 
     public void getNrPosts(String userID, TextView postsNo){
-        postReference.addValueEventListener(new ValueEventListener() {
+        postReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int totalCount = 0;
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    PostModel post = snapshot.getValue(PostModel.class);
-                    assert post != null;
+                int postCount = 0;
+                if (dataSnapshot.exists()){
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        PostModel post = snapshot.getValue(PostModel.class);
+                        assert post != null;
 
-                    if (post.getUserID().equals(userID)){
-                        totalCount++;
+                        if (post.getUserID().equals(userID)){
+                            postCount++;
+                        }
+
+                        int finalPostCount = postCount;
+                        videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                int videoCount = 0;
+                                for (DataSnapshot ds : snapshot.getChildren()){
+                                    PostModel postModel = ds.getValue(PostModel.class);
+
+                                    if (postModel.getUserID().equals(userID))
+                                        videoCount++;
+                                }
+                                postsNo.setText(String.valueOf(finalPostCount + videoCount));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                     }
+                }else{
+                    postsNo.setText(String.valueOf(postCount));
                 }
-                postsNo.setText(String.valueOf(totalCount));
             }
 
             @Override

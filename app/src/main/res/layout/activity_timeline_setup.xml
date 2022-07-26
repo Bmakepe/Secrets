@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.TimelineSetupActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -75,25 +74,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
-        <TextView
+        <Button
             android:id="@+id/goToTimeline"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
-            android:layout_marginBottom="5dp"
-            android:drawableStart="@drawable/ic_done_black_24dp"
-            android:drawablePadding="5dp"
             android:padding="10dp"
             android:text="Continue"
             android:textAllCaps="true"
-            android:textColor="@color/colorBlack"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:drawableTint="@color/colorBlack"
             tools:ignore="UseCompatTextViewDrawableXml" />
 
     </RelativeLayout>

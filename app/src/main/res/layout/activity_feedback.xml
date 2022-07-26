@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
     tools:context=".GettingStarted.InAppActivities.FeedbackActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -83,22 +82,21 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxLines="2"
-                    android:text="Do you have a suggestion or found some bugs? Please write to us and tell us where we can improve"
-                    android:textAlignment="center"
-                    android:textSize="14sp"
-                    android:padding="5dp"
-                    android:layout_margin="5dp"
-                    android:textColor="@color/colorBlack"/>
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
+                    android:padding="10dp"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="2"
+                        android:text="Do you have a suggestion or found some bugs? Please write to us and tell us where we can improve"
+                        android:textAlignment="center"
+                        android:textSize="12sp"
+                        android:padding="5dp"
+                        android:textColor="@color/colorBlack"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
@@ -106,8 +104,6 @@
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/textInputName"
-                        android:padding="5dp"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="30"
                         app:counterOverflowTextAppearance="@color/colorRed">
@@ -138,12 +134,9 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/textInputMobile"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="25"
                         app:counterOverflowTextAppearance="@color/colorRed">
@@ -173,12 +166,9 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         app:boxStrokeColor="@color/colorPrimary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:id="@+id/textMessage"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/rounded_edittext"
                         app:counterEnabled="true"
                         app:counterMaxLength="200"
                         app:counterOverflowTextAppearance="@color/colorRed">

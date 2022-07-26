@@ -32,9 +32,10 @@ public class ExploreFragment extends Fragment {
         videosTab = view.findViewById(R.id.videosTab);
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getChildFragmentManager());
-        //viewPagerAdapter.addFragment(new VideosFragment());
+
         viewPagerAdapter.addFragment(new ExploreFootageFragment(), "Following");
         viewPagerAdapter.addFragment(new ExploreVideosFragment(), "Explore");
+
         explorePager.setAdapter(viewPagerAdapter);
         videosTab.setupWithViewPager(explorePager);
 

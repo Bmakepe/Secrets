@@ -164,7 +164,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
 
         getChatDetails(chat, holder);
 
-        if (!chat.getSender().equals(firebaseUser.getUid()))
+        if (!chat.getSenderID().equals(firebaseUser.getUid()))
             getHisDetails(chat, holder);
 
         try{
@@ -198,7 +198,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                 for (DataSnapshot ds : snapshot.getChildren()){
                     User user = ds.getValue(User.class);
 
-                    if (user.getUSER_ID().equals(chat.getSender()))
+                    if (user.getUserID().equals(chat.getSenderID()))
                         try{
                             Picasso.get().load(user.getImageURL()).into(holder.chatPic);
                         }catch (NullPointerException e){
@@ -271,7 +271,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     }
 
     private void getStoryMessageDetails(Chat chat, MyHolder holder) {
-        storyReference.child(chat.getReceiver()).addValueEventListener(new ValueEventListener() {
+        storyReference.child(chat.getReceiverID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
@@ -281,7 +281,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                         assert story != null;
                         if (story.getStoryID().equals(chat.getStoryID()))
                             try{
-                                Picasso.get().load(story.getStoryImage()).into(holder.storyImage);
+                                Picasso.get().load(story.getImageURL()).into(holder.storyImage);
                                 holder.messageStoryImageLoader.setVisibility(View.GONE);
                             }catch (NullPointerException ignored){}
                     }
@@ -340,7 +340,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
             @Override
             public void onClick(View view) {
                 if (!audioPlayer.isPlaying()){
-                    audioPlayer.startPlayingAudio(chat.getAudio());
+                    audioPlayer.startPlayingAudio(chat.getAudioURL());
                 }else{
                     audioPlayer.stopPlayingAudio();
                 }
@@ -399,7 +399,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
         popupMenu.getMenu().add(Menu.NONE, 0,0,"Reply");
         popupMenu.getMenu().add(Menu.NONE, 1,0,"Copy");
         popupMenu.getMenu().add(Menu.NONE, 2,0,"Forward");
-        if(chat.getSender().equals(firebaseUser.getUid())){
+        if(chat.getSenderID().equals(firebaseUser.getUid())){
             popupMenu.getMenu().add(Menu.NONE, 3,0,"Delete");
         }
 
@@ -481,7 +481,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     Chat chat = ds.getValue(Chat.class);
                     assert chat != null;
-                    if(chat.getSender().equals(firebaseUser.getUid())) {
+                    if(chat.getSenderID().equals(firebaseUser.getUid())) {
                        ds.getRef().removeValue();
                    }
                 }
@@ -551,7 +551,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyHolder
     @Override
     public int getItemViewType(int position) {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if(mChats.get(position).getSender().equals(firebaseUser.getUid())){
+        if(mChats.get(position).getSenderID().equals(firebaseUser.getUid())){
 
             switch (mChats.get(position).getMessage_type()) {
                 case "text":
