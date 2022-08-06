@@ -56,7 +56,7 @@
                     android:id="@+id/video_details_area"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
+                    android:layout_above="@+id/videoProgressLoader"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -197,6 +197,16 @@
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/video_details_area"
                     android:layout_alignParentEnd="true" />
+
+                <!-- Linear progress indicator -->
+                <SeekBar
+                    android:id="@+id/videoProgressLoader"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:thumb="@color/colorTrans" />
 
             </RelativeLayout>
 

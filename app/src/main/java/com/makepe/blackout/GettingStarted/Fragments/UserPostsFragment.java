@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ import com.makepe.blackout.R;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class UserPostsFragment extends Fragment {
 
@@ -44,6 +47,7 @@ public class UserPostsFragment extends Fragment {
     private int mediaCount;
     private TextView mediaCounter, seeMore;
     private LinearLayout hisMediaArea, hisPostsArea;
+    private LinearLayoutManager linearLayoutManager;
 
     //for his normal posts
     private RecyclerView hisPostsRecycler;
@@ -157,9 +161,12 @@ public class UserPostsFragment extends Fragment {
         hisMediaRecycler.setHasFixedSize(true);
         hisMediaRecycler.setNestedScrollingEnabled(false);
         hisMediaRecycler.hasFixedSize();
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
+        linearLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL, false);
         hisMediaRecycler.setLayoutManager(linearLayoutManager);
         hisMediaRecycler.setItemAnimator(new DefaultItemAnimator());
+
+        LinearSnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(hisMediaRecycler);
 
         mediaList = new ArrayList<>();
 

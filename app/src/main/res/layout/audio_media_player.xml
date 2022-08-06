@@ -36,17 +36,16 @@
             android:padding="5dp"
             android:text="00:00" />
 
-        <com.airbnb.lottie.LottieAnimationView
+        <SeekBar
             android:id="@+id/postItem_lav_playing"
-            app:lottie_autoPlay="false"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/blue_playing_animation"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
+            android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/postTotalTime"
             android:layout_toEndOf="@+id/postItemSeekTimer"
-            android:visibility="visible" />
+            android:indeterminate="false"
+            android:max="100"
+            android:thumb="@color/colorTrans" />
 
         <TextView
             android:id="@+id/postTotalTime"

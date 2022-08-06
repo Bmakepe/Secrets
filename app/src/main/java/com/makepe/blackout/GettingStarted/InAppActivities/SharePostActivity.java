@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +39,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -79,7 +81,7 @@ public class SharePostActivity extends AppCompatActivity{
     //for normal post views
     private CircleImageView myProfilePic;
     private EditText myCaptionET;
-    private Toolbar toolbar;
+    private Toolbar sharePostToolbar;
     private Switch commentSwitch;
 
     //for shared post views
@@ -124,7 +126,7 @@ public class SharePostActivity extends AppCompatActivity{
     private RelativeLayout mediaPlayerArea;
     private AudioPlayer audioPlayer;
     public CircleImageView playBTN;
-    public LottieAnimationView audioAnimation;
+    public SeekBar audioAnimation;
     public TextView audioSeekTimer, postTotalTime;
 
     private ProgressDialog uploadProgress;
@@ -142,8 +144,8 @@ public class SharePostActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_post);
 
-        toolbar = findViewById(R.id.sharingToolbar);
-        setSupportActionBar(toolbar);
+        sharePostToolbar = findViewById(R.id.sharingToolbar);
+        setSupportActionBar(sharePostToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //for normal post views
@@ -184,12 +186,13 @@ public class SharePostActivity extends AppCompatActivity{
         voicePlayBTN = findViewById(R.id.post_playVoiceIcon);
         seekTimer = findViewById(R.id.seekTimer);
         lavPlaying = findViewById(R.id.lav_playing);
+        deleteAudioBTN = findViewById(R.id.recordingDeleteBTN);
 
         //for shared audio posts
         mediaPlayerArea = findViewById(R.id.shared_audio_media_player);
         playBTN = findViewById(R.id.postItem_playVoiceIcon);
         audioAnimation = findViewById(R.id.postItem_lav_playing);
-        seekTimer = findViewById(R.id.postItemSeekTimer);
+        audioSeekTimer = findViewById(R.id.postItemSeekTimer);
         postTotalTime = findViewById(R.id.postTotalTime);
 
         Intent intent = getIntent();
@@ -197,8 +200,6 @@ public class SharePostActivity extends AppCompatActivity{
 
         sendNotifications = new SendNotifications(this);
         getTimeAgo = new GetTimeAgo();
-        uploadProgress = new ProgressDialog(this);
-        uploadProgress.setMessage("Loading... Please wait...");
         universalFunctions = new UniversalFunctions(SharePostActivity.this);
         locationServices = new LocationServices(myLocationCheckIn, SharePostActivity.this);
         audioRecorder = new AudioRecorder(lavPlaying, SharePostActivity.this,
@@ -206,6 +207,12 @@ public class SharePostActivity extends AppCompatActivity{
 
         audioPlayer = new AudioPlayer(SharePostActivity.this, playBTN,
                 audioSeekTimer, postTotalTime, audioAnimation);
+
+        audioPlayer.init();
+
+        uploadProgress = new ProgressDialog(this);
+        uploadProgress.setMessage("Loading... Please wait...");
+        uploadProgress.setCancelable(false);
 
         postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
         videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
@@ -291,6 +298,13 @@ public class SharePostActivity extends AppCompatActivity{
                 if (shareBTN.getText().toString().equals("Record")){
                     if(audioRecorder.checkRecordingPermission()){
                         postCaptionArea.setVisibility(View.GONE);
+
+                        if (videoView.isPlaying())
+                            videoView.pause();
+
+                        if (audioPlayer.mediaPlayer.isPlaying())
+                            audioPlayer.stopPlayingAudio();
+
                         if (!audioRecorder.isRecording()){
                             shareBTN.setText("Stop");
                             audioRecorder.startRecording();
@@ -303,6 +317,9 @@ public class SharePostActivity extends AppCompatActivity{
 
                     shareBTN.setText("Post");
                     audioRecorder.stopRecording();
+
+                    if (!videoView.isPlaying())
+                        videoView.start();
 
                 }else if (shareBTN.getText().toString().equals("Post")){
 
@@ -374,10 +391,29 @@ public class SharePostActivity extends AppCompatActivity{
             public void onClick(View view) {
 
                 if (!audioRecorder.isPlaying()){
+
+                    if (videoView.isPlaying())
+                        videoView.pause();
+
+                    if (audioPlayer.mediaPlayer.isPlaying())
+                        audioPlayer.stopPlayingAudio();
+
                     audioRecorder.startPlayingRecording();
                 }else{
                     audioRecorder.stopPlayingAudio();
+
+                    if (!videoView.isPlaying())
+                        videoView.start();
+
                 }
+            }
+        });
+
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                audioRecorder.resetRecorder();
+                shareBTN.setText("Record");
             }
         });
 
@@ -713,6 +749,17 @@ public class SharePostActivity extends AppCompatActivity{
                 mediaPlayer.start();
             }
         });
+
+        videoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (videoView.isPlaying())
+                    videoView.pause();
+                else
+                    videoView.start();
+            }
+        });
     }
 
     private void getPostImages(PostModel post) {
@@ -810,10 +857,19 @@ public class SharePostActivity extends AppCompatActivity{
         playBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!audioPlayer.isPlaying()){
+                if (!audioPlayer.mediaPlayer.isPlaying()){
+
+                    if (videoView.isPlaying())
+                        videoView.pause();
+
                     audioPlayer.startPlayingAudio(postModel.getAudioURL());
-                }else{
+                }
+                else if(audioPlayer.mediaPlayer.isPlaying()){
                     audioPlayer.stopPlayingAudio();
+
+                    if (!videoView.isPlaying())
+                        videoView.start();
+
                 }
             }
         });
@@ -963,27 +1019,6 @@ public class SharePostActivity extends AppCompatActivity{
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.share_post_menu, menu);
-
-        menu.findItem(R.id.uploadImageItems).setVisible(false);
-        menu.findItem(R.id.uploadVideosItem).setVisible(false);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.tagFriendsItem:
-                Toast.makeText(this, "You will be able to tag friends", Toast.LENGTH_SHORT).show();
-                break;
-
-        }
-        return super.onOptionsItemSelected(item);
     }
 
 }

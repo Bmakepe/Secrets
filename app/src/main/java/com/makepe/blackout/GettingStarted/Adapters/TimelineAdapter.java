@@ -1,27 +1,36 @@
 package com.makepe.blackout.GettingStarted.Adapters;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
@@ -34,6 +43,11 @@ import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,28 +56,38 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.InAppActivities.ChatActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.CommentsActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.FullScreenImageActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.PhoneCallActivity;
+import com.makepe.blackout.GettingStarted.InAppActivities.PostListActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.SharePostActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.StoryActivity;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
 import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.User;
+import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
+import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private Context context;
     private List<PostModel> postList;
@@ -90,7 +114,14 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private UniversalFunctions universalFunctions;
     private GetTimeAgo getTimeAgo;
 
-    private boolean isLoaderVisible = false;
+    private boolean isShared = false;
+
+    //for comments
+    private StorageReference commentAudioReference;
+    private SendNotifications notifications;
+    private String commentID;
+    private EditText commentET;
+    private ProgressDialog commentDialog;
 
     public TimelineAdapter(Context context, List<PostModel> postList) {
         this.context = context;
@@ -207,19 +238,44 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
             commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
             likesReference = FirebaseDatabase.getInstance().getReference("Likes");
+            commentAudioReference = FirebaseStorage.getInstance().getReference();
 
             universalFunctions = new UniversalFunctions(context);
             getTimeAgo = new GetTimeAgo();
+            notifications = new SendNotifications(context);
 
             HolderPosts holderPosts = (HolderPosts) holder;
 
+            ((HolderPosts) holder).commentAreaVoiceBTN.setTag("notRecording");
+
             getAdapterFunctions(post, holderPosts);
+
+            ((HolderPosts) holder).commentAreaMessage.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if (charSequence.length() != 0)
+                        ((HolderPosts) holder).commentAreaVoiceBTN.setImageResource(R.drawable.ic_send_black_24dp);
+                    else
+                        ((HolderPosts) holder).commentAreaVoiceBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
 
             switch (getItemViewType(position)){
                 case IMAGE_POST_ITEM:
 
                     holderPosts.postImageRecyclerView.hasFixedSize();
                     holderPosts.postImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.postImageRecyclerView);
 
                     displayImagePost(holderPosts, post);
                     break;
@@ -236,6 +292,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                     holderPosts.postImageRecyclerView.hasFixedSize();
                     holderPosts.postImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.postImageRecyclerView);
 
                     displayAudioImagePost(holderPosts, post);
                     break;
@@ -246,11 +303,21 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     break;
 
                 case SHARED_IMAGE_POST_ITEM:
+
+                    holderPosts.sharedPostImageRecyclerView.hasFixedSize();
+                    holderPosts.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.sharedPostImageRecyclerView);
+
                     displaySharedImagePost(holderPosts, post);
                     getSharedPostButtons(holderPosts, post);
                     break;
 
                 case SHARED_AUDIO_IMAGE_POST:
+
+                    holderPosts.sharedPostImageRecyclerView.hasFixedSize();
+                    holderPosts.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.sharedPostImageRecyclerView);
+
                     displaySharedAudioImageTextPost(holderPosts, post);
                     getSharedPostButtons(holderPosts, post);
                     break;
@@ -266,6 +333,11 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     break;
 
                 case SHARED_TEXT_AUDIO_IMAGE_POST:
+
+                    holderPosts.sharedPostImageRecyclerView.hasFixedSize();
+                    holderPosts.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.sharedPostImageRecyclerView);
+
                     displaySharedTextImageAudioPost(holderPosts, post);
                     getSharedPostButtons(holderPosts, post);
                     break;
@@ -276,6 +348,11 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     break;
 
                 case SHARED_AUDIO_AUDIO_IMAGE_POST:
+
+                    holderPosts.sharedPostImageRecyclerView.hasFixedSize();
+                    holderPosts.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                    new LinearSnapHelper().attachToRecyclerView(holderPosts.sharedPostImageRecyclerView);
+
                     displaySharedAudioImageAudioPost(holderPosts, post);
                     getSharedPostButtons(holderPosts, post);
                     break;
@@ -392,6 +469,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 assert sharedPost != null;
                                 holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+                                isShared = true;
 
                                 getSharedPostOwner(holder, sharedPost);
                                 checkSharedTaggedFriends(holder, sharedPost);
@@ -417,9 +495,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void displaySharedImagePost(HolderPosts holder, PostModel post) {
         ArrayList<String> imageList = new ArrayList<>();
 
-        holder.sharedPostImageRecyclerView.hasFixedSize();
-        holder.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-
         postReference.child(post.getPostID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -429,8 +504,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     assert postModel != null;
                     displayTextPost(holder, postModel);
 
-                    holder.shareCounter.setVisibility(View.GONE);
-
                     postReference.child(post.getSharedPost()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -439,6 +512,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 assert sharedPost != null;
                                 holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+                                isShared = true;
 
                                 postReference.child(post.getSharedPost()).child("images").addValueEventListener(new ValueEventListener() {
                                     @Override
@@ -483,7 +557,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.sharedPostDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
+                Intent sharedPostIntent = new Intent(context, PostListActivity.class);
                 sharedPostIntent.putExtra("postID", post.getSharedPost());
                 context.startActivity(sharedPostIntent);
             }
@@ -501,8 +575,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     assert postModel != null;
                     displayAudioPost(holder, postModel);
 
-                    holder.shareCounter.setVisibility(View.GONE);
-
                     postReference.child(postModel.getSharedPost()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -511,6 +583,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 assert sharedPost != null;
                                 holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+                                isShared = true;
 
                                 getUniversalSharedFunctions(holder, sharedPost);
                                 getSharedPostOwner(holder, sharedPost);
@@ -536,9 +609,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void displaySharedAudioImageTextPost(HolderPosts holder, PostModel post) {
         ArrayList<String> imageList = new ArrayList<>();
 
-        holder.sharedPostImageRecyclerView.hasFixedSize();
-        holder.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-
         postReference.child(post.getPostID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -558,6 +628,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 assert sharedPost != null;
                                 holder.sharedPostDesc.setText(sharedPost.getPostCaption());
+                                isShared = true;
 
                                 postReference.child(sharedPost.getPostID()).child("images").addValueEventListener(new ValueEventListener() {
                                     @Override
@@ -602,7 +673,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.sharedPostDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
+                Intent sharedPostIntent = new Intent(context, PostListActivity.class);
                 sharedPostIntent.putExtra("postID", post.getSharedPost());
                 context.startActivity(sharedPostIntent);
             }
@@ -629,6 +700,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 PostModel sharedPost = snapshot.getValue(PostModel.class);
 
                                 assert sharedPost != null;
+                                isShared = true;
 
                                 getSharedPostOwner(holder, sharedPost);
                                 getSharedAudio(holder, sharedPost);
@@ -654,9 +726,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void displaySharedTextImageAudioPost(HolderPosts holder, PostModel post) {
         ArrayList<String> imageList = new ArrayList<>();
 
-        holder.sharedPostImageRecyclerView.hasFixedSize();
-        holder.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-
         postReference.child(post.getPostID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -667,6 +736,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     displayTextPost(holder, model);
 
                     holder.shareCounter.setVisibility(View.GONE);
+                    isShared = true;
 
                     postReference.child(model.getSharedPost()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -719,7 +789,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.sharedPostDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
+                Intent sharedPostIntent = new Intent(context, PostListActivity.class);
                 sharedPostIntent.putExtra("postID", post.getSharedPost());
                 context.startActivity(sharedPostIntent);
             }
@@ -728,10 +798,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private void displaySharedAudioImageAudioPost(HolderPosts holder, PostModel post) {
         ArrayList<String> imageList = new ArrayList<>();
-
-        holder.sharedPostImageRecyclerView.hasFixedSize();
-        holder.sharedPostImageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        holder.sharedPostImageRecyclerView.setAdapter(new PostImageAdapter(context, imageList));
 
         postReference.child(post.getPostID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -751,6 +817,9 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 PostModel sharedPost = snapshot.getValue(PostModel.class);
 
                                 assert sharedPost != null;
+
+                                isShared = true;
+
                                 postReference.child(sharedPost.getPostID()).child("images").addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -795,7 +864,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.sharedPostDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent sharedPostIntent = new Intent(context, CommentsActivity.class);
+                Intent sharedPostIntent = new Intent(context, PostListActivity.class);
                 sharedPostIntent.putExtra("postID", post.getSharedPost());
                 context.startActivity(sharedPostIntent);
             }
@@ -824,6 +893,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 assert sharedPost != null;
 
+                                isShared = true;
                                 getSharedPostOwner(holder, sharedPost);
                                 getSharedAudio(holder, sharedPost);
                                 getUniversalSharedFunctions(holder, sharedPost);
@@ -1159,9 +1229,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         onClickListeners(holder, post);
         getPostComments(holder, post);
         checkTags(holder, post);
-
-        if (firebaseUser.getUid().equals(post.getUserID()))
-            holder.shareArea.setVisibility(View.INVISIBLE);
+        getMyUserDetails(holder);
 
         /*try{
             if (!post.isCommentsAllowed()){
@@ -1171,9 +1239,30 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } catch (NullPointerException ignored){}*/
     }
 
-    private void getSharedPostButtons(HolderPosts holder, PostModel post) {
+    private void getMyUserDetails(HolderPosts holder) {
+        userReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    User user = ds.getValue(User.class);
 
-        holder.shareArea.setVisibility(View.GONE);
+                    if (user.getUserID().equals(firebaseUser.getUid()))
+                        try {
+                            Picasso.get().load(user.getImageURL()).fit().into(holder.commentAreaProPic);
+                        }catch (NullPointerException e){
+                            Picasso.get().load(R.drawable.default_profile_display_pic).into(holder.commentAreaProPic);
+                        }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSharedPostButtons(HolderPosts holder, PostModel post) {
 
         holder.sharedPost_taggedPeopleList.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1193,6 +1282,9 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void onClickListeners(HolderPosts holder, PostModel post){
+
+        AudioRecorder audioRecorder = new AudioRecorder(holder.lavPlaying, context,
+                (Activity) context, holder.playAudioArea, holder.voicePlayBTN, holder.recorderDurationTV);
 
         holder.postUsername.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1217,11 +1309,13 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public void onClick(View v) {
 
-                universalFunctions.addView(post.getPostID());
+                showCommentsDialog(post);
+
+                /*universalFunctions.addView(post.getPostID());
 
                 Intent postDetailIntent= new Intent(context, CommentsActivity.class);
                 postDetailIntent.putExtra("postID", post.getPostID());
-                context.startActivity(postDetailIntent);
+                context.startActivity(postDetailIntent);*/
             }
         });
 
@@ -1267,9 +1361,17 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.shareArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent shareIntent = new Intent(context, SharePostActivity.class);
-                shareIntent.putExtra("postID", post.getPostID());
-                context.startActivity(shareIntent);
+
+                if (!firebaseUser.getUid().equals(post.getUserID())) {
+                    Intent shareIntent = new Intent(context, SharePostActivity.class);
+                    if (!isShared) {
+                        shareIntent.putExtra("postID", post.getPostID());
+                    }else{
+                        shareIntent.putExtra("postID", post.getSharedPost());
+                    }
+                    context.startActivity(shareIntent);
+                }else
+                    Toast.makeText(context, "You can not share your own post", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1289,6 +1391,75 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public void onClick(View view) {
                 showTaggedFriendsDialog(holder, post);
+            }
+        });
+
+        holder.commentAreaVoiceBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (TextUtils.isEmpty(holder.commentAreaMessage.getText().toString())
+                        && holder.commentAreaVoiceBTN.getTag().equals("notRecording")){
+
+                    if (audioRecorder.checkRecordingPermission()){
+                        holder.commentAreaVoiceBTN.setImageResource(R.drawable.ic_baseline_stop_circle_24);
+
+                        if (!audioRecorder.isRecording){
+                            audioRecorder.startRecording();
+                            holder.commentAreaVoiceBTN.setTag("Recording");
+                        }
+
+                    }else{
+                        audioRecorder.requestRecordingPermission();
+                    }
+
+                }else if (holder.commentAreaVoiceBTN.getTag().equals("Recording")){
+
+                    try {
+                        audioRecorder.stopRecording();
+                        holder.commentAreaVoiceBTN.setTag("sendAudio");
+                        holder.commentAreaVoiceBTN.setImageResource(R.drawable.ic_send_black_24dp);
+                    }catch (NullPointerException e){
+                        Toast.makeText(context, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }else{
+                    commentID = commentsReference.push().getKey();
+
+                    if (!TextUtils.isEmpty(holder.commentAreaMessage.getText().toString()))
+
+                        uploadTextComment(post, holder.commentAreaMessage);
+
+                    else if (audioRecorder.getRecordingFilePath() != null){
+
+                        if (holder.commentAreaVoiceBTN.getTag().equals("sendAudio"))
+                            uploadAudioComment(post, audioRecorder);
+
+                        holder.commentAreaVoiceBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+
+                    }
+                }
+            }
+        });
+
+        holder.deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                audioRecorder.resetRecorder();
+                holder.commentAreaVoiceBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                holder.commentAreaVoiceBTN.setTag("notRecording");
+            }
+        });
+
+        holder.voicePlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!audioRecorder.isPlaying()){
+                    audioRecorder.startPlayingRecording();
+                }else{
+                    audioRecorder.stopPlayingAudio();
+                }
             }
         });
 
@@ -1495,6 +1666,288 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
 
+    //functions to deal with comments only
+    private void showCommentsDialog(PostModel post) {
+        final BottomSheetDialog commentSheetDialog = new BottomSheetDialog(context);
+        commentSheetDialog.setContentView(R.layout.post_comment_layout);
+
+        ImageView close = commentSheetDialog.findViewById(R.id.closeCommentSheetBTN);
+        TextView commentHeader = commentSheetDialog.findViewById(R.id.commentSheetHeader);
+        RecyclerView commentSheetRecycler = commentSheetDialog.findViewById(R.id.commentSheetRecycler);
+        CircleImageView myProfilePicture = commentSheetDialog.findViewById(R.id.commentSheetProfilePic);
+        commentET = commentSheetDialog.findViewById(R.id.commentSheetCaptionET);
+        ImageView postCommentBTN = commentSheetDialog.findViewById(R.id.commentSheetPostBTN);
+
+        //for recording audio status
+        LottieAnimationView lavPlaying = commentSheetDialog.findViewById(R.id.lav_playing);
+        ImageView deleteAudioBTN = commentSheetDialog.findViewById(R.id.recordingDeleteBTN);
+        ImageView voicePlayBTN = commentSheetDialog.findViewById(R.id.post_playVoiceIcon);
+        TextView seekTimer = commentSheetDialog.findViewById(R.id.seekTimer);
+        RelativeLayout playAudioArea = commentSheetDialog.findViewById(R.id.playAudioArea);
+
+        AudioRecorder commentRecorder = new AudioRecorder(lavPlaying, context,
+                (Activity) context, playAudioArea, voicePlayBTN, seekTimer);
+        postCommentBTN.setTag("notRecording");
+
+        ArrayList<CommentModel> commentList = new ArrayList<>();
+
+        commentSheetRecycler.hasFixedSize();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        commentSheetRecycler.setLayoutManager(layoutManager);
+        CommentsAdapter commentsAdapter = new CommentsAdapter(context, commentList);
+        commentSheetRecycler.setAdapter(commentsAdapter);
+
+        commentsReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    int counter = 0;
+                    commentList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        CommentModel comments = ds.getValue(CommentModel.class);
+
+                        if (comments.getPostID().equals(post.getPostID())) {
+                            commentList.add(comments);
+                            counter++;
+                        }
+
+                        if (counter == 1)
+                            commentHeader.setText(counter + " Comment");
+                        else
+                            commentHeader.setText(counter + " Comments");
+                    }
+                    commentsAdapter.notifyDataSetChanged();
+                }else
+                    commentHeader.setText("0 Comments");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        userReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        User user = ds.getValue(User.class);
+
+                        if (user.getUserID().equals(firebaseUser.getUid()))
+                            try{
+                                Picasso.get().load(user.getImageURL()).into(myProfilePicture);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(myProfilePicture);
+                            }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        commentET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() != 0)
+                    postCommentBTN.setImageResource(R.drawable.ic_send_black_24dp);
+                else
+                    postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        commentSheetDialog.show();
+        commentSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        postCommentBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (TextUtils.isEmpty(commentET.getText().toString())
+                        && postCommentBTN.getTag().equals("notRecording")){
+
+                    if (commentRecorder.checkRecordingPermission()){
+                        postCommentBTN.setImageResource(R.drawable.ic_baseline_stop_circle_24);
+
+                        if (!commentRecorder.isRecording){
+                            commentRecorder.startRecording();
+                            postCommentBTN.setTag("Recording");
+                        }
+
+                    }else{
+                        commentRecorder.requestRecordingPermission();
+                    }
+
+                }else if (postCommentBTN.getTag().equals("Recording")){
+                    commentRecorder.stopRecording();
+                    postCommentBTN.setTag("sendAudio");
+                    postCommentBTN.setImageResource(R.drawable.ic_send_black_24dp);
+
+                }else{
+                    commentID = commentsReference.push().getKey();
+
+                    if (!TextUtils.isEmpty(commentET.getText().toString()))
+                        uploadTextComment(post, commentET);
+                    else if (commentRecorder.getRecordingFilePath() != null){
+                        if (postCommentBTN.getTag().equals("sendAudio"))
+                            uploadAudioComment(post, commentRecorder);
+                        postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                    }
+
+                }
+            }
+        });
+
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                commentRecorder.resetRecorder();
+                postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                postCommentBTN.setTag("notRecording");
+            }
+        });
+
+        voicePlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!commentRecorder.isPlaying()){
+                    commentRecorder.startPlayingRecording();
+                }else{
+                    commentRecorder.stopPlayingAudio();
+                }
+            }
+        });
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                commentSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void uploadAudioComment(PostModel post, AudioRecorder audioRecorder) {
+
+        commentDialog = new ProgressDialog(context);
+        commentDialog.setMessage("loading...");
+        commentDialog.setCancelable(false);
+        commentDialog.show();
+
+        StorageReference audioPath = commentAudioReference.child("comment_audio_files")
+                .child(commentID + ".3gp");
+        Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+
+                    HashMap<String, Object> audioMap = new HashMap<>();
+
+                    audioMap.put("commentID", commentID);
+                    audioMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    audioMap.put("userID", firebaseUser.getUid());
+                    audioMap.put("postID", post.getPostID());
+                    audioMap.put("commentType", "audioComment");
+                    audioMap.put("audioUrl", audioDownloadLink.toString());
+
+                    commentsReference.child(commentID).setValue(audioMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    resetAudioLayout(post, audioRecorder);
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+        });
+    }
+
+    private void uploadTextComment(PostModel post, EditText commentText) {
+
+        commentDialog = new ProgressDialog(context);
+        commentDialog.setMessage("loading...");
+        commentDialog.setCancelable(false);
+        commentDialog.show();
+
+        HashMap<String, Object> commentMap = new HashMap<>();
+
+        commentMap.put("commentID", commentID);
+        commentMap.put("comment", commentText.getText().toString());
+        commentMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        commentMap.put("userID", firebaseUser.getUid());
+        commentMap.put("postID", post.getPostID());
+        commentMap.put("commentType", "textComment");
+
+        commentsReference.child(commentID).setValue(commentMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        resetTextLayout(post, commentText);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(context, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void resetTextLayout(PostModel post, EditText commentText) {
+
+        if (!post.getUserID().equals(firebaseUser.getUid()))
+            notifications.addPostCommentNotification(post.getUserID(), post.getPostID(), commentText.getText().toString());
+
+        commentText.setText("");
+
+        commentDialog.dismiss();
+    }
+
+    private void resetAudioLayout(PostModel post, AudioRecorder audioRecorder){
+        if (!post.getUserID().equals(firebaseUser.getUid()))
+            notifications.addPostCommentNotification(post.getUserID(), post.getPostID(), "recorded a comment");
+
+        if (audioRecorder.getRecordingFilePath() != null){
+            audioRecorder.resetRecorder();
+        }
+
+        commentDialog.dismiss();
+
+    }
+
+
     //other post functions
     private void iniPicPopUp(final Context context, final HolderPosts holder, final PostModel postModel) {
         holder.popAddPost = new Dialog(context);
@@ -1602,16 +2055,17 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void getSharedAudio(HolderPosts holder, PostModel sharedPost) {
 
         AudioPlayer audioPlayer = new AudioPlayer(context, holder.shared_playBTN,
-                holder.shared_seekTimer, holder.shared_postTotalTime, holder.shared_audioAnimation);
+                holder.shared_audioCurrentDuration, holder.shared_postTotalTime, holder.sharedAudioSeekbar);
+
+        audioPlayer.init();
 
         holder.shared_playBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!audioPlayer.isPlaying()){
+                if (!audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.startPlayingAudio(sharedPost.getAudioURL());
-                }else{
+                else if(audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.stopPlayingAudio();
-                }
             }
         });
     }
@@ -1632,16 +2086,18 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void getNormalPostAudio(HolderPosts holder, PostModel post){
 
         AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
-                holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
+                holder.postAudioCurrentDuration, holder.postTotalTime, holder.audioSeekBar);
+
+        audioPlayer.init();
 
         holder.playBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!audioPlayer.isPlaying()){
+
+                if (!audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.startPlayingAudio(post.getAudioURL());
-                }else{
+                else if(audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.stopPlayingAudio();
-                }
             }
         });
     }
@@ -1652,11 +2108,13 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         holder.postItemRecyclerView.hasFixedSize();
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
-        layoutManager.setReverseLayout(true);
+        layoutManager.setReverseLayout(false);
         holder.postItemRecyclerView.setLayoutManager(layoutManager);
         holder.postItemRecyclerView.setVisibility(View.VISIBLE);
+        CommentsAdapter adapterComments = new CommentsAdapter(context, comments);
+        holder.postItemRecyclerView.setAdapter(adapterComments);
 
-        commentsReference.child(post.getPostID()).limitToLast(2).addListenerForSingleValueEvent(new ValueEventListener() {
+        commentsReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
@@ -1664,9 +2122,18 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     for (DataSnapshot ds : snapshot.getChildren()){
                         CommentModel commentModel = ds.getValue(CommentModel.class);
 
-                        comments.add(commentModel);
+                        assert commentModel != null;
+                        if (commentModel.getPostID().equals(post.getPostID()))
+                            comments.add(commentModel);
                     }
-                    holder.postItemRecyclerView.setAdapter(new CommentsAdapter(context, comments));
+
+                    Collections.reverse(comments);
+
+                    while(comments.size() > 1){
+                        comments.remove(1);
+                    }
+
+                    adapterComments.notifyDataSetChanged();
                 }
             }
 
@@ -1715,15 +2182,24 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         //--------------for audio post buttons
         public CircleImageView playBTN;
-        public LottieAnimationView audioAnimation;
-        public TextView seekTimer, postTotalTime;
+        public SeekBar audioSeekBar;
+        public TextView postAudioCurrentDuration, postTotalTime;
 
         //--------------for shared audio post buttons
         public CircleImageView shared_playBTN;
-        public LottieAnimationView shared_audioAnimation;
-        public TextView shared_seekTimer, shared_postTotalTime;
+        public SeekBar sharedAudioSeekbar;
+        public TextView shared_audioCurrentDuration, shared_postTotalTime;
 
+        //----------for comments
         public RecyclerView postItemRecyclerView;
+        public CircleImageView commentAreaProPic, commentAreaVoiceBTN;
+        public EditText commentAreaMessage;
+
+        //for recording voice comments
+        private LottieAnimationView lavPlaying;
+        private ImageView voicePlayBTN, deleteAudioBTN;
+        private TextView recorderDurationTV;
+        private RelativeLayout playAudioArea;
 
         public HolderPosts(@NonNull View itemView) {
             super(itemView);
@@ -1757,6 +2233,16 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tagsArea = itemView.findViewById(R.id.tagsArea);
 
             postItemRecyclerView = itemView.findViewById(R.id.postItemRecyclerView);
+            commentAreaProPic = itemView.findViewById(R.id.commentAreaProPic);
+            commentAreaVoiceBTN = itemView.findViewById(R.id.commentAreaVoiceBTN);
+            commentAreaMessage = itemView.findViewById(R.id.commentAreaMessage);
+
+            //for recording the audio
+            playAudioArea = itemView.findViewById(R.id.playAudioArea);
+            voicePlayBTN = itemView.findViewById(R.id.post_playVoiceIcon);
+            recorderDurationTV = itemView.findViewById(R.id.seekTimer);
+            lavPlaying = itemView.findViewById(R.id.lav_playing);
+            deleteAudioBTN = itemView.findViewById(R.id.recordingDeleteBTN);
 
             //for shared posts
             sharedPostProPic = itemView.findViewById(R.id.shared_image_user);
@@ -1775,16 +2261,17 @@ public class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             //for audio buttons
             playBTN = itemView.findViewById(R.id.postItem_playVoiceIcon);
-            audioAnimation = itemView.findViewById(R.id.postItem_lav_playing);
-            seekTimer = itemView.findViewById(R.id.postItemSeekTimer);
+            audioSeekBar = itemView.findViewById(R.id.postItem_lav_playing);
+            postAudioCurrentDuration = itemView.findViewById(R.id.postItemSeekTimer);
             postTotalTime = itemView.findViewById(R.id.postTotalTime);
 
             //for audio buttons
             shared_playBTN = itemView.findViewById(R.id.shared_postItem_playVoiceIcon);
-            shared_audioAnimation = itemView.findViewById(R.id.shared_postItem_lav_playing);
-            shared_seekTimer = itemView.findViewById(R.id.shared_postItemSeekTimer);
+            sharedAudioSeekbar = itemView.findViewById(R.id.shared_postItem_lav_playing);
+            shared_audioCurrentDuration = itemView.findViewById(R.id.shared_postItemSeekTimer);
             shared_postTotalTime = itemView.findViewById(R.id.shared_postTotalTime);
         }
+
     }
 
     static class HolderNativeAd extends RecyclerView.ViewHolder{

@@ -69,21 +69,18 @@ public class ChatlistAdapter extends RecyclerView.Adapter<ChatlistAdapter.MyHold
         universalFunctions = new UniversalFunctions(context);
         userReference = FirebaseDatabase.getInstance().getReference("Users");
 
-        String lastmessage = lastMessageMap.get(chats.getUserID());
-        String lastTime = lastTimeStampMap.get(chats.getUserID());
-
         getUserDetails(chats.getUserID(), holder);
-        universalFunctions.checkActiveStories(holder.chatlistProPic, chats.getUserID());
+        universalFunctions.checkActiveStories(holder.chatlistProPic, chatList.get(position).getUserID());
 
         //set Data
 
-        if(lastmessage == null || lastmessage.equals("default")){
+        if(lastMessageMap.get(chats.getUserID()) == null || lastMessageMap.get(chats.getUserID()).equals("default")){
             holder.chatlistMessage.setVisibility(View.GONE);
         }else{
             holder.chatlistMessage.setVisibility(View.VISIBLE);
-            holder.chatlistMessage.setText(lastmessage);
+            holder.chatlistMessage.setText(lastMessageMap.get(chats.getUserID()));
 
-            holder.timestamp.setText("- " + getTimeAgo.getTimeAgo(Long.parseLong(lastTime), context));
+            holder.timestamp.setText("- " + getTimeAgo.getTimeAgo(Long.parseLong(lastTimeStampMap.get(chats.getUserID())), context));
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {

@@ -24,14 +24,14 @@
             android:padding="5dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/addPostProPic"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:id="@+id/addPostProPic"
                 android:src="@drawable/default_profile_display_pic"
                 android:tint="@color/colorBlack"
                 app:civ_border_color="@color/colorBlack"
-                app:civ_border_width="2dp"
-                app:civ_border_overlay="true"/>
+                app:civ_border_overlay="true"
+                app:civ_border_width="2dp" />
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -65,17 +65,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_margin="5dp"
-            android:background="@drawable/rounded_edittext"
-            android:backgroundTint="@color/white">
+            android:padding="5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_marginTop="5dp"
                 android:background="@drawable/rounded_edittext"
                 android:baselineAligned="false">
 
@@ -182,8 +177,6 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="5dp"
-                    android:paddingEnd="5dp"
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:id="@+id/postCaptionArea">
@@ -215,12 +208,10 @@
                 android:id="@+id/imageCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_marginTop="5dp"
                 android:backgroundTint="@color/white"
                 android:orientation="vertical"
                 android:visibility="gone"
+                android:layout_marginTop="5dp"
                 app:cardCornerRadius="5dp"
                 app:cardElevation="5dp"
                 app:cardUseCompatPadding="false"
@@ -268,11 +259,11 @@
                 android:id="@+id/videoCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:backgroundTint="@color/white"
                 android:baselineAligned="false"
                 android:orientation="vertical"
                 android:visibility="gone"
+                android:layout_marginTop="5dp"
                 app:cardCornerRadius="5dp"
                 app:cardElevation="5dp"
                 app:cardUseCompatPadding="false"
@@ -319,8 +310,15 @@
 
             </androidx.cardview.widget.CardView>
 
-            <include
-                layout="@layout/post_extension_layout"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp">
+
+                <include
+                    layout="@layout/post_extension_layout"/>
+
+            </RelativeLayout>
 
         </LinearLayout>
 

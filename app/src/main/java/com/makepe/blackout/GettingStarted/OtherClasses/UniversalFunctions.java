@@ -34,6 +34,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
 import com.makepe.blackout.GettingStarted.InAppActivities.ViewProfileActivity;
+import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
 import com.makepe.blackout.GettingStarted.Models.User;
@@ -48,18 +49,18 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UniversalFunctions {
     private Context context;
-    private SendNotifications sendNotifications = new SendNotifications();
+    private final SendNotifications sendNotifications = new SendNotifications();
 
-    private FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-    private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
-    private DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
-    private DatabaseReference videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
-    private DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
-    private DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
-    private DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
-    private DatabaseReference viewsReference = FirebaseDatabase.getInstance().getReference("VideoViews");
-    private DatabaseReference storyReference = FirebaseDatabase.getInstance().getReference("Story");
-    private DatabaseReference postViewsReference = FirebaseDatabase.getInstance().getReference("Views");
+    private final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    private final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
+    private final DatabaseReference postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
+    private final DatabaseReference videoReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
+    private final DatabaseReference likesReference =  FirebaseDatabase.getInstance().getReference("Likes");
+    private final DatabaseReference commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
+    private final DatabaseReference savesReference = FirebaseDatabase.getInstance().getReference().child("Saves");
+    private final DatabaseReference viewsReference = FirebaseDatabase.getInstance().getReference("VideoViews");
+    private final DatabaseReference storyReference = FirebaseDatabase.getInstance().getReference("Story");
+    private final DatabaseReference postViewsReference = FirebaseDatabase.getInstance().getReference("Views");
 
     public UniversalFunctions(Context context) {
         this.context = context;
@@ -85,8 +86,8 @@ public class UniversalFunctions {
         }catch (Exception ignored){}
     }
 
-    public void isLiked(String postid, ImageView imageView){
-        likesReference.child(postid).addValueEventListener(new ValueEventListener() {
+    public void isLiked(String postID, ImageView imageView){
+        likesReference.child(postID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.child(firebaseUser.getUid()).exists()){
@@ -123,13 +124,26 @@ public class UniversalFunctions {
     }
 
     public void getCommentsCount(String postID, final TextView commentCountTV) {
-        commentsReference.child(postID).addListenerForSingleValueEvent(new ValueEventListener() {
+        commentsReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getChildrenCount() == 1)
-                    commentCountTV.setText(dataSnapshot.getChildrenCount() + " Comment");
-                else
-                    commentCountTV.setText(dataSnapshot.getChildrenCount() +" Comments");
+                if (dataSnapshot.exists()) {
+                    int counter = 0;
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        CommentModel commentModel = ds.getValue(CommentModel.class);
+
+                        assert commentModel != null;
+                        if (commentModel.getPostID().equals(postID)){
+                            counter++;
+                        }
+                        if (counter == 1)
+                            commentCountTV.setText(counter + " Comment");
+                        else
+                            commentCountTV.setText(counter + " Comments");
+                    }
+                }else
+                    commentCountTV.setText("0 Comments");
+
             }
 
             @Override
@@ -159,15 +173,15 @@ public class UniversalFunctions {
         });
     }
 
-    public void beginDelete(String pId, String postImage) {
+    public void beginDelete(String postID, String postImage) {
         if(postImage.equals("noImage")){
-            deleteWithoutImage(pId);
+            deleteWithoutImage(postID);
         }else{
-            deleteWithImage(pId, postImage);
+            deleteWithImage(postID, postImage);
         }
     }
 
-    private void deleteWithImage(final String pId, String postImage) {
+    private void deleteWithImage(final String postID, String postImage) {
         final ProgressDialog pd = new ProgressDialog(context);
         pd.setMessage("Deleting...");
 
@@ -177,7 +191,7 @@ public class UniversalFunctions {
                     @Override
                     public void onSuccess(Void aVoid) {
 
-                        Query fquery = FirebaseDatabase.getInstance().getReference("Posts").orderByChild("pId").equalTo(pId);
+                        Query fquery = FirebaseDatabase.getInstance().getReference("Posts").orderByChild("postID").equalTo(postID);
                         fquery.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -204,11 +218,11 @@ public class UniversalFunctions {
                 });
     }
 
-    private void deleteWithoutImage(String pId) {
+    private void deleteWithoutImage(String postID) {
         final ProgressDialog pd = new ProgressDialog(context);
         pd.setMessage("Deleting...");
 
-        Query fquery = FirebaseDatabase.getInstance().getReference("Posts").orderByChild("pId").equalTo(pId);
+        Query fquery = FirebaseDatabase.getInstance().getReference("Posts").orderByChild("postID").equalTo(postID);
         fquery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -423,6 +437,8 @@ public class UniversalFunctions {
                 });
             }
         }
+
+
 
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override

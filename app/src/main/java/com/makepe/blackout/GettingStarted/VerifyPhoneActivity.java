@@ -183,6 +183,7 @@ public class VerifyPhoneActivity extends AppCompatActivity {
     private void verifyVerificationCode(String code) {
         //function to verify the code that has been send
         verifyDialog.setMessage("Verifying...Please Wait...");
+        verifyDialog.setCancelable(false);
         verifyDialog.show();
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, code);
 

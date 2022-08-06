@@ -50,8 +50,7 @@ import java.util.List;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-
-public class TimelineFragment extends Fragment {
+public class TimelineFragment extends Fragment{
 
     private FirebaseUser firebaseUser;
     private DatabaseReference userRef, followReference, storyReference, postReference;
@@ -125,6 +124,8 @@ public class TimelineFragment extends Fragment {
         layoutManager.setStackFromEnd(false);
         layoutManager.setReverseLayout(true);
         postRecycler.setLayoutManager(layoutManager);
+        postAdapter = new TimelineAdapter(getActivity(), postList);
+        postRecycler.setAdapter(postAdapter);
 
         //for stories recycler view
         storyRecycler.setHasFixedSize(true);
@@ -227,8 +228,7 @@ public class TimelineFragment extends Fragment {
                 }
 
                 Collections.shuffle(postList);
-                postAdapter = new TimelineAdapter(getActivity(), postList);
-                postRecycler.setAdapter(postAdapter);
+                postAdapter.notifyDataSetChanged();
                 timelineLoader.setVisibility(View.GONE);
             }
 
@@ -326,5 +326,6 @@ public class TimelineFragment extends Fragment {
                     break;
         }
     }
+
 
 }

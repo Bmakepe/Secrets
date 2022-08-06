@@ -30,7 +30,7 @@ public class FullScreenPictureActivity extends AppCompatActivity {
         imageURL = imageIntent.getStringExtra("imageURL");
 
         try{
-            Picasso.get().load(imageURL).into(fullScreenImage);
+            Picasso.get().load(imageURL).fit().into(fullScreenImage);
         }catch (NullPointerException ignored){}
     }
 

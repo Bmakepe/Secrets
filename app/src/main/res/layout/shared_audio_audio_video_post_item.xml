@@ -190,7 +190,7 @@
                     android:id="@+id/shared_video_details_area"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
+                    android:layout_above="@+id/videoProgressLoader"
                     android:background="@color/white_greyish"
                     android:orientation="vertical"
                     android:padding="5dp">
@@ -299,11 +299,21 @@
                 </LinearLayout>
 
                 <include
-                    android:layout_alignParentEnd="true"
-                    android:layout_above="@+id/video_details_area"
                     layout="@layout/video_post_social_btns"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/video_details_area"
+                    android:layout_alignParentEnd="true" />
+
+                <!-- Linear progress indicator -->
+                <SeekBar
+                    android:id="@+id/videoProgressLoader"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:thumb="@color/colorTrans" />
 
             </RelativeLayout>
 

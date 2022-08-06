@@ -47,6 +47,7 @@ import com.google.firebase.storage.UploadTask;
 import com.makepe.blackout.GettingStarted.Adapters.FriendsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.TaggedFriendsAdapter;
 import com.makepe.blackout.GettingStarted.MainActivity;
+import com.makepe.blackout.GettingStarted.Models.AddStoryModel;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.Notifications.SendNotifications;
@@ -83,7 +84,7 @@ public class AddStoryActivity extends AppCompatActivity {
     private EditText storyCaption;
     private TextInputLayout storyCaptionSection;
     private LocationServices locationServices;
-    private ProgressDialog pd;
+    private ProgressDialog storyDialog;
     private Switch commentSwitch;
 
     private ArrayList<User> taggedUsers = new ArrayList<>();
@@ -139,6 +140,7 @@ public class AddStoryActivity extends AppCompatActivity {
                 AddStoryActivity.this, playAudioArea, voicePlayBTN, seekTimer);
         uploadFunctions = new UploadFunctions(AddStoryActivity.this);
         sendNotifications = new SendNotifications(this);
+        storyDialog = new ProgressDialog(AddStoryActivity.this);
 
         taggedFriendsRecycler.hasFixedSize();
         taggedFriendsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -195,8 +197,9 @@ public class AddStoryActivity extends AppCompatActivity {
 
                 }else if (storyFAB.getText().toString().trim().equals("Post")){
 
-                    pd = new ProgressDialog(AddStoryActivity.this);
-                    pd.setMessage("Updating Story");
+                    storyDialog.setMessage("Updating Story");
+                    storyDialog.setCancelable(false);
+                    storyDialog.show();
 
                     if (!TextUtils.isEmpty(storyCaption.getText().toString()))
                         publishStory();
@@ -327,7 +330,6 @@ public class AddStoryActivity extends AppCompatActivity {
     }
 
     private void publishAudioStory() {
-        pd.show();
 
         StorageReference audioPath = audioReference.child("user_story_audios").child(storyID + ".3gp");
         Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
@@ -396,7 +398,7 @@ public class AddStoryActivity extends AppCompatActivity {
                                                     checkStoryTags();
 
                                                     storyFAB.setVisibility(View.VISIBLE);
-                                                    pd.dismiss();
+                                                    storyDialog.dismiss();
 
                                                     finish();
                                                 }
@@ -412,10 +414,6 @@ public class AddStoryActivity extends AppCompatActivity {
     }
 
     private void getUserDetails() {
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList = new ContactsList(phoneBook, AddStoryActivity.this);
-        contactsList.readContacts();
-        final List<ContactsModel> myContacts = contactsList.getContactsList();
 
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -446,7 +444,6 @@ public class AddStoryActivity extends AppCompatActivity {
     }
 
     private void publishStory(){
-        pd.show();
 
         if(mImageUri != null){
             final StorageReference imageReference = storageReference.child(System.currentTimeMillis()
@@ -493,7 +490,7 @@ public class AddStoryActivity extends AppCompatActivity {
                                         checkStoryTags();
 
                                         storyFAB.setVisibility(View.VISIBLE);
-                                        pd.dismiss();
+                                        storyDialog.dismiss();
 
                                         finish();
                                     }

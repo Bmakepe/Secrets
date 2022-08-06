@@ -81,6 +81,7 @@ public class EditGroupDetailsActivity extends AppCompatActivity {
         groupID = intent.getStringExtra("groupID");
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Updating Group Details. Please Wait...");
+        progressDialog.setCancelable(false);
 
         groupReference = FirebaseDatabase.getInstance().getReference("SecretGroups");
         proPicStorageReference = FirebaseStorage.getInstance().getReference("group_profile_pictures");

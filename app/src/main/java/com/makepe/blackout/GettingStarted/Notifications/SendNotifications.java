@@ -53,7 +53,8 @@ public class SendNotifications {
         notificationMap.put("text", "Liked Your Post");
         notificationMap.put("notificationType", "likesNotification");
 
-        notificationsReference.child(postModel.getUserID()).child("LikesNotifications").child(postModel.getPostID())
+        notificationsReference.child(postModel.getUserID()).child("LikesNotifications")
+                .child(postModel.getPostID())
                 .child(notificationID).setValue(notificationMap);
     }
 
@@ -94,7 +95,8 @@ public class SendNotifications {
         notificationMap.put("text", commentText);
         notificationMap.put("notificationType", "commentNotification");
 
-        notificationsReference.child(owner).child("CommentNotifications").child(postID)
+        notificationsReference.child(owner).child("CommentNotifications")
+                .child(postID)
                 .child(notificationID).setValue(notificationMap);
     }
 
@@ -154,7 +156,8 @@ public class SendNotifications {
         notificationMap.put("text", "Liked Your Comment");
         notificationMap.put("notificationType", "likesNotification");
 
-        notificationsReference.child(model.getUserID()).child("LikesNotifications").child(model.getCommentID())
+        notificationsReference.child(model.getUserID()).child("LikesNotifications")
+                .child(model.getCommentID())
                 .child(notificationID).setValue(notificationMap);
 
     }
@@ -196,7 +199,8 @@ public class SendNotifications {
         notificationMap.put("text", "Liked Your Post");
         notificationMap.put("notificationType", "likesNotification");
 
-        notificationsReference.child(story.getUserID()).child("LikesNotifications").child(story.getStoryID())
+        notificationsReference.child(story.getUserID()).child("LikesNotifications")
+                .child(story.getStoryID())
                 .child(notificationID).setValue(notificationMap);
     }
 
@@ -237,7 +241,8 @@ public class SendNotifications {
         notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
         notificationMap.put("notificationType", "shareNotification");
 
-        notificationsReference.child(postModel.getUserID()).child("PostShareNotifications").child(postModel.getPostID())
+        notificationsReference.child(postModel.getUserID()).child("PostShareNotifications")
+                .child(postModel.getPostID())
                 .child(notificationID).setValue(notificationMap);
 
     }
@@ -277,7 +282,7 @@ public class SendNotifications {
         notificationMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
         notificationMap.put("notificationType", "taggedNotification");
 
-        notificationsReference.child(user.getUserID()).child("TagNotifications").child(postID)
+        notificationsReference.child(user.getUserID()).child("TagNotifications")
                 .child(notificationID).setValue(notificationMap);
 
     }

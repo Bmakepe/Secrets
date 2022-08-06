@@ -15,9 +15,11 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -67,7 +69,9 @@ import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -247,7 +251,8 @@ public class ChatActivity extends AppCompatActivity {
 
         voiceBTN.setOnClickListener(v -> {
 
-            if (TextUtils.isEmpty(myMessage.getText().toString()) && voiceBTN.getTag().equals("notRecording")){
+            if (TextUtils.isEmpty(myMessage.getText().toString())
+                    && voiceBTN.getTag().equals("notRecording")){
 
                 if (audioRecorder.checkRecordingPermission()){
                     myMessage.setVisibility(View.GONE);
@@ -261,6 +266,7 @@ public class ChatActivity extends AppCompatActivity {
                 }else{
                     audioRecorder.requestRecordingPermission();
                 }
+
             }else if (voiceBTN.getTag().equals("Recording")){
                 audioRecorder.stopRecording();
 
@@ -409,6 +415,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendAudioMessage() {
         messageDialog.show();
+        messageDialog.setCancelable(false);
         chatID = chatReference.push().getKey();
 
         StorageReference audioPath = audioReference.child(firebaseUser.getUid()).child(chatID + ".3gp");
@@ -436,13 +443,18 @@ public class ChatActivity extends AppCompatActivity {
                     messageMap.put("receiverID", receiverID);
                     messageMap.put("isSeen", false);
                     messageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-                    messageMap.put("audio", audioDownloadLink.toString());
+                    messageMap.put("audioURL", audioDownloadLink.toString());
                     messageMap.put("message_type", "audioMessage");
 
                     chatReference.child(chatID).setValue(messageMap)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
+
+                                    if (audioRecorder.getRecordingFilePath() != null){
+                                        audioRecorder.resetRecorder();
+                                        myMessage.setVisibility(View.VISIBLE);
+                                    }
 
                                     voiceBTN.setTag("notRecording");
                                     messageDialog.dismiss();
@@ -505,6 +517,7 @@ public class ChatActivity extends AppCompatActivity {
     private void uploadImages() {
 
         messageDialog.show();
+        messageDialog.setCancelable(false);
 
         chatID = chatReference.push().getKey();
 
@@ -517,7 +530,8 @@ public class ChatActivity extends AppCompatActivity {
         imageMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
         imageMap.put("message_type", "imageMessage");
 
-        chatReference.child(chatID).setValue(imageMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+        chatReference.child(chatID).setValue(imageMap)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
@@ -528,8 +542,10 @@ public class ChatActivity extends AppCompatActivity {
                     String mediaId = chatReference.child("images").push().getKey();
                     mediaIdList.add(mediaId);
 
-                    final StorageReference filePath = chatImageReference.child(System.currentTimeMillis()
+                    final StorageReference filePath = chatImageReference.child(mediaId
                             + "." + uploadFunctions.getFileExtension(Uri.parse(mediaUri)));
+
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
                     UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
 
@@ -576,6 +592,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendVideoMessage() {
         messageDialog.show();
+        messageDialog.setCancelable(false);
 
         long systemMillis = System.currentTimeMillis();
 
@@ -680,6 +697,21 @@ public class ChatActivity extends AppCompatActivity {
                     mediaUriList.add(data.getClipData().getItemAt(i).getUri().toString());
                 }
             }
+
+            /*Bitmap bmp = null;
+
+            try{
+                for (int i = 0; i < mediaUriList.size(); i++){
+                    bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(mediaUriList.get(i)));
+                }
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+            byte[] filesInBytes = baos.toByteArray();*/
 
             if(mediaUriList != null)
                 uploadImages();

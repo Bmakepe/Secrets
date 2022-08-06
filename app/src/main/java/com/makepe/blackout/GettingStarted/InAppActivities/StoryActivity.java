@@ -1,15 +1,18 @@
 package com.makepe.blackout.GettingStarted.InAppActivities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -26,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +41,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -49,7 +54,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.makepe.blackout.GettingStarted.Adapters.CommentsAdapter;
 import com.makepe.blackout.GettingStarted.Adapters.UserAdapter;
+import com.makepe.blackout.GettingStarted.Models.CommentModel;
 import com.makepe.blackout.GettingStarted.Models.ContactsModel;
 import com.makepe.blackout.GettingStarted.Models.PostModel;
 import com.makepe.blackout.GettingStarted.Models.Story;
@@ -59,9 +66,12 @@ import com.makepe.blackout.GettingStarted.OtherClasses.AudioPlayer;
 import com.makepe.blackout.GettingStarted.OtherClasses.AudioRecorder;
 import com.makepe.blackout.GettingStarted.OtherClasses.ContactsList;
 import com.makepe.blackout.GettingStarted.OtherClasses.GetTimeAgo;
+import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.OtherClasses.UniversalFunctions;
+import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -82,18 +92,20 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
     private ImageView storyPhoto, commentBTN, likeBTN;
     private CircleImageView storyProPic;
     private TextView storyUsername, storyTimeStamp, storyCap, likesCounter,
-            commentCounter, shareCounter, storyLocationTV, seen_number, sendBTN, storyTaggedPeopleList;
+            commentCounter, shareCounter, storyLocationTV, seen_number, sendBTN,
+            storyTaggedPeopleList;
     private RelativeLayout likesArea, commentsArea, sharesArea, storyAudioArea, story_slideDMArea;
     private LinearLayout r_seen, storyTagsArea;
-    private EditText messageET;
+    private EditText messageET, commentET;
     private TextInputLayout dmArea;
 
     private List<Story> storyList;
-    private String userID, storyID, chatID;
+    private String userID, storyID, chatID, commentID;
 
     private FirebaseUser firebaseUser;
-    private DatabaseReference userReference, storyReference, chatReference, likesReference, postViewsReference;
-    private StorageReference audioReference;
+    private DatabaseReference userReference, storyReference, chatReference,
+            likesReference, postViewsReference, commentsReference;
+    private StorageReference messageAudioReference;
 
     private UniversalFunctions universalFunctions;
     private SendNotifications notifications;
@@ -105,15 +117,19 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
     //for playing audio status
     private AudioPlayer audioPlayer;
     public CircleImageView playBTN;
-    public LottieAnimationView audioAnimation;
+    public SeekBar audioAnimation;
     public TextView audioSeekTimer, postTotalTime;
 
     //for sending voice note replies
-    private AudioRecorder audioRecorder;
+    private AudioRecorder audioRecorder, commentRecorder;
     private LottieAnimationView lavPlaying;
     private ImageView voicePlayBTN, deleteAudioBTN;
     private TextView seekTimer;
     private RelativeLayout playAudioArea;
+
+    //for comments
+    private StorageReference commentAudioReference;
+    private ProgressDialog commentDialog;
 
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
         @Override
@@ -187,10 +203,12 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         storyReference = FirebaseDatabase.getInstance().getReference("Story").child(userID);
-        audioReference = FirebaseStorage.getInstance().getReference("voice_notes");
+        messageAudioReference = FirebaseStorage.getInstance().getReference("voice_notes");
         chatReference = FirebaseDatabase.getInstance().getReference("Chats");
         likesReference = FirebaseDatabase.getInstance().getReference("Likes");
         postViewsReference = FirebaseDatabase.getInstance().getReference("Views");
+        commentsReference = FirebaseDatabase.getInstance().getReference("Comments");
+        commentAudioReference = FirebaseStorage.getInstance().getReference();
 
         universalFunctions = new UniversalFunctions(this);
         notifications = new SendNotifications(this);
@@ -209,7 +227,7 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
             r_seen.setVisibility(View.VISIBLE);
             sharesArea.setVisibility(View.GONE);
             story_slideDMArea.setVisibility(View.GONE);
-        }else{
+        } else {
             r_seen.setVisibility(View.GONE);
         }
 
@@ -244,11 +262,11 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(charSequence.length() != 0){
+                if (charSequence.length() != 0) {
                     sendBTN.setText("Send");
                     storiesProgressView.pause();
 
-                }else{
+                } else {
                     sendBTN.setText("Record");
                     storiesProgressView.resume();
                 }
@@ -280,12 +298,12 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         likeBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(likeBTN.getTag().equals("like")){
+                if (likeBTN.getTag().equals("like")) {
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).setValue(true);
                     if (!userID.equals(firebaseUser.getUid()))
                         notifications.addStoryLikeNotification(storyList.get(counter));
-                }else{
+                } else {
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(storyID)
                             .child(firebaseUser.getUid()).removeValue();
                     if (!userID.equals(firebaseUser.getUid()))
@@ -297,12 +315,16 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         commentsArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(StoryActivity.this, CommentsActivity.class);
+
+                storiesProgressView.pause();
+                showCommentsDialog(storyList.get(counter));
+
+                /*Intent intent = new Intent(StoryActivity.this, CommentsActivity.class);
                 intent.putExtra("postID", storyID);
-                startActivity(intent);
+                startActivity(intent);*/
             }
         });
-        
+
         sharesArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -322,31 +344,51 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         sendBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (sendBTN.getText().toString().trim().equals("Record")){
+                if (sendBTN.getText().toString().trim().equals("Record")) {
 
-                    if (audioRecorder.checkRecordingPermission()){
+                    if (audioRecorder.checkRecordingPermission()) {
                         dmArea.setVisibility(View.GONE);
                         storiesProgressView.pause();
 
-                        if (!audioRecorder.isRecording){
+                        if (!audioRecorder.isRecording) {
                             audioRecorder.startRecording();
                             sendBTN.setText("Stop");
                         }
-                    }else{
+                    } else {
                         audioRecorder.requestRecordingPermission();
                     }
 
-                }else if (sendBTN.getText().toString().trim().equals("Stop")){
+                } else if (sendBTN.getText().toString().trim().equals("Stop")) {
 
                     sendBTN.setText("Send");
                     audioRecorder.stopRecording();
 
-                }else if (sendBTN.getText().toString().equals("Send")){
+                } else if (sendBTN.getText().toString().equals("Send")) {
 
                     if (TextUtils.isEmpty(messageET.getText().toString()))
                         sendAudioStoryReply();
                     else
                         sendMessage();
+                }
+            }
+        });
+
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                audioRecorder.resetRecorder();
+                sendBTN.setText("Record");
+            }
+        });
+
+        voicePlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!audioRecorder.isPlaying()){
+                    audioRecorder.startPlayingRecording();
+                }else{
+                    audioRecorder.stopPlayingAudio();
                 }
             }
         });
@@ -361,6 +403,276 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
 
     }
 
+    //functions to deal with comments only
+    private void showCommentsDialog(Story story) {
+        final BottomSheetDialog commentSheetDialog = new BottomSheetDialog(this);
+        commentSheetDialog.setContentView(R.layout.post_comment_layout);
+
+        ImageView close = commentSheetDialog.findViewById(R.id.closeCommentSheetBTN);
+        TextView commentHeader = commentSheetDialog.findViewById(R.id.commentSheetHeader);
+        RecyclerView commentSheetRecycler = commentSheetDialog.findViewById(R.id.commentSheetRecycler);
+        CircleImageView myProfilePicture = commentSheetDialog.findViewById(R.id.commentSheetProfilePic);
+        commentET = commentSheetDialog.findViewById(R.id.commentSheetCaptionET);
+        ImageView postCommentBTN = commentSheetDialog.findViewById(R.id.commentSheetPostBTN);
+
+        //for recording audio status
+        LottieAnimationView lavPlaying = commentSheetDialog.findViewById(R.id.lav_playing);
+        ImageView deleteAudioBTN = commentSheetDialog.findViewById(R.id.recordingDeleteBTN);
+        ImageView voicePlayBTN = commentSheetDialog.findViewById(R.id.post_playVoiceIcon);
+        TextView seekTimer = commentSheetDialog.findViewById(R.id.seekTimer);
+        RelativeLayout playAudioArea = commentSheetDialog.findViewById(R.id.playAudioArea);
+
+        commentRecorder = new AudioRecorder(lavPlaying, this,
+                StoryActivity.this, playAudioArea, voicePlayBTN, seekTimer);
+
+        commentDialog = new ProgressDialog(this);
+        postCommentBTN.setTag("notRecording");
+
+        ArrayList<CommentModel> commentList = new ArrayList<>();
+
+        commentSheetRecycler.hasFixedSize();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        commentSheetRecycler.setLayoutManager(layoutManager);
+        CommentsAdapter commentsAdapter = new CommentsAdapter(StoryActivity.this, commentList);
+        commentSheetRecycler.setAdapter(commentsAdapter);
+
+        commentsReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    int counter = 0;
+                    commentList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        CommentModel comments = ds.getValue(CommentModel.class);
+
+                        if (comments.getPostID().equals(story.getStoryID())) {
+                            commentList.add(comments);
+                            counter++;
+                        }
+                        if (counter == 1)
+                            commentHeader.setText(counter + " Comment");
+                        else
+                            commentHeader.setText(counter + " Comments");
+                    }
+
+                    commentsAdapter.notifyDataSetChanged();
+                }else
+                    commentHeader.setText("0 Comments");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        userReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        User user = ds.getValue(User.class);
+
+                        if (user.getUserID().equals(firebaseUser.getUid()))
+                            try{
+                                Picasso.get().load(user.getImageURL()).into(myProfilePicture);
+                            }catch (NullPointerException e){
+                                Picasso.get().load(R.drawable.default_profile_display_pic).into(myProfilePicture);
+                            }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        commentET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() != 0)
+                    postCommentBTN.setImageResource(R.drawable.ic_send_black_24dp);
+                else
+                    postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        commentSheetDialog.show();
+        commentSheetDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        postCommentBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (TextUtils.isEmpty(commentET.getText().toString())
+                        && postCommentBTN.getTag().equals("notRecording")){
+
+                    if (commentRecorder.checkRecordingPermission()){
+                        postCommentBTN.setImageResource(R.drawable.ic_baseline_stop_circle_24);
+
+                        if (!commentRecorder.isRecording){
+                            commentRecorder.startRecording();
+                            postCommentBTN.setTag("Recording");
+                        }
+
+                    }else{
+                        commentRecorder.requestRecordingPermission();
+                    }
+
+                }else if (postCommentBTN.getTag().equals("Recording")){
+                    commentRecorder.stopRecording();
+                    postCommentBTN.setTag("sendAudio");
+                    postCommentBTN.setImageResource(R.drawable.ic_send_black_24dp);
+
+                }else{
+                    commentID = commentsReference.push().getKey();
+                    commentDialog.setMessage("Loading...");
+                    commentDialog.setCancelable(false);
+                    commentDialog.show();
+
+                    if (!TextUtils.isEmpty(commentET.getText().toString()))
+                        uploadTextComment();
+                    else if (commentRecorder.getRecordingFilePath() != null){
+                        if (postCommentBTN.getTag().equals("sendAudio"))
+                            uploadAudioComment();
+                        postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                    }
+
+                }
+            }
+        });
+
+        deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                commentRecorder.resetRecorder();
+                postCommentBTN.setImageResource(R.drawable.ic_mic_black_24dp);
+                postCommentBTN.setTag("notRecording");
+            }
+        });
+
+        voicePlayBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!commentRecorder.isPlaying()){
+                    commentRecorder.startPlayingRecording();
+                }else{
+                    commentRecorder.stopPlayingAudio();
+                }
+            }
+        });
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                commentSheetDialog.dismiss();
+            }
+        });
+    }
+
+    private void uploadAudioComment() {
+        StorageReference audioPath = commentAudioReference.child("story_comment_audio_files").child(commentID + ".3gp");
+        Uri audioUri = Uri.fromFile(new File(commentRecorder.getRecordingFilePath()));
+
+        StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUri);
+
+        audioTask.continueWithTask(new Continuation() {
+            @Override
+            public Object then(@NonNull Task task) throws Exception {
+                if (!task.isSuccessful())
+                    throw task.getException();
+                return audioPath.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()){
+                    Uri audioDownloadLink = task.getResult();
+
+                    HashMap<String, Object> audioMap = new HashMap<>();
+
+                    audioMap.put("commentID", commentID);
+                    audioMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+                    audioMap.put("userID", firebaseUser.getUid());
+                    audioMap.put("postID", storyID);
+                    audioMap.put("commentType", "audioComment");
+                    audioMap.put("audioUrl", audioDownloadLink.toString());
+
+                    commentsReference.child(commentID).setValue(audioMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    resetLayout();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(StoryActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+        });
+    }
+
+    private void uploadTextComment() {
+        HashMap<String, Object> commentMap = new HashMap<>();
+
+        commentMap.put("commentID", commentID);
+        commentMap.put("comment", commentET.getText().toString());
+        commentMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        commentMap.put("userID", firebaseUser.getUid());
+        commentMap.put("postID", storyID);
+        commentMap.put("commentType", "textComment");
+
+        commentsReference.child(commentID).setValue(commentMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        resetLayout();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(StoryActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void resetLayout() {
+
+        if (!userID.equals(firebaseUser.getUid()))
+            if (TextUtils.isEmpty(commentET.getText().toString()))
+                notifications.addPostCommentNotification(userID, storyID, "recorded a comment");
+            else
+                notifications.addPostCommentNotification(userID, storyID, commentET.getText().toString());
+
+        if (commentRecorder.getRecordingFilePath() != null){
+            commentRecorder.resetRecorder();
+        }
+
+        commentET.setText("");
+
+        commentDialog.dismiss();
+    }
+
+
+    //Other dialog functions
     private void showLikesDialog(Story story) {
         final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         bottomSheetDialog.setContentView(R.layout.tagged_users_layout);
@@ -503,6 +815,8 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         });
     }
 
+
+    //for send messages
     private void sendMessage() {
         chatID = chatReference.push().getKey();
 
@@ -520,9 +834,9 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        messageET.setText("");
-                        messageET.setHint("Whats Up");
-                        storiesProgressView.resume();
+
+                        updateChatList();
+                        resetAudioLayout();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -531,15 +845,13 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                     }
                 });
 
-        updateChatList();
-
     }
 
     private void sendAudioStoryReply() {
         messageDialog.show();
         chatID = chatReference.push().getKey();
 
-        StorageReference audioPath = audioReference.child(firebaseUser.getUid()).child(chatID + ".3gp");
+        StorageReference audioPath = messageAudioReference.child(firebaseUser.getUid()).child(chatID + ".3gp");
         Uri audioUrl = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
 
         StorageTask<UploadTask.TaskSnapshot> audioTask = audioPath.putFile(audioUrl);
@@ -572,17 +884,26 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    sendBTN.setTag("notRecording");
-                                    messageDialog.dismiss();
-                                    sendBTN.setText("Record");
-                                    storiesProgressView.resume();
+
+                                    updateChatList();
+                                    resetAudioLayout();
                                 }
                             });
                 }
             }
         });
+    }
 
-        updateChatList();
+    private void resetAudioLayout() {
+
+        if (audioRecorder.getRecordingFilePath() != null){
+            audioRecorder.resetRecorder();
+        }
+
+        dmArea.setVisibility(View.VISIBLE);
+        messageDialog.dismiss();
+        sendBTN.setText("Record");
+        storiesProgressView.resume();
     }
 
     private void updateChatList() {
@@ -626,6 +947,8 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
         });
     }
 
+
+    //for retrieving appropriate story and story user details
     private void getStories(){
 
         storyList = new ArrayList<>();
@@ -674,11 +997,10 @@ public class StoryActivity extends AppCompatActivity implements StoriesProgressV
             playBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-                    if (!audioPlayer.isPlaying()){
+                    if (!audioPlayer.mediaPlayer.isPlaying()) {
                         storiesProgressView.pause();
                         audioPlayer.startPlayingAudio(storyList.get(counter).getStoryAudioUrl());
-                    }else{
+                    }else if(audioPlayer.mediaPlayer.isPlaying()){
                         storiesProgressView.resume();
                         audioPlayer.stopPlayingAudio();
                     }

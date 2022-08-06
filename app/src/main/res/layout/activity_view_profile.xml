@@ -422,6 +422,7 @@
                 app:tabIndicatorHeight="2dp"
                 android:overScrollMode="ifContentScrolls"
                 app:tabMode="fixed"
+                android:visibility="invisible"
                 android:background="@null"
                 app:tabTextColor="@color/colorBlack" />
 

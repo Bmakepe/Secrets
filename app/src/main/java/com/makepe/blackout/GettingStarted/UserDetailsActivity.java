@@ -18,6 +18,8 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
@@ -32,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
+import com.makepe.blackout.GettingStarted.InAppActivities.EditProfileActivity;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.OtherClasses.Permissions;
 import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
@@ -52,11 +55,12 @@ public class UserDetailsActivity extends AppCompatActivity {
     private CircleImageView setupProfilePic;
     private TextInputEditText setupUsername, setupBiography;
     private Button continueBTN;
-    private CheckBox maleCheck, femaleCheck;
+    private RadioGroup userGenderBTN;
+    private RadioButton radioBtnMale, radioBtnFemale;
     private ProgressDialog progressDialog;
     private EditText dateOfBirth, locationET;
     private ImageView addCoverPic, coverPic;
-    private String choice, boy = "Male", girl = "Female", terms = "Accepted";
+    private String choice, genderSelected, terms = "Accepted";
 
     private Uri imageUri, coverPicUri;
     private StorageTask uploadTask, coverUploadTask;
@@ -80,8 +84,9 @@ public class UserDetailsActivity extends AppCompatActivity {
         setupUsername = findViewById(R.id.setupUsername);
         setupBiography = findViewById(R.id.setupBiography);
         continueBTN = findViewById(R.id.continueBTN);
-        maleCheck = findViewById(R.id.checkMale);
-        femaleCheck = findViewById(R.id.checkFemale);
+        userGenderBTN = findViewById(R.id.userGenderBTN);
+        radioBtnMale = findViewById(R.id.maleChecked);
+        radioBtnFemale = findViewById(R.id.femaleChecked);
         dateOfBirth= findViewById(R.id.dateOfBirthPicker);
         locationET= findViewById(R.id.userLocation);
         addCoverPic= findViewById(R.id.addCoverPicBTN);
@@ -112,8 +117,28 @@ public class UserDetailsActivity extends AppCompatActivity {
         permissions = new Permissions(this);
         permissions.verifyPermissions();
 
-        selectGender();
         checkUserStatus();
+
+        userGenderBTN.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                switch (i){
+                    case R.id.maleChecked:
+                        genderSelected = "Male";
+                        Toast.makeText(UserDetailsActivity.this, genderSelected, Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case R.id.femaleChecked:
+                        genderSelected = "Female";
+                        Toast.makeText(UserDetailsActivity.this, genderSelected, Toast.LENGTH_SHORT).show();
+                        break;
+
+                    default:
+                        Toast.makeText(UserDetailsActivity.this, "Please select group privacy", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        });
 
         continueBTN.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,7 +202,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         }else if(TextUtils.isEmpty(setupBiography.getText().toString())){
             setupBiography.setError("Tell Us Something About Yourself");
             setupBiography.requestFocus();
-        }else if(!maleCheck.isChecked() && !femaleCheck.isChecked()){
+        }else if(userGenderBTN.getCheckedRadioButtonId() == -1){
             Toast.makeText(UserDetailsActivity.this, "Please Select Your Gender", Toast.LENGTH_SHORT).show();
         }else if(TextUtils.isEmpty(dateOfBirth.getText().toString())){
             dateOfBirth.setError("Please Pick Date of Birth");
@@ -192,6 +217,7 @@ public class UserDetailsActivity extends AppCompatActivity {
 
     private void updateUserDetails() {
         progressDialog.show();
+        progressDialog.setCancelable(false);
 
         final StorageReference picFileReference = imageStorageReference.child(firebaseUser.getUid()
                 + "." + uploadFunctions.getFileExtension(imageUri));
@@ -238,13 +264,12 @@ public class UserDetailsActivity extends AppCompatActivity {
                                 credentialsMap.put("imageURL", picDownloadUri.toString());
                                 credentialsMap.put("coverURL", coverDownloadUri.toString());
                                 credentialsMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-                                credentialsMap.put("isVerified", false);
+                                credentialsMap.put("isVerified", true);
 
-                                if(maleCheck.isChecked()){
-                                    credentialsMap.put("gender", boy);
-                                }else if(femaleCheck.isChecked()){
-                                    credentialsMap.put("gender", girl);
-                                }
+                                if (radioBtnMale.isChecked())
+                                    credentialsMap.put("gender", "Male");
+                                else if (radioBtnFemale.isChecked())
+                                    credentialsMap.put("gender", "Female");
 
                                 if (!locationET.getText().toString().equals(R.string.location_text)) {
                                     credentialsMap.put("latitude", locationServices.getLatitude());
@@ -271,22 +296,6 @@ public class UserDetailsActivity extends AppCompatActivity {
                     });
 
                 }
-            }
-        });
-    }
-
-    private void selectGender() {
-        maleCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                femaleCheck.setChecked(false);
-            }
-        });
-
-        femaleCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                maleCheck.setChecked(false);
             }
         });
     }

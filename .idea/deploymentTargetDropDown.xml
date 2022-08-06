@@ -16,15 +16,6 @@
         <deviceKey>
           <Key>
             <type value="SERIAL_NUMBER" />
-            <value value="38R9X19328W02405" />
-          </Key>
-        </deviceKey>
-      </Target>
-      <Target>
-        <type value="RUNNING_DEVICE_TARGET" />
-        <deviceKey>
-          <Key>
-            <type value="SERIAL_NUMBER" />
             <value value="NNR6R20804007898" />
           </Key>
         </deviceKey>

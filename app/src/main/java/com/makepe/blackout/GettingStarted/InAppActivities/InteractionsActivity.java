@@ -173,7 +173,11 @@ public class InteractionsActivity extends AppCompatActivity {
                         assert post != null;
                         if (post.getPostID().equals(id)) {
                             if (post.getPostType().equals("imagePost")
-                                    || post.getPostType().equals("audioImagePost"))
+                                    || post.getPostType().equals("audioImagePost")
+                                    || post.getPostType().equals("sharedTextImagePost")
+                                    || post.getPostType().equals("sharedAudioImagePost")
+                                    || post.getPostType().equals("sharedTextAudioImagePost")
+                                    || post.getPostType().equals("sharedAudioAudioImagePost"))
                                 mediaList.add(post);
                         }
                     }

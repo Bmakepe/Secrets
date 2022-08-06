@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="3dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/follow_tag_notification_area"
+        android:visibility="visible">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/notificationOwnerPic"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/default_profile_display_pic"
+            android:visibility="visible"
+            app:civ_border_color="@color/colorBlack"
+            app:civ_border_width="2dp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/notificationOwnerPic"
+            android:layout_toStartOf="@+id/post_notification_image"
+            android:padding="2dp"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/notificationOwner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@+id/notificationTimeStamp"
+                android:lineSpacingExtra="5sp"
+                android:maxLines="2"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/notificationTimeStamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                android:textStyle="normal" />
+
+        </RelativeLayout>
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/post_notification_image"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_image_black_24dp"/>
+
+    </RelativeLayout>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"/>
+
+</LinearLayout>

@@ -367,7 +367,14 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <include layout="@layout/media_audio_layout" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true">
+
+                        <include layout="@layout/media_audio_layout" />
+
+                    </RelativeLayout>
 
                 </RelativeLayout>
 

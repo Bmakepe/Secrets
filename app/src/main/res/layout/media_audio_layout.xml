@@ -2,6 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/round_white"
+    android:layout_margin="2dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
@@ -30,15 +32,15 @@
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lav_playing"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/blue_playing_animation"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/seekTimer"
             android:layout_toEndOf="@+id/audioButtons"
-            android:visibility="visible" />
+            android:visibility="visible"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/blue_playing_animation" />
 
         <TextView
             android:id="@+id/seekTimer"

@@ -23,7 +23,7 @@
         app:tabIndicatorColor="@color/white"
         app:tabIndicatorHeight="2dp"
         android:overScrollMode="ifContentScrolls"
-        app:tabMode="fixed"
+        app:tabMode="scrollable"
         android:layout_margin="10dp"
         android:background="@null"
         app:tabTextColor="@color/white" />

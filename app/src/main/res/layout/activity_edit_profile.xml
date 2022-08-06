@@ -284,7 +284,7 @@
                             android:gravity="center">
 
                             <RadioGroup
-                                android:id="@+id/userGenderBTN"
+                                android:id="@+id/editUserGenderBTN"
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:background="@drawable/pink_out_line"
@@ -294,7 +294,7 @@
                                     android:layout_marginTop="1dp"
                                     android:layout_marginBottom="1dp"
                                     android:layout_marginStart="1dp"
-                                    android:id="@+id/maleChecked"
+                                    android:id="@+id/editMaleChecked"
                                     android:background="@drawable/toggle_widget_background"
                                     android:layout_width="0dp"
                                     android:layout_height="match_parent"
@@ -309,7 +309,7 @@
                                     android:layout_marginEnd="1dp"
                                     android:layout_marginTop="1dp"
                                     android:layout_marginBottom="1dp"
-                                    android:id="@+id/femaleChecked"
+                                    android:id="@+id/editFemaleChecked"
                                     android:layout_width="0dp"
                                     android:layout_height="match_parent"
                                     android:layout_weight="1"

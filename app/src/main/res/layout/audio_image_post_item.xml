@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:backgroundTint="@color/white"
+    app:cardElevation="5dp"
+    app:cardCornerRadius="5dp"
     android:layout_margin="2dp"
+    app:cardUseCompatPadding="false"
     tools:ignore="UnusedAttribute">
 
     <LinearLayout
@@ -14,21 +18,22 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <RelativeLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="wrap_content"
             android:visibility="visible"
-            android:id="@+id/postPicArea"
             tools:ignore="UnusedAttribute">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:id="@+id/postPicArea"
+                android:layout_height="250dp">
 
                 <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/postImageRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/postImageRecyclerView"/>
+                    android:layout_height="match_parent" />
 
                 <TextView
                     android:id="@+id/postImagesCounter"
@@ -180,9 +185,6 @@
 
                     </LinearLayout>
 
-                    <include
-                        layout="@layout/audio_media_player"/>
-
                 </LinearLayout>
 
                 <ProgressBar
@@ -197,25 +199,13 @@
 
             </RelativeLayout>
 
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/capSection">
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="2dp">
-
-            </RelativeLayout>
-
             <include
-                layout="@layout/post_item_social_buttons"/>
+                layout="@layout/audio_media_player"/>
 
         </LinearLayout>
+
+        <include
+            layout="@layout/post_item_social_buttons"/>
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
@@ -223,4 +213,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.cardview.widget.CardView>

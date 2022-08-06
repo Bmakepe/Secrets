@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
@@ -30,6 +31,8 @@ import com.makepe.blackout.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SavedPostsActivity extends AppCompatActivity {
 
@@ -44,6 +47,10 @@ public class SavedPostsActivity extends AppCompatActivity {
     //for firebase
     private FirebaseUser firebaseUser;
     private DatabaseReference savedReference, postsReference, videosReference;
+
+    private LinearLayoutManager savedMediaLayout, savedVideoLayout;
+    private MediaAdapter mediaAdapter;
+    private VideoItemAdapter videoItemAdapter;
 
     private ProgressDialog pd;
 
@@ -74,20 +81,29 @@ public class SavedPostsActivity extends AppCompatActivity {
         postsReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
         videosReference = FirebaseDatabase.getInstance().getReference("SecretVideos");
 
-        savedMediaRecycler.hasFixedSize();
-        savedMediaRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        savedMediaRecycler.setItemAnimator(new DefaultItemAnimator());
-
-        savedVideosRecycler.hasFixedSize();
-        savedVideosRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
-        savedPostsRecycler.hasFixedSize();
-        savedPostsRecycler.setLayoutManager(new LinearLayoutManager(this));
-
         savedPostsList = new ArrayList<>();
         postListSaves = new ArrayList<>();
         mediaPostList = new ArrayList<>();
         savedVideosList = new ArrayList<>();
+
+        LinearSnapHelper snapHelper = new LinearSnapHelper();
+
+        savedMediaRecycler.hasFixedSize();
+        savedMediaLayout = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        savedMediaRecycler.setLayoutManager(savedMediaLayout);
+        snapHelper.attachToRecyclerView(savedMediaRecycler);
+        mediaAdapter = new MediaAdapter(SavedPostsActivity.this, mediaPostList);
+        savedMediaRecycler.setAdapter(mediaAdapter);
+
+        savedVideosRecycler.hasFixedSize();
+        savedVideoLayout = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        savedVideosRecycler.setLayoutManager(savedVideoLayout);
+        snapHelper.attachToRecyclerView(savedVideosRecycler);
+        videoItemAdapter = new VideoItemAdapter(savedVideosList, SavedPostsActivity.this);
+        savedVideosRecycler.setAdapter(videoItemAdapter);
+
+        savedPostsRecycler.hasFixedSize();
+        savedPostsRecycler.setLayoutManager(new LinearLayoutManager(this));
 
         pd = new ProgressDialog(this);
         pd.setMessage("Loading...");
@@ -110,13 +126,10 @@ public class SavedPostsActivity extends AppCompatActivity {
         seeMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mediaPostList.isEmpty()) {
-                    Intent seeMoreIntent = new Intent(SavedPostsActivity.this, InteractionsActivity.class);
-                    seeMoreIntent.putExtra("userID", firebaseUser.getUid());
-                    seeMoreIntent.putExtra("interactionType", "seeSavedMedia");
-                    startActivity(seeMoreIntent);
-                }else
-                    Toast.makeText(SavedPostsActivity.this, "You have not saved any media", Toast.LENGTH_SHORT).show();
+                Intent seeMoreIntent = new Intent(SavedPostsActivity.this, InteractionsActivity.class);
+                seeMoreIntent.putExtra("userID", firebaseUser.getUid());
+                seeMoreIntent.putExtra("interactionType", "seeSavedMedia");
+                startActivity(seeMoreIntent);
             }
         });
 
@@ -134,6 +147,7 @@ public class SavedPostsActivity extends AppCompatActivity {
                         savedPostsList.add(ds.getKey());
                     }
 
+                    getSavedMediaPosts();
                     getSavedTextPosts();
                     getSavedVideoPosts();
                 }else{
@@ -143,6 +157,43 @@ public class SavedPostsActivity extends AppCompatActivity {
                     savedVideosHeader.setText("Saved Videos [" + savedVideosList.size() + "]");
 
                     pd.dismiss();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getSavedMediaPosts() {
+        postsReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mediaPostList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    PostModel postModel = ds.getValue(PostModel.class);
+
+                    for (String id : savedPostsList){
+                        assert postModel != null;
+                        if (postModel.getPostID().equals(id)){
+                            if (postModel.getPostType().equals("imagePost")
+                                    || postModel.getPostType().equals("audioImagePost")
+                                    || postModel.getPostType().equals("sharedTextImagePost")
+                                    || postModel.getPostType().equals("sharedAudioImagePost")
+                                    || postModel.getPostType().equals("sharedTextAudioImagePost")
+                                    || postModel.getPostType().equals("sharedAudioAudioImagePost"))
+                                mediaPostList.add(postModel);
+                        }
+                    }
+
+                    if (!mediaPostList.isEmpty()){
+                        imagesArea.setVisibility(View.VISIBLE);
+                        savedMediaHeader.setText("Saved Media [" + mediaPostList.size() +  "]");
+                        mediaAdapter.notifyDataSetChanged();
+                    }
+
                 }
             }
 
@@ -164,22 +215,21 @@ public class SavedPostsActivity extends AppCompatActivity {
                     for (String id : savedPostsList){
                         assert postModel != null;
                         if (postModel.getPostID().equals(id))
-                            switch (postModel.getPostType()){
-                                case "videoPost":
-                                case "sharedAudioVideoPost":
-                                case "sharedTextVideoPost":
-                                case "audioVideoPost":
-                                case "sharedAudioAudioVideoPost":
-                                case "sharedTextAudioVideoPost":
-                                    savedVideosList.add(postModel);
-                                    break;
+                            if (postModel.getPostType().equals("videoPost")
+                                    || postModel.getPostType().equals("sharedAudioVideoPost")
+                                    || postModel.getPostType().equals("sharedTextVideoPost")
+                                    || postModel.getPostType().equals("audioVideoPost")
+                                    || postModel.getPostType().equals("sharedAudioAudioVideoPost")
+                                    || postModel.getPostType().equals("sharedTextAudioVideoPost")) {
+                                savedVideosList.add(postModel);
                             }
                     }
 
                     if (!savedVideosList.isEmpty()){
                         videosArea.setVisibility(View.VISIBLE);
+
                         savedVideosHeader.setText("Saved Videos [" + savedVideosList.size() + "]");
-                        savedVideosRecycler.setAdapter(new VideoItemAdapter(savedVideosList, SavedPostsActivity.this));
+                        videoItemAdapter.notifyDataSetChanged();
                     }
 
                     pd.dismiss();
@@ -198,7 +248,6 @@ public class SavedPostsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postListSaves.clear();
-                mediaPostList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()){
                     PostModel postModel = ds.getValue(PostModel.class);
 
@@ -206,24 +255,13 @@ public class SavedPostsActivity extends AppCompatActivity {
                         assert postModel != null;
                         if (postModel.getPostID().equals(id)) {
 
-                            switch (postModel.getPostType()) {
-                                case "textPost":
-                                case "audioPost":
-                                case "sharedTextPost":
-                                case "sharedAudioTextPost":
-                                case "sharedTextAudioPost":
-                                case "sharedAudioAudioPost":
-                                    postListSaves.add(postModel);
-                                    break;
-
-                                case "imagePost":
-                                case "audioImagePost":
-                                case "sharedTextImagePost":
-                                case "sharedAudioImagePost":
-                                case "sharedTextAudioImagePost":
-                                case "sharedAudioAudioImagePost":
-                                    mediaPostList.add(postModel);
-                                    break;
+                            if (postModel.getPostType().equals("textPost")
+                                    || postModel.getPostType().equals("audioPost")
+                                    || postModel.getPostType().equals("sharedTextPost")
+                                    || postModel.getPostType().equals("sharedAudioTextPost")
+                                    || postModel.getPostType().equals("sharedTextAudioPost")
+                                    || postModel.getPostType().equals("sharedAudioAudioPost")) {
+                                postListSaves.add(postModel);
                             }
                         }
                     }
@@ -232,12 +270,6 @@ public class SavedPostsActivity extends AppCompatActivity {
                         postsArea.setVisibility(View.VISIBLE);
                         savedPostsHead.setText("Saved Posts [" + postListSaves.size() +  "]");
                         savedPostsRecycler.setAdapter(new TimelineAdapter(SavedPostsActivity.this, postListSaves));
-                    }
-
-                    if (!mediaPostList.isEmpty()){
-                        imagesArea.setVisibility(View.VISIBLE);
-                        savedMediaHeader.setText("Saved Media [" + mediaPostList.size() +  "]");
-                        savedMediaRecycler.setAdapter(new MediaAdapter(SavedPostsActivity.this, mediaPostList));
                     }
 
                 }
@@ -259,4 +291,5 @@ public class SavedPostsActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
 }

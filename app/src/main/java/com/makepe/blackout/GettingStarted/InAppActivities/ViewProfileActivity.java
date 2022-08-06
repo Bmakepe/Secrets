@@ -10,10 +10,15 @@ import androidx.viewpager.widget.ViewPager;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -76,6 +81,11 @@ public class ViewProfileActivity extends AppCompatActivity {
     private GetTimeAgo getTimeAgo;
 
     private double latitude, longitude;
+
+    //for hand shake
+    private SensorManager sensorManager;
+    private float acelVal, acelLast, shake;
+    private static int counter = 0;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -142,6 +152,13 @@ public class ViewProfileActivity extends AppCompatActivity {
         if(hisUserID.equals(firebaseUser.getUid())){
             otherUserButtons.setVisibility(View.GONE);
         }
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+
+        acelVal = SensorManager.GRAVITY_EARTH;
+        acelLast = SensorManager.GRAVITY_EARTH;
+        shake = 0.00f;
 
         sendDM.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,6 +234,34 @@ public class ViewProfileActivity extends AppCompatActivity {
 
     }
 
+    private final SensorEventListener sensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+
+            acelLast = acelVal;
+            acelVal = (float) Math.sqrt((double) (x*x) + (y*y) + (z*z));
+            float delta = acelVal - acelLast;
+            shake = shake * 0.9f + delta;
+
+            if (shake > 12){
+                counter++;
+            }
+
+            if (counter >= 3){
+                counter = 0;
+                Toast.makeText(ViewProfileActivity.this, "You will be able to exchange hand shake with " + hisUsername.getText().toString(), Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
+
+        }
+    };
+
     private void setupFragments() {
         ProfileTabAdapter viewPagerAdapter = new ProfileTabAdapter(getSupportFragmentManager());
         postReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -230,8 +275,10 @@ public class ViewProfileActivity extends AppCompatActivity {
                     if (model.getUserID().equals(hisUserID))
                         postCounter++;
                 }
-                if (postCounter != 0)
+                if (postCounter != 0){
                     viewPagerAdapter.addFragment(new UserPostsFragment(), "Posts [" + postCounter + "]", hisUserID);
+                    hisTabLayout.setVisibility(View.VISIBLE);
+                }
 
                 videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -244,8 +291,10 @@ public class ViewProfileActivity extends AppCompatActivity {
                             if (postModel.getUserID().equals(hisUserID))
                                 videoCounter++;
                         }
-                        if (videoCounter != 0)
+                        if (videoCounter != 0){
                             viewPagerAdapter.addFragment(new UserVideosFragment(), "Videos [" + videoCounter + "]", hisUserID);
+                            hisTabLayout.setVisibility(View.VISIBLE);
+                        }
 
                         hisViewPager.setAdapter(viewPagerAdapter);
                         hisTabLayout.setupWithViewPager(hisViewPager);
@@ -527,6 +576,10 @@ public class ViewProfileActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
+            case R.id.handshake:
+                Toast.makeText(this, "Shake your phone 3 times to exchange handshake with " + hisUsername.getText().toString(), Toast.LENGTH_SHORT).show();
+                break;
+
             case R.id.postNotifications:
                 Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
                 break;

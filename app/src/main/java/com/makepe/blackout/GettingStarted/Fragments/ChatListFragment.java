@@ -23,7 +23,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.makepe.blackout.GettingStarted.Adapters.ChatlistAdapter;
 import com.makepe.blackout.GettingStarted.Models.Chat;
 import com.makepe.blackout.GettingStarted.Models.ChatList;
-import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;

@@ -374,6 +374,7 @@
                 app:tabIndicatorHeight="2dp"
                 android:overScrollMode="ifContentScrolls"
                 app:tabMode="fixed"
+                android:visibility="invisible"
                 android:background="@null"/>
 
         </com.google.android.material.appbar.AppBarLayout>

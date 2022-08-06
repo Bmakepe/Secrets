@@ -105,6 +105,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Creating Group...");
+        progressDialog.setCancelable(false);
 
         groupId = groupReference.push().getKey();
 

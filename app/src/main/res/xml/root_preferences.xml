@@ -2,6 +2,27 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:settings="http://schemas.android.com/tools">
 
+    <PreferenceCategory app:title="Entertainment and more...">
+
+        <Preference
+            app:key="advertising"
+            app:title="Create a Campaign"
+            android:icon="@drawable/ic_baseline_ad_units_24"
+            app:useSimpleSummaryProvider="true">
+
+
+        </Preference>
+
+        <Preference
+            app:key="tickets"
+            app:title="Secret Ticketing"
+            android:icon="@drawable/ic_baseline_airplane_ticket_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Account Settings">
 
         <Preference
@@ -27,15 +48,6 @@
                 android:action="android.intent.action.VIEW"
                 android:targetPackage="com.makepe.blackout"
                 android:targetClass="com.makepe.blackout.GettingStarted.InAppActivities.ChangeNumberActivity"/>
-
-        </Preference>
-
-        <Preference
-            app:key="advertising"
-            app:title="Create an Ad Campaign"
-            android:icon="@drawable/ic_baseline_ad_units_24"
-            app:useSimpleSummaryProvider="true">
-
 
         </Preference>
 

@@ -253,8 +253,10 @@ public class ProfileFragment extends Fragment {
                     if (model.getUserID().equals(firebaseUser.getUid()))
                         postCounter++;
                 }
-                if (postCounter != 0)
+                if (postCounter != 0){
                     viewPagerAdapter.addFragment(new UserPostsFragment(), "Posts [" + postCounter + "]", firebaseUser.getUid());
+                    profileTabs.setVisibility(View.VISIBLE);
+                }
 
                 videoReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -267,8 +269,10 @@ public class ProfileFragment extends Fragment {
                             if (postModel.getUserID().equals(firebaseUser.getUid()))
                                 videoCounter++;
                         }
-                        if (videoCounter != 0)
+                        if (videoCounter != 0){
                             viewPagerAdapter.addFragment(new UserVideosFragment(), "Videos [" + videoCounter + "]", firebaseUser.getUid());
+                            profileTabs.setVisibility(View.VISIBLE);
+                        }
 
                         profilePager.setAdapter(viewPagerAdapter);
                         profileTabs.setupWithViewPager(profilePager);

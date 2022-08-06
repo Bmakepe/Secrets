@@ -24,9 +24,11 @@ import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -71,8 +73,8 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
 
     private GetTimeAgo getTimeAgo;
 
-    //private AudioPlayer audioPlayer;
     private UniversalFunctions universalFunctions;
+    private LinearSnapHelper snapHelper;
 
     private boolean videoIsPlaying = false;
 
@@ -129,6 +131,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
         getTimeAgo = new GetTimeAgo();
         GroupChat chat = groupChats.get(position);
         universalFunctions = new UniversalFunctions(context);
+        snapHelper = new LinearSnapHelper();
 
         getGroupChats(chat, holder);
         getUserInfo(chat, holder);
@@ -245,6 +248,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
 
                 holder.mediaRecycler.hasFixedSize();
                 holder.mediaRecycler.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                snapHelper.attachToRecyclerView(holder.mediaRecycler);
 
                 getMediaList(chat, holder);
 
@@ -309,6 +313,8 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
         AudioPlayer audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.seekTimer, holder.postTotalTime, holder.audioAnimation);
 
+        audioPlayer.init();
+
         try{//convert timestamp
             holder.timeStamp.setText(getTimeAgo.getTimeAgo(Long.parseLong(chat.getTimeStamp()), context));
         }catch (NumberFormatException n){
@@ -318,11 +324,11 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
         holder.playBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!audioPlayer.isPlaying()){
+                if (!audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.startPlayingAudio(chat.getAudioURL());
-                }else{
+                else if(audioPlayer.mediaPlayer.isPlaying())
                     audioPlayer.stopPlayingAudio();
-                }
+
             }
         });
 
@@ -415,7 +421,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
 
         //--------------for audio post buttons
         public CircleImageView playBTN;
-        public LottieAnimationView audioAnimation;
+        public SeekBar audioAnimation;
         public TextView seekTimer, postTotalTime;
 
         //------------for videos

@@ -1,97 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:backgroundTint="@color/white"
-    app:cardElevation="5dp"
-    app:cardCornerRadius="5dp"
-    android:layout_margin="2dp"
-    app:cardUseCompatPadding="false"
-    tools:ignore="UnusedAttribute">
+    android:padding="2dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp">
+        android:id="@+id/notificationPics">
 
-        <RelativeLayout
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/notiProIMG"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_profile_display_pic"
+            android:visibility="visible"
+            app:civ_border_color="@color/colorBlack"
+            app:civ_border_width="2dp" />
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/notificationPics">
+            android:layout_toEndOf="@+id/notiProIMG"
+            android:layout_centerVertical="true"
+            android:layout_height="wrap_content">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/notiProIMG"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/default_profile_display_pic"
-                android:visibility="visible"
-                app:civ_border_color="@color/colorBlack"
-                app:civ_border_width="2dp" />
-
-            <LinearLayout
-                android:orientation="vertical"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_toEndOf="@+id/notiProIMG"
-                android:layout_height="wrap_content">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/notiUsername"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:maxLines="2"
-                        android:padding="5dp"
-                        android:text="Bokang Makepe"
-                        android:textColor="@color/colorBlack"
-                        android:layout_toStartOf="@+id/notiTimeStamp"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/notiTimeStamp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:maxLines="2"
-                        android:padding="5dp"
-                        android:text="5 days ago"
-                        android:layout_alignParentEnd="true"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="normal" />
-
-                </RelativeLayout>
+                android:layout_height="wrap_content"
+                android:padding="2dp">
 
                 <TextView
-                    android:id="@+id/notiComment"
+                    android:id="@+id/notiUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="2"
-                    android:padding="5dp"
-                    android:text="commented on your post: "
+                    android:layout_toStartOf="@+id/notiTimeStamp"
+                    android:singleLine="true"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/notiTimeStamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:layout_alignParentEnd="true"
                     android:textColor="@color/colorBlack"
                     android:textSize="12sp"
                     android:textStyle="normal" />
 
-            </LinearLayout>
+            </RelativeLayout>
 
-        </RelativeLayout>
+            <TextView
+                android:id="@+id/notiComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:padding="2dp"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                android:textStyle="normal" />
 
-        <ImageView
-            android:id="@+id/post_image"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="fitCenter"
-            android:visibility="visible"
-            android:src="@drawable/ic_image_black_24dp" />
+        </LinearLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
 
-</androidx.cardview.widget.CardView>
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"/>
+
+</LinearLayout>

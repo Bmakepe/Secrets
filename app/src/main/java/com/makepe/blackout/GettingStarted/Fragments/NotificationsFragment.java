@@ -24,6 +24,7 @@ import com.makepe.blackout.GettingStarted.Adapters.BundledNotificationAdapter;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class NotificationsFragment extends Fragment {
 
@@ -78,6 +79,7 @@ public class NotificationsFragment extends Fragment {
                                     for (DataSnapshot data : snapshot.getChildren()){
                                         bundledNotifications.add(data.getKey());
                                     }
+                                    //Collections.shuffle(bundledNotifications);
                                     notiRecycler.setAdapter(new BundledNotificationAdapter(getActivity(), bundledNotifications));
                                     notificationsLoader.setVisibility(View.GONE);
                                 }

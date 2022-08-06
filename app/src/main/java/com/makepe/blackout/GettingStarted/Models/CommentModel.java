@@ -1,15 +1,16 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class CommentModel {
-    private String commentID, comment, timeStamp, userID, commentImage, commentType, postID, audioUrl;
+    private String commentID, comment, timeStamp, userID, commentImage, commentType, postID,
+            audioUrl, replyCommentID;
     private double longitude, latitude;
 
     public CommentModel() {
     }
 
     public CommentModel(String commentID, String comment, String timeStamp, String userID,
-                        String commentImage, String commentType, String postID,
-                        String audioUrl, double longitude, double latitude) {
+                        String commentImage, String commentType, String postID, String audioUrl,
+                        String replyCommentID, double longitude, double latitude) {
         this.commentID = commentID;
         this.comment = comment;
         this.timeStamp = timeStamp;
@@ -18,8 +19,17 @@ public class CommentModel {
         this.commentType = commentType;
         this.postID = postID;
         this.audioUrl = audioUrl;
+        this.replyCommentID = replyCommentID;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public String getReplyCommentID() {
+        return replyCommentID;
+    }
+
+    public void setReplyCommentID(String replyCommentID) {
+        this.replyCommentID = replyCommentID;
     }
 
     public String getAudioUrl() {

@@ -138,6 +138,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
         messageDialog = new ProgressDialog(this);
         messageDialog.setMessage("Loading...");
+        messageDialog.setCancelable(false);
 
         audioReference = FirebaseStorage.getInstance().getReference("group_voice_notes");
         groupReference = FirebaseDatabase.getInstance().getReference("SecretGroups");
@@ -364,6 +365,12 @@ public class GroupChatActivity extends AppCompatActivity {
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
+
+                                    if (audioRecorder.getRecordingFilePath() != null){
+                                        audioRecorder.resetRecorder();
+                                        groupChatET.setVisibility(View.VISIBLE);
+                                    }
+
                                     groupSendBTN.setTag("notRecording");
                                     messageDialog.dismiss();
                                     groupSendBTN.setImageResource(R.drawable.ic_mic_black_24dp);

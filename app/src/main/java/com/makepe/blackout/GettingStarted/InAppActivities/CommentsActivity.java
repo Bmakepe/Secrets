@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -108,7 +110,7 @@ public class CommentsActivity extends AppCompatActivity {
     //for playing audio status
     private AudioPlayer audioPlayer;
     public CircleImageView playBTN;
-    public LottieAnimationView audioAnimation;
+    public SeekBar audioAnimation;
     public TextView audioSeekTimer, postTotalTime;
 
     @Override
@@ -415,7 +417,7 @@ public class CommentsActivity extends AppCompatActivity {
                         audioMap.put("longitude", locationServices.getLongitude());
                     }
 
-                    commentReference.child(itemID).child(commentID).setValue(audioMap)
+                    commentReference.child(commentID).setValue(audioMap)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void unused) {
@@ -484,7 +486,7 @@ public class CommentsActivity extends AppCompatActivity {
                                     audioImageMap.put("longitude", locationServices.getLongitude());
                                 }
 
-                                commentReference.child(itemID).child(commentID).setValue(audioImageMap)
+                                commentReference.child(commentID).setValue(audioImageMap)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void unused) {
@@ -521,7 +523,7 @@ public class CommentsActivity extends AppCompatActivity {
             commentMap.put("longitude", locationServices.getLongitude());
         }
 
-        commentReference.child(itemID).child(commentID).setValue(commentMap)
+        commentReference.child(commentID).setValue(commentMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
@@ -571,7 +573,7 @@ public class CommentsActivity extends AppCompatActivity {
                         commentMap.put("longitude", locationServices.getLongitude());
                     }
 
-                    commentReference.child(itemID).child(commentID).setValue(commentMap)
+                    commentReference.child(commentID).setValue(commentMap)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void unused) {
@@ -786,14 +788,16 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void readComments() {
-        commentReference.child(itemID).addValueEventListener(new ValueEventListener() {
+        commentReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     commentList.clear();
                     for (DataSnapshot ds : snapshot.getChildren()) {
                         CommentModel comments = ds.getValue(CommentModel.class);
-                        commentList.add(comments);
+                        assert comments != null;
+                        if (comments.getPostID().equals(itemID))
+                            commentList.add(comments);
                     }
                     commentsRecycler.setAdapter(new CommentsAdapter(CommentsActivity.this, commentList));
                 }
@@ -882,12 +886,10 @@ public class CommentsActivity extends AppCompatActivity {
                             playBTN.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-
-                                    if (!audioPlayer.isPlaying()){
+                                    if (!audioPlayer.mediaPlayer.isPlaying())
                                         audioPlayer.startPlayingAudio(story.getStoryAudioUrl());
-                                    }else{
+                                    else if(audioPlayer.mediaPlayer.isPlaying())
                                         audioPlayer.stopPlayingAudio();
-                                    }
                                 }
                             });
 
@@ -983,11 +985,10 @@ public class CommentsActivity extends AppCompatActivity {
             playBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (!audioPlayer.isPlaying()){
+                    if (!audioPlayer.mediaPlayer.isPlaying())
                         audioPlayer.startPlayingAudio(model.getAudioURL());
-                    }else{
+                    else
                         audioPlayer.stopPlayingAudio();
-                    }
                 }
             });
 
@@ -1010,7 +1011,7 @@ public class CommentsActivity extends AppCompatActivity {
         }catch (NullPointerException ignored){}
 
         postReference.child(model.getPostID()).child("taggedFriends")
-                .addValueEventListener(new ValueEventListener() {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()){
@@ -1022,7 +1023,28 @@ public class CommentsActivity extends AppCompatActivity {
 
                             tagsArea.setVisibility(View.VISIBLE);
                         }else {
-                            tagsArea.setVisibility(View.GONE);
+                            videoReference.child(model.getPostID()).child("taggedFriends")
+                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.exists()){
+
+                                                        if (snapshot.getChildrenCount() == 1)
+                                                            taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friend");
+                                                        else
+                                                            taggedPeopleList.setText("with: "+ snapshot.getChildrenCount() +" friends");
+
+                                                        tagsArea.setVisibility(View.VISIBLE);
+                                                    }else{
+                                                        tagsArea.setVisibility(View.GONE);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
                         }
                     }
 

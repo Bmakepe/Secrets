@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -109,6 +111,8 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
 
         audioPlayer = new AudioPlayer(context, holder.playBTN,
                 holder.audioSeekTimer, holder.postTotalTime, holder.audioAnimation);
+
+        audioPlayer.init();
 
         if (story.getUserID().equals(firebaseUser.getUid())){
             holder.r_seen.setVisibility(View.VISIBLE);
@@ -283,13 +287,11 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
             holder.playBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (!audioPlayer.isPlaying){
-                        holder.storiesProgressView.pause();
+                    if (!audioPlayer.mediaPlayer.isPlaying())
                         audioPlayer.startPlayingAudio(storyList.get(counter).getStoryAudioUrl());
-                    }else{
-                        holder.storiesProgressView.resume();
+                    else if(audioPlayer.mediaPlayer.isPlaying())
                         audioPlayer.stopPlayingAudio();
-                    }
+
                 }
             });
         }
@@ -374,7 +376,7 @@ public class ViewStoryAdapter extends RecyclerView.Adapter<ViewStoryAdapter.View
 
         //for playing audio stories
         public CircleImageView playBTN;
-        public LottieAnimationView audioAnimation;
+        public SeekBar audioAnimation;
         public TextView audioSeekTimer, postTotalTime;
 
         //for story navigation

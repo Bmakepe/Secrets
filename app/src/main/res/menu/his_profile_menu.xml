@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/handshake"
+        android:title="Hand Shake"
+        android:icon="@drawable/ic_baseline_back_hand_24"
+        app:showAsAction="always"/>
+
+    <item
         android:id="@+id/postNotifications"
         android:title="Post Notifications"
         android:icon="@drawable/ic_notifications_black_24dp"

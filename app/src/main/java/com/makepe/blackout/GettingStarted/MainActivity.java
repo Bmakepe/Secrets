@@ -1,6 +1,7 @@
 package com.makepe.blackout.GettingStarted;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.emoji2.text.EmojiCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.homeFragmentContainerView);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
 
     }
 }

@@ -8,13 +8,18 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -88,6 +93,7 @@ public class PostActivity extends AppCompatActivity {
     private Switch commentSwitch;
     private Toolbar postToolbar;
     private RecyclerView mediaRecyclerView, taggedFriendsRecycler;
+    private LinearSnapHelper snapHelper;
 
     private ProgressDialog uploadDialog;
 
@@ -98,8 +104,11 @@ public class PostActivity extends AppCompatActivity {
     private UploadFunctions uploadFunctions;
     private SendNotifications sendNotifications;
 
-    private int PICK_IMAGE_INTENT = 1, totalMediaUploaded = 0;
-    private int PICK_VIDEO_REQUEST = 2;
+    private int totalMediaUploaded = 0;
+    private static final int PICK_IMAGE_INTENT = 1;
+    private static final int PICK_VIDEO_REQUEST = 2;
+    private static final int VIDEO_CAMERA_REQUEST_CODE = 3;
+    private static final int CAMERA_REQUEST_CODE = 4;
 
     //for video gallery
     private Uri videoURI;
@@ -172,6 +181,7 @@ public class PostActivity extends AppCompatActivity {
                 PostActivity.this, playAudioArea, voicePlayBTN, seekTimer);
         uploadFunctions = new UploadFunctions(PostActivity.this);
         sendNotifications = new SendNotifications(PostActivity.this);
+        snapHelper = new LinearSnapHelper();
 
         postID = postRef.push().getKey();
         timeStamp = String.valueOf(System.currentTimeMillis());
@@ -182,6 +192,7 @@ public class PostActivity extends AppCompatActivity {
         mediaRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mediaAdapter = new PostMediaAdapter(PostActivity.this, mediaUriList, imageCardView);
         mediaRecyclerView.setAdapter(mediaAdapter);
+        snapHelper.attachToRecyclerView(mediaRecyclerView);
 
         taggedFriendsRecycler.hasFixedSize();
         taggedFriendsRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -270,8 +281,8 @@ public class PostActivity extends AppCompatActivity {
         deleteAudioBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //audioRecorder.deleteRecording();
-                Toast.makeText(PostActivity.this, "Recording will be deleted", Toast.LENGTH_SHORT).show();
+                audioRecorder.resetRecorder();
+                postBTN.setText("Record");
             }
         });
 
@@ -314,9 +325,10 @@ public class PostActivity extends AppCompatActivity {
                 }else if (postBTN.getText().toString().trim().equals("Post")){
                     //Button for posting to the database
                     uploadDialog.setMessage("Loading...");
+                    uploadDialog.setCancelable(false);
+                    uploadDialog.show();
 
                     if (!TextUtils.isEmpty(captionArea.getText().toString().trim())){
-                        uploadDialog.show();
                         if (videoURI != null)
                             uploadTextVideoPost();
                         else
@@ -344,6 +356,31 @@ public class PostActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 chooseVideo();
+            }
+        });
+
+        goToCameraBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String[] options = {"Camera", "Video"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(PostActivity.this);
+                builder.setTitle("Choose Selection")
+                        .setItems(options, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                switch (i){
+                                    case 0:
+                                        Toast.makeText(PostActivity.this, "You will be able to take a picture", Toast.LENGTH_SHORT).show();
+                                        break;
+
+                                    case 1:
+                                        openCameraRecorder();
+                                        break;
+
+                                }
+                            }
+                        }).show();
             }
         });
 
@@ -464,9 +501,8 @@ public class PostActivity extends AppCompatActivity {
         });
 
         Task<Uri> urlTask = uploadTask.continueWithTask(task ->{
-            if (!task.isSuccessful()){
+            if (!task.isSuccessful())
                 throw task.getException();
-            }
             return ref.getDownloadUrl();
         }).addOnCompleteListener(task -> {
             if (task.isSuccessful()){
@@ -524,7 +560,6 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void uploadVideoAudioPost() {
-        uploadDialog.show();
 
         StorageReference ref = FirebaseStorage.getInstance().getReference()
                 .child("user_video_posts")
@@ -635,7 +670,7 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void uploadAudioPost() {
-        uploadDialog.show();
+
         StorageReference filePath = audioReference.child("user_audio_posts").child(postID + ".3gp");
 
         Uri audioUri = Uri.fromFile(new File(audioRecorder.getRecordingFilePath()));
@@ -854,6 +889,11 @@ public class PostActivity extends AppCompatActivity {
 
     }
 
+    private void openCameraRecorder() {
+        Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        startActivityForResult(videoIntent, VIDEO_CAMERA_REQUEST_CODE);
+    }
+
     private void chooseVideo() {
         Intent intent = new Intent();
         intent.setType("video/*");
@@ -936,8 +976,8 @@ public class PostActivity extends AppCompatActivity {
                 videoView.setOnPreparedListener(mp -> {
 
                     //scaling it to a correct size
-                    float videoRatio=mp.getVideoWidth()/(float)mp.getVideoHeight();
-                    float screenRatio=videoView.getWidth()/(float)videoView.getHeight();
+                    float videoRatio = mp.getVideoWidth() / (float)mp.getVideoHeight();
+                    float screenRatio = videoView.getWidth() / (float)videoView.getHeight();
                     float scale=videoRatio/screenRatio;
 
                     if(scale >=1f) videoView.setScaleX(scale);
@@ -945,6 +985,29 @@ public class PostActivity extends AppCompatActivity {
 
                     mp.start();
                     mp.setLooping(true);
+                });
+            }else if (requestCode == VIDEO_CAMERA_REQUEST_CODE){
+                videoURI = data.getData();
+
+                videoArea.setVisibility(View.VISIBLE);
+                videoView.setVisibility(View.VISIBLE);
+                videoCardView.setVisibility(View.VISIBLE);
+                videoView.setVideoURI(videoURI);
+                videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+
+                        //scaling it to a correct size
+                        float videoRatio = mp.getVideoWidth() / (float)mp.getVideoHeight();
+                        float screenRatio = videoView.getWidth() / (float)videoView.getHeight();
+                        float scale=videoRatio/screenRatio;
+
+                        if(scale >=1f) videoView.setScaleX(scale);
+                        else videoView.setScaleY(1f/scale);
+
+                        mp.start();
+                        mp.setLooping(true);
+                    }
                 });
             }
         }

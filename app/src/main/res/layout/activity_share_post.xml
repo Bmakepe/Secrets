@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
+    android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -30,7 +31,6 @@
                 app:civ_border_width="2dp" />
 
             <TextView
-                android:id="@+id/dudooLogo"
                 style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,15 +49,13 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/sharingToolbar">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@drawable/rounded_edittext"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="5dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -66,7 +64,6 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="5dp"
                     app:boxStrokeColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:id="@+id/textMessage">
@@ -88,8 +85,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <include
-                    layout="@layout/media_audio_layout"/>
+                <include layout="@layout/media_audio_layout" />
 
             </RelativeLayout>
 
@@ -97,206 +93,214 @@
                 android:id="@+id/post_to_be_shared"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:backgroundTint="@color/white"
                 android:orientation="vertical"
                 app:cardCornerRadius="5dp"
+                android:layout_marginTop="5dp"
                 app:cardElevation="5dp"
                 app:cardUseCompatPadding="false"
                 tools:ignore="UnusedAttribute">
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                     <RelativeLayout
-                        android:id="@+id/shareVideoCardView"
                         android:layout_width="match_parent"
-                        android:layout_height="300dp"
-                        android:visibility="gone">
+                        android:layout_height="wrap_content">
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/shareVideoArea"
+                        <RelativeLayout
+                            android:id="@+id/shareVideoCardView"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:visibility="visible">
+                            android:layout_height="500dp"
+                            android:visibility="gone">
 
-                            <VideoView
-                                android:id="@+id/sharePreviewCameraSelectedVideo"
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/shareVideoArea"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:visibility="visible"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="0.5"
-                                app:layout_constraintStart_toStartOf="parent" />
+                                android:visibility="visible">
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                                <VideoView
+                                    android:id="@+id/sharePreviewCameraSelectedVideo"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintHorizontal_bias="0.5"
+                                    app:layout_constraintStart_toStartOf="parent" />
 
-                        <ProgressBar
-                            android:id="@+id/sharedVideoLoader"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerInParent="true" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    </RelativeLayout>
+                            <ProgressBar
+                                android:id="@+id/sharedVideoLoader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerInParent="true" />
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="250dp"
-                        android:id="@+id/share_postPicArea"
-                        android:visibility="gone">
+                        </RelativeLayout>
 
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/sharedImagePostRecycler"
+                        <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="250dp"
+                            android:id="@+id/share_postPicArea"
+                            android:visibility="gone">
 
-                        <TextView
-                            android:id="@+id/sharedPostImagesCounter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:background="@drawable/rounded_edittext"
-                            android:backgroundTint="@color/colorPrimary"
-                            android:padding="5dp"
-                            android:textColor="@color/white"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/sharedImagePostRecycler"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
 
-                        <ProgressBar
-                            android:id="@+id/progress_load_media"
-                            style="@android:style/Widget"
+                            <TextView
+                                android:id="@+id/sharedPostImagesCounter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:background="@drawable/rounded_edittext"
+                                android:backgroundTint="@color/colorPrimary"
+                                android:padding="5dp"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <ProgressBar
+                                android:id="@+id/progress_load_media"
+                                style="@android:style/Widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:layout_gravity="center"
+                                android:backgroundTint="@color/white" />
+
+                        </RelativeLayout>
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_gravity="center"
-                            android:backgroundTint="@color/white" />
+                            android:layout_alignParentBottom="true"
+                            android:background="@color/white_greyish"
+                            android:orientation="vertical"
+                            android:padding="2dp">
+
+                            <LinearLayout
+                                android:id="@+id/rPostDeclaration"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:padding="2dp">
+
+                                <RelativeLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+
+                                    <de.hdodenhof.circleimageview.CircleImageView
+                                        android:id="@+id/share_image_user"
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:layout_centerInParent="true"
+                                        android:padding="2dp"
+                                        android:src="@drawable/default_profile_display_pic"
+                                        android:tint="@color/colorPrimary"
+                                        app:civ_border_color="@color/colorBlack"
+                                        app:civ_border_overlay="true"
+                                        app:civ_border_width="1dp" />
+
+                                </RelativeLayout>
+
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_centerVertical="true"
+                                        android:layout_marginStart="2dp"
+                                        android:layout_toStartOf="@+id/layoutDate"
+                                        android:orientation="vertical">
+
+                                        <RelativeLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:layout_gravity="center_vertical">
+
+                                            <TextView
+                                                android:id="@+id/share_username"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:singleLine="true"
+                                                android:textColor="@color/colorBlack"
+                                                android:textSize="12sp"
+                                                android:layout_toStartOf="@+id/share_postDate"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:id="@+id/share_postDate"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_gravity="center"
+                                                android:gravity="center"
+                                                android:layout_alignParentEnd="true"
+                                                android:padding="2dp"
+                                                android:singleLine="true"
+                                                android:textColor="@color/colorBlack"
+                                                android:textSize="10sp"
+                                                tools:ignore="SmallSp" />
+
+                                        </RelativeLayout>
+
+                                        <LinearLayout
+                                            android:id="@+id/shared_postLocationArea"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:orientation="horizontal"
+                                            android:visibility="gone">
+
+                                            <TextView
+                                                android:id="@+id/share_postCheckIn"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:layout_gravity="center_vertical"
+                                                android:singleLine="true"
+                                                android:textColor="@color/colorBlack"
+                                                android:textSize="10sp"
+                                                android:textStyle="normal"
+                                                android:visibility="visible"
+                                                tools:ignore="SmallSp" />
+
+                                        </LinearLayout>
+
+                                    </LinearLayout>
+
+                                </RelativeLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
 
                     </RelativeLayout>
 
                     <LinearLayout
-                        android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:background="@color/white_greyish"
-                        android:padding="2dp">
-
-                        <LinearLayout
-                            android:id="@+id/rPostDeclaration"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:padding="2dp">
-
-                            <RelativeLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-
-                                <de.hdodenhof.circleimageview.CircleImageView
-                                    android:id="@+id/share_image_user"
-                                    android:layout_width="40dp"
-                                    android:layout_height="40dp"
-                                    android:layout_centerInParent="true"
-                                    android:padding="2dp"
-                                    android:src="@drawable/default_profile_display_pic"
-                                    android:tint="@color/colorPrimary"
-                                    app:civ_border_color="@color/colorBlack"
-                                    app:civ_border_overlay="true"
-                                    app:civ_border_width="1dp" />
-
-                            </RelativeLayout>
-
-                            <RelativeLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_centerVertical="true"
-                                    android:layout_marginStart="2dp"
-                                    android:layout_toStartOf="@+id/layoutDate"
-                                    android:orientation="vertical">
-
-                                    <TextView
-                                        android:id="@+id/share_username"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:singleLine="true"
-                                        android:textColor="@color/colorBlack"
-                                        android:textSize="12sp"
-                                        android:textStyle="bold" />
-
-                                    <LinearLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:id="@+id/shared_postLocationArea"
-                                        android:visibility="visible"
-                                        android:orientation="horizontal">
-
-                                        <TextView
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            android:textSize="10sp"
-                                            android:textStyle="normal"
-                                            android:visibility="visible"
-                                            android:layout_gravity="center_vertical"
-                                            android:singleLine="true"
-                                            android:textColor="@color/colorBlack"
-                                            android:id="@+id/share_postCheckIn"
-                                            tools:ignore="SmallSp" />
-
-                                    </LinearLayout>
-
-                                </LinearLayout>
-
-                                <FrameLayout
-                                    android:id="@+id/layoutDate"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_alignParentEnd="true"
-                                    android:padding="5dp">
-
-                                    <LinearLayout
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:orientation="horizontal">
-
-                                        <TextView
-                                            android:id="@+id/share_postDate"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_gravity="center"
-                                            android:gravity="center"
-                                            android:padding="2dp"
-                                            android:singleLine="true"
-                                            android:textColor="@color/colorBlack"
-                                            android:textSize="10sp"
-                                            tools:ignore="SmallSp" />
-
-                                    </LinearLayout>
-
-                                </FrameLayout>
-
-                            </RelativeLayout>
-
-                        </LinearLayout>
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/share_post_desc"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:padding="2dp"
+                            android:padding="5dp"
                             android:textColor="@color/colorBlack"
                             android:textSize="12sp"
                             android:visibility="visible" />
 
                         <RelativeLayout
+                            android:id="@+id/shared_audio_media_player"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/shared_audio_media_player"
+                            android:padding="5dp"
                             android:visibility="gone">
 
                             <include layout="@layout/audio_media_player" />
@@ -304,40 +308,37 @@
                         </RelativeLayout>
 
                         <TextView
+                            android:id="@+id/shared_taggedPeopleList"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:singleLine="true"
-                            android:gravity="center_vertical"
-                            android:drawableStart="@drawable/ic_person_black_24dp"
-                            android:id="@+id/shared_taggedPeopleList"
                             android:layout_gravity="center_vertical"
-                            android:textStyle="normal"
+                            android:drawableStart="@drawable/ic_person_black_24dp"
+                            android:gravity="center_vertical"
+                            android:singleLine="true"
                             android:textColor="@color/colorBlack"
                             android:textSize="10sp"
-                            tools:ignore="SmallSp"
-                            app:drawableTint="@color/colorBlack" />
+                            android:textStyle="normal"
+                            app:drawableTint="@color/colorBlack"
+                            tools:ignore="SmallSp" />
 
                     </LinearLayout>
 
-                    <ProgressBar
-                        android:id="@+id/progress_load_photo"
-                        android:layout_marginTop="70dp"
-                        style="@android:style/Widget"
-                        android:backgroundTint="#FFF"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
-                        android:visibility="gone"/>
-
-                </RelativeLayout>
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
-            <include
-                layout="@layout/post_extension_layout"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp">
+
+                <include
+                    layout="@layout/post_extension_layout"/>
+
+            </RelativeLayout>
 
         </LinearLayout>
 
     </ScrollView>
 
-</RelativeLayout>
+</LinearLayout>

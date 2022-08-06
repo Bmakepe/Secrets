@@ -35,12 +35,13 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyHolder> {
 
     private Context mContext;
     private List<NotiModel> mNotifications;
-    private DatabaseReference userReference, postReference, storyReference, commentReference;
-    private FirebaseUser firebaseUser;
+    private DatabaseReference userReference;
 
     private GetTimeAgo getTimeAgo;
 
@@ -60,14 +61,18 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         final NotiModel notification = mNotifications.get(position);
         getTimeAgo = new GetTimeAgo();
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
-        storyReference = FirebaseDatabase.getInstance().getReference("Story");
-        commentReference = FirebaseDatabase.getInstance().getReference("Comments");
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         getUserInfo(holder, notification);
         getNotificationContent(holder, notification);
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent profileIntent = new Intent(mContext, ViewProfileActivity.class);
+                profileIntent.putExtra("uid", notification.getUserID());
+                mContext.startActivity(profileIntent);
+            }
+        });
 
     }
 
@@ -89,7 +94,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     public static class MyHolder extends RecyclerView.ViewHolder {
-        ImageView image_profile, post_image;
+        public ImageView post_image;
+        public CircleImageView image_profile;
         public TextView username, text, timeStamp;
 
         MyHolder(@NonNull View itemView) {
@@ -105,10 +111,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     private void getUserInfo(MyHolder holder, NotiModel notification){
-        List<ContactsModel> phoneBook = new ArrayList<>();
-        ContactsList contactsList = new ContactsList(phoneBook, mContext);
-        contactsList.readContacts();
-        final List<ContactsModel> phoneContacts = contactsList.getContactsList();
 
         userReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -122,20 +124,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
                             try {
                                 Picasso.get().load(user.getImageURL()).into(holder.image_profile);
-                            } catch (NullPointerException ignored) {
-                            }
+                            } catch (NullPointerException ignored) {}
 
-                            //username.setText(username1);
-
-                            for (ContactsModel contactsModel : phoneContacts) {
-                                if (notification.getUserID().equals(firebaseUser.getUid())) {
-                                    holder.username.setText("Me");
-                                } else if (contactsModel.getPhoneNumber().equals(user.getPhoneNumber())) {
-                                    holder.username.setText(contactsModel.getUsername());
-                                }else{
-                                    holder.username.setText(user.getUsername());
-                                }
-                            }
+                            holder.username.setText(user.getUsername());
                         }
                     }
                 }

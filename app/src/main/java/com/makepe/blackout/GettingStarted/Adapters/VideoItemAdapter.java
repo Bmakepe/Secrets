@@ -2,6 +2,8 @@ package com.makepe.blackout.GettingStarted.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -130,15 +132,32 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
     private void getVideoDetails(PostModel post, ViewHolder holder) {
 
         holder.exploreVideoView.setVideoURI(Uri.parse(post.getVideoURL()));
+        holder.exploreVideoView.requestFocus();
         holder.exploreVideoView.setOnPreparedListener(mediaPlayer -> {
 
+            holder.videoLoader.setVisibility(View.GONE);
+            holder.exploreVideoView.start();
             mediaPlayer.setVolume(0f, 0f);
-            mediaPlayer.setLooping(true);
+            mediaPlayer.setLooping(false);
 
         });
 
-        holder.exploreVideoView.start();
-        holder.videoLoader.setVisibility(View.GONE);
+        holder.exploreVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
+                switch (what){
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                        holder.videoLoader.setVisibility(View.VISIBLE);
+                        return true;
+
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                        holder.videoLoader.setVisibility(View.GONE);
+                        return true;
+
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -162,4 +181,5 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
             videoLoader = itemView.findViewById(R.id.videoItemLoader);
         }
     }
+
 }

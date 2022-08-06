@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_margin="2dp">
+    android:backgroundTint="@color/white"
+    app:cardElevation="5dp"
+    app:cardCornerRadius="5dp"
+    android:layout_margin="2dp"
+    app:cardUseCompatPadding="false"
+    tools:ignore="UnusedAttribute">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -133,16 +138,16 @@
 
             </LinearLayout>
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@color/cardView_color"
+                android:background="@drawable/rounded_edittext"
                 android:id="@+id/shared_post_item">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="250dp"
                     android:backgroundTint="@color/colorBlack">
 
                     <androidx.recyclerview.widget.RecyclerView
@@ -249,10 +254,6 @@
 
                         </RelativeLayout>
 
-                        <include
-                            layout="@layout/shared_post_audio_media_player"
-                            android:visibility="visible"/>
-
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -280,7 +281,11 @@
 
                 </RelativeLayout>
 
-            </RelativeLayout>
+                <include
+                    layout="@layout/shared_post_audio_media_player"
+                    android:visibility="visible"/>
+
+            </LinearLayout>
 
             <include
                 layout="@layout/post_item_social_buttons"/>
@@ -293,4 +298,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.cardview.widget.CardView>

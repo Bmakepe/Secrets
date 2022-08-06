@@ -60,6 +60,7 @@ import com.google.firebase.storage.StorageTask;
 import com.makepe.blackout.GettingStarted.Models.User;
 import com.makepe.blackout.GettingStarted.OtherClasses.LocationServices;
 import com.makepe.blackout.GettingStarted.OtherClasses.UploadFunctions;
+import com.makepe.blackout.GettingStarted.UserDetailsActivity;
 import com.makepe.blackout.R;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -82,7 +83,6 @@ public class EditProfileActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RadioGroup userGenderBTN;
     private RadioButton radioBtnMale, radioBtnFemale;
-
 
     private FirebaseUser firebaseUser;
     private DatabaseReference userRef;
@@ -117,9 +117,9 @@ public class EditProfileActivity extends AppCompatActivity {
         changePicArea = findViewById(R.id.changePicArea);
         locationET = findViewById(R.id.editLocationET);
         dateOfBirthET = findViewById(R.id.dateOfBirthET);
-        userGenderBTN = findViewById(R.id.userGenderBTN);
-        radioBtnMale = findViewById(R.id.maleChecked);
-        radioBtnFemale = findViewById(R.id.femaleChecked);
+        userGenderBTN = findViewById(R.id.editUserGenderBTN);
+        radioBtnMale = findViewById(R.id.editMaleChecked);
+        radioBtnFemale = findViewById(R.id.editFemaleChecked);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -147,12 +147,12 @@ public class EditProfileActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 switch (i){
-                    case R.id.maleChecked:
+                    case R.id.editMaleChecked:
                         genderSelected = "Male";
                         Toast.makeText(EditProfileActivity.this, genderSelected, Toast.LENGTH_SHORT).show();
                         break;
 
-                    case R.id.femaleChecked:
+                    case R.id.editFemaleChecked:
                         genderSelected = "Female";
                         Toast.makeText(EditProfileActivity.this, genderSelected, Toast.LENGTH_SHORT).show();
                         break;
@@ -208,9 +208,12 @@ public class EditProfileActivity extends AppCompatActivity {
                 }else if (TextUtils.isEmpty(dateOfBirthET.getText().toString())){
                     dateOfBirthET.setError("Select Your Date Of Birth");
                     dateOfBirthET.requestFocus();
+                }else if(userGenderBTN.getCheckedRadioButtonId() == -1){
+                    Toast.makeText(EditProfileActivity.this, "Please Select Your Gender", Toast.LENGTH_SHORT).show();
                 }else{
 
                     progressDialog.setMessage("Updating Profile. Please Wait...");
+                    progressDialog.setCancelable(false);
                     progressDialog.show();
 
                     if (proPicUri != null && coverPicUri != null)
@@ -256,7 +259,7 @@ public class EditProfileActivity extends AppCompatActivity {
         if (radioBtnMale.isChecked())
             if (!userGender.equals("Male"))
                 credentialsMap.put("gender", "Male");
-        else if (radioBtnFemale.isChecked())
+        else if (radioBtnMale.isChecked())
             if (!userGender.equals("Female"))
                 credentialsMap.put("gender", "Female");
 

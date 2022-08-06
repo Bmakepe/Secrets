@@ -115,4 +115,6 @@
     <string name="location_text">Click Here To Retrieve Your Address</string>
     <string name="app_record">Record</string>
 
+    <string name="emoji_pointer">&#128072;</string>
+
 </resources>

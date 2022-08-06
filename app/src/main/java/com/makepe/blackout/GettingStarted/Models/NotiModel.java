@@ -4,6 +4,9 @@ public class NotiModel {
     private String notificationID, userID, postID, timeStamp, text, notificationType,
             commentID, storyID;
 
+    public NotiModel() {
+    }
+
     public NotiModel(String notificationID, String userID, String postID,
                      String timeStamp, String text, String notificationType,
                      String commentID, String storyID) {

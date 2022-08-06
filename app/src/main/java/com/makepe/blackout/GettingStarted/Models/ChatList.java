@@ -1,7 +1,7 @@
 package com.makepe.blackout.GettingStarted.Models;
 
 public class ChatList {
-    String userID;
+    public String userID;
 
     public ChatList() {
     }

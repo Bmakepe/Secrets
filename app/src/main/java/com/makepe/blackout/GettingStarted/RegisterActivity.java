@@ -50,6 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Registration in progress...");
+        progressDialog.setCancelable(false);
 
         //click register button to get input number and prepare to send OTP by parsing the number to next activity
         registerBTN.setOnClickListener(new View.OnClickListener() {

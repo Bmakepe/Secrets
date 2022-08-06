@@ -28,14 +28,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PostListActivity extends AppCompatActivity {
+public class PostListActivity extends AppCompatActivity{
 
     private RecyclerView postListPager;
     private List<PostModel> postList;
+    private TimelineAdapter timelineAdapter;
 
     private DatabaseReference postReference;
     private String postID;
-    private Toolbar postListToolbar;
 
     public static final String TAG = "NATIVE_AD_TAG";
 
@@ -45,7 +45,7 @@ public class PostListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_post_list);
 
         postListPager = findViewById(R.id.postListRecycler);
-        postListToolbar = findViewById(R.id.postListToolbar);
+        Toolbar postListToolbar = findViewById(R.id.postListToolbar);
         setSupportActionBar(postListToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -65,10 +65,12 @@ public class PostListActivity extends AppCompatActivity {
 
         postReference = FirebaseDatabase.getInstance().getReference("SecretPosts");
 
+        postList = new ArrayList<>();
+
         postListPager.hasFixedSize();
         postListPager.setLayoutManager(new LinearLayoutManager(this));
-
-        postList = new ArrayList<>();
+        timelineAdapter = new TimelineAdapter(PostListActivity.this, postList);
+        postListPager.setAdapter(timelineAdapter);
 
         getAllPublicPosts();
 
@@ -84,13 +86,7 @@ public class PostListActivity extends AppCompatActivity {
                     PostModel postModel = ds.getValue(PostModel.class);
 
                     assert postModel != null;
-                    if (!postModel.getPostType().equals("videoPost")
-                            && !postModel.getPostType().equals("sharedVideoPost")
-                            && !postModel.getPostType().equals("audioVideoPost")
-                            && !postModel.getPostType().equals("sharedAudioTextVideoPost")
-                            && !postModel.getPostType().equals("sharedTextAudioVideoPost")
-                            && !postModel.getPostType().equals("sharedAudioAudioVideoPost")
-                            && !postModel.getPostPrivacy().equals("Private")){
+                    if (!postModel.getPostPrivacy().equals("Private")){
                         postList.add(postModel);
                     }
 
@@ -105,8 +101,7 @@ public class PostListActivity extends AppCompatActivity {
                     }
                 }
 
-                postListPager.setAdapter(new TimelineAdapter(PostListActivity.this, postList));
-
+                timelineAdapter.notifyDataSetChanged();
                 //postListPager.setAdapter(new PostAdapter(PostListActivity.this, postList));
             }
 
