@@ -23,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -52,10 +53,9 @@ public class ExploreImagesFragment extends Fragment {
     private DatabaseReference postRef, userRef;
     private FirebaseUser firebaseUser;
 
-    private ProgressDialog pd;
+    public ProgressDialog pd;
     private Toolbar exploreToolbar;
-
-    private View view;
+    private ImageView exploreMoreBTN;
 
     /*private int currentPage = PAGE_START;
     private final boolean isLastPage = false;
@@ -80,10 +80,11 @@ public class ExploreImagesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_explore_images, container, false);
+        View view = inflater.inflate(R.layout.fragment_explore_images, container, false);
 
         exploreRecycler = view.findViewById(R.id.exploreRecycler);
         exploreToolbar = view.findViewById(R.id.exploreImageToolbar);
+        exploreMoreBTN = view.findViewById(R.id.exploreMoreItemsBTN);
         //refreshLayout = view.findViewById(R.id.exploreRefresher);
 
         ((AppCompatActivity)getActivity()).setSupportActionBar(exploreToolbar);
@@ -100,6 +101,58 @@ public class ExploreImagesFragment extends Fragment {
 
         declareRecycler();
         getAllExploreItems();
+
+        exploreMoreBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popupMenu = new PopupMenu(getActivity(), exploreMoreBTN);
+                popupMenu.getMenu().add(0, 0, Menu.NONE, "All");
+                popupMenu.getMenu().add(0, 1, Menu.NONE, "Posts");
+                popupMenu.getMenu().add(0, 2, Menu.NONE, "Users");
+
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+
+                        switch (menuItem.getItemId()){
+                            case 0:
+                                pd.setMessage("Loading...");
+                                pd.show();
+
+                                declareRecycler();
+                                getAllExploreItems();
+                                pd.dismiss();
+                                break;
+
+                            case 1:
+                                pd.setMessage("Loading Posts");
+                                pd.show();
+
+                                declareRecycler();
+                                getNormalPostsItems();
+                                pd.dismiss();
+
+                                break;
+
+                            case 2:
+                                pd.setMessage("Loading Users");
+                                pd.show();
+
+                                declareRecycler();
+                                getExploreUsers();
+                                pd.dismiss();
+
+                                break;
+
+                            default:
+                                Toast.makeText(getActivity(), "Unknown Selection", Toast.LENGTH_SHORT).show();
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
 
         /*refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -171,14 +224,14 @@ public class ExploreImagesFragment extends Fragment {
         }, 1500);
     }*/
 
-    private void getAllExploreItems() {
+    public void getAllExploreItems() {
         getNormalPostsItems();
         getExploreUsers();
 
         pd.dismiss();
     }
 
-    private void declareRecycler() {
+    public void declareRecycler() {
         exploreItems.clear();
 
         exploreRecycler.hasFixedSize();
@@ -188,7 +241,7 @@ public class ExploreImagesFragment extends Fragment {
 
     }
 
-    private void getExploreUsers() {
+    public void getExploreUsers() {
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -210,7 +263,7 @@ public class ExploreImagesFragment extends Fragment {
         });
     }
 
-    private void getNormalPostsItems() {
+    public void getNormalPostsItems() {
         postRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -247,66 +300,16 @@ public class ExploreImagesFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.explore_menu, menu);
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        View menuView = view.findViewById(item.getItemId());
-
         switch (item.getItemId()){
             case R.id.exploreSearch:
                 startActivity(new Intent(getActivity(), SearchActivity.class));
-                break;
-            case R.id.filterExplore:
-
-                PopupMenu popupMenu = new PopupMenu(getActivity(), menuView);
-                popupMenu.getMenu().add(0, 0, Menu.NONE, "All");
-                popupMenu.getMenu().add(0, 1, Menu.NONE, "Posts");
-                popupMenu.getMenu().add(0, 2, Menu.NONE, "Users");
-
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-
-                        switch (menuItem.getItemId()){
-                            case 0:
-                                pd.setMessage("Loading...");
-                                pd.show();
-
-                                declareRecycler();
-                                getAllExploreItems();
-                                pd.dismiss();
-                                break;
-
-                            case 1:
-                                pd.setMessage("Loading Posts");
-                                pd.show();
-
-                                declareRecycler();
-                                getNormalPostsItems();
-                                pd.dismiss();
-
-                                break;
-
-                            case 2:
-                                pd.setMessage("Loading Users");
-                                pd.show();
-
-                                declareRecycler();
-                                getExploreUsers();
-                                pd.dismiss();
-
-                                break;
-
-                            default:
-                                Toast.makeText(getActivity(), "Unknown Selection", Toast.LENGTH_SHORT).show();
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
                 break;
 
             default:

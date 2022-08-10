@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/savedPostsItem"
-        android:title="@string/saved_posts" />
 
     <item
         android:id="@+id/inboxBTN"
         android:icon="@drawable/ic_baseline_inbox_24"
         app:showAsAction="always"
         android:title="Inbox" />
+
+    <item
+        android:id="@+id/savedPostsItem"
+        android:title="@string/saved_posts" />
+
+    <item
+        android:id="@+id/wishList"
+        android:title="Wish List" />
+
+    <item
+        android:id="@+id/secretOrders"
+        android:title="Orders" />
 
     <item
         android:id="@+id/goToSettings"

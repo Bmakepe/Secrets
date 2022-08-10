@@ -3,7 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/chatlistSearch"
+        android:id="@+id/filterCart"
+        android:title="Filter"
+        android:icon="@drawable/ic_baseline_shopping_cart_24"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/storesSearchBTN"
         android:title="Search"
         android:icon="@drawable/ic_search_black_24dp"
         app:actionViewClass="androidx.appcompat.widget.SearchView"

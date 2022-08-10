@@ -19,10 +19,19 @@
             android:layout_height="wrap_content"
             android:elevation="5dp"
             app:title="Explore"
+            android:visibility="gone"
             android:background="@null"
             app:contentInsetLeft="0dp"
             app:contentInsetStartWithNavigation="0dp"
-            app:menu="@menu/explore_menu"/>
+            app:menu="@menu/explore_menu">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_arrow_drop_down_black_24dp"
+                android:id="@+id/exploreMoreItemsBTN"/>
+
+        </androidx.appcompat.widget.Toolbar>
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"

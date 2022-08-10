@@ -10,13 +10,20 @@
             android:icon="@drawable/ic_baseline_ad_units_24"
             app:useSimpleSummaryProvider="true">
 
-
         </Preference>
 
         <Preference
             app:key="tickets"
             app:title="Secret Ticketing"
             android:icon="@drawable/ic_baseline_airplane_ticket_24"
+            app:useSimpleSummaryProvider="true">
+
+        </Preference>
+
+        <Preference
+            app:key="subscriptions"
+            app:title="Manage Subsriptions"
+            android:icon="@drawable/ic_baseline_subscriptions_24"
             app:useSimpleSummaryProvider="true">
 
         </Preference>

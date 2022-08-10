@@ -2,27 +2,26 @@ package com.makepe.blackout.GettingStarted.Adapters;
 
 import android.content.Context;
 
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import com.makepe.blackout.GettingStarted.Fragments.DynamicVideoFragment;
+import com.makepe.blackout.GettingStarted.Fragments.DynamicSearchFragment;
 
 import java.util.ArrayList;
 
-public class VideoTabAdapter extends FragmentStatePagerAdapter {
+public class SearchTabAdapter extends FragmentStatePagerAdapter {
 
     private int numOfTabs;
-    private ArrayList<String> videoTabList;
+    private ArrayList<String> searchTabList;
     private Context context;
 
-    public VideoTabAdapter(FragmentManager fm, int numOfTabs, ArrayList<String> videoTabList, Context context) {
+    public SearchTabAdapter(@NonNull FragmentManager fm, int numOfTabs, ArrayList<String> searchTabList, Context context) {
         super(fm);
         this.numOfTabs = numOfTabs;
-        if (!videoTabList.isEmpty())
-            this.videoTabList = videoTabList;
+        if (!searchTabList.isEmpty())
+            this.searchTabList = searchTabList;
         this.context = context;
     }
 
@@ -30,7 +29,7 @@ public class VideoTabAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if (position >= 0)
-            return DynamicVideoFragment.addFrag(position, videoTabList);
+            return DynamicSearchFragment.addFrag(position, searchTabList);
         else
             return null;
     }

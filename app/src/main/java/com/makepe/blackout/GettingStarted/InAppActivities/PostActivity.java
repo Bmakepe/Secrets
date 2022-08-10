@@ -286,6 +286,16 @@ public class PostActivity extends AppCompatActivity {
             }
         });
 
+        videoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (videoView.isPlaying())
+                    videoView.pause();
+                else
+                    videoView.start();
+            }
+        });
+
         addMoreImagesBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

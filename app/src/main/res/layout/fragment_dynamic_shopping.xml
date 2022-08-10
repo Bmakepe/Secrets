@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".GettingStarted.Fragments.DynamicShoppingFragment">
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/dynamicShoppingSearchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:closeIcon="@drawable/ic_close_black_24dp"
+        app:iconifiedByDefault="false"
+        app:queryHint="Search Secrets Stores"
+        app:searchHintIcon="@null"
+        app:searchIcon="@null" />
+
+</RelativeLayout>

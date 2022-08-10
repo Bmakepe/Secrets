@@ -10,12 +10,11 @@
         android:name="com.makepe.blackout.GettingStarted.Fragments.TimelineFragment"
         android:label="fragment_timeline"
         tools:layout="@layout/fragment_timeline" />
-
     <fragment
-        android:id="@+id/exploreImagesFragment"
-        android:name="com.makepe.blackout.GettingStarted.Fragments.ExploreImagesFragment"
-        android:label="fragment_explore_images"
-        tools:layout="@layout/fragment_explore_images" />
+        android:id="@+id/secretExploreFragment"
+        android:name="com.makepe.blackout.GettingStarted.Fragments.SecretExploreFragment"
+        android:label="fragment_secret_explore"
+        tools:layout="@layout/fragment_secret_explore" />
 
     <fragment
         android:id="@+id/exploreFragment"
