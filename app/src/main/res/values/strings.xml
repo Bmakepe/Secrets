@@ -3,6 +3,7 @@
     <!--Admob test ids-->
     <string name="native_ad_test">ca-app-pub-3940256099942544/2247696110</string>
     <string name="app_id_test">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="news_api_key">ec05a10e31a24773ace460f945f439b4</string>
 
     <!--Admob live ids-->
     <string name="native_ad_live">ca-app-pub-2193593343976198/6342443613</string>

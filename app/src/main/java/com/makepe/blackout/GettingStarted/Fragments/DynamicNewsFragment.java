@@ -1,24 +1,38 @@
 package com.makepe.blackout.GettingStarted.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.makepe.blackout.GettingStarted.Adapters.NewsAdapter;
+import com.makepe.blackout.GettingStarted.InAppActivities.NewsDetailsActivity;
+import com.makepe.blackout.GettingStarted.Models.NewsApiResponse;
+import com.makepe.blackout.GettingStarted.Models.NewsHeadlines;
+import com.makepe.blackout.GettingStarted.OtherClasses.OnFetchDataListener;
+import com.makepe.blackout.GettingStarted.OtherClasses.RequestManager;
+import com.makepe.blackout.GettingStarted.OtherClasses.SelectListener;
 import com.makepe.blackout.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class DynamicNewsFragment extends Fragment {
+public class DynamicNewsFragment extends Fragment implements SelectListener {
 
+    private String tabTitle;
     private int position;
     private ArrayList<String> newsCategories;
     private SearchView searchView;
+
+    private RecyclerView newsRecycler;
+    private View view;
     
     public DynamicNewsFragment() {
         // Required empty public constructor
@@ -37,7 +51,7 @@ public class DynamicNewsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_dynamic_news, container, false);
+        view =  inflater.inflate(R.layout.fragment_dynamic_news, container, false);
 
         searchView = view.findViewById(R.id.dynamicNewsSearchView);
         position = getArguments().getInt("tabPosition", 0);
@@ -45,9 +59,42 @@ public class DynamicNewsFragment extends Fragment {
 
         for(int i = 0; i < newsCategories.size(); i++){
             if(i == position)
+                tabTitle = newsCategories.get(i);
                 searchView.setQueryHint("Search " + newsCategories.get(i) + " Stories");
         }
 
+        RequestManager manager = new RequestManager(getContext());
+        if (position == 0)
+            manager.getNewsHeadlines(listener, "general", null);
+        else
+            manager.getNewsHeadlines(listener, tabTitle, null);
+
         return view;
+    }
+
+    private final OnFetchDataListener<NewsApiResponse> listener = new OnFetchDataListener<NewsApiResponse>() {
+        @Override
+        public void onFetchData(List<NewsHeadlines> list, String message) {
+            showList(list);
+        }
+
+        @Override
+        public void onError(String message) {
+
+        }
+    };
+
+    private void showList(List<NewsHeadlines> list) {
+
+        newsRecycler = view.findViewById(R.id.newsRecycler);
+        newsRecycler.hasFixedSize();
+        newsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        newsRecycler.setAdapter(new NewsAdapter(getContext(), list, this));
+    }
+
+    @Override
+    public void OnNewsClicked(NewsHeadlines headlines) {
+        startActivity(new Intent(getContext(), NewsDetailsActivity.class)
+                .putExtra("data", headlines));
     }
 }

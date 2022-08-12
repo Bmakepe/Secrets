@@ -1,4 +1,4 @@
-package com.makepe.blackout.GettingStarted.Fragments;
+package com.makepe.blackout.GettingStarted.OtherClasses;
 
 import com.makepe.blackout.GettingStarted.Notifications.MyResponse;
 import com.makepe.blackout.GettingStarted.Notifications.Sender;

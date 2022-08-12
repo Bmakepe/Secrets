@@ -51,11 +51,13 @@ public class ExploreNewsFragment extends Fragment {
         newsPager = view.findViewById(R.id.newsViewPager);
 
         newsCategories = new ArrayList<>();
-        newsCategories.add("Breaking News");
-        newsCategories.add("Business");
-        newsCategories.add("Science & Technology");
-        newsCategories.add("Music & Entertainment");
-        newsCategories.add("Sports");
+        newsCategories.add("All");
+        newsCategories.add("business");
+        newsCategories.add("entertainment");
+        newsCategories.add("health");
+        newsCategories.add("science");
+        newsCategories.add("sports");
+        newsCategories.add("technology");
 
         for(int i = 0; i < newsCategories.size(); i++){
             newsTabs.addTab(newsTabs.newTab().setText(newsCategories.get(i)));
@@ -64,7 +66,6 @@ public class ExploreNewsFragment extends Fragment {
         try{
             tabAdapter = new NewsTabAdapter(getChildFragmentManager(), newsTabs.getTabCount(), newsCategories, getContext());
             newsPager.setAdapter(tabAdapter);
-            //newsTabs.setupWithViewPager(newsPager);
             newsPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(newsTabs));
 
             newsTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {

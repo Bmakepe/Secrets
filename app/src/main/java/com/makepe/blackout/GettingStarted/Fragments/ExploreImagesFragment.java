@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -54,8 +55,6 @@ public class ExploreImagesFragment extends Fragment {
     private FirebaseUser firebaseUser;
 
     public ProgressDialog pd;
-    private Toolbar exploreToolbar;
-    private ImageView exploreMoreBTN;
 
     /*private int currentPage = PAGE_START;
     private final boolean isLastPage = false;
@@ -83,11 +82,7 @@ public class ExploreImagesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_explore_images, container, false);
 
         exploreRecycler = view.findViewById(R.id.exploreRecycler);
-        exploreToolbar = view.findViewById(R.id.exploreImageToolbar);
-        exploreMoreBTN = view.findViewById(R.id.exploreMoreItemsBTN);
         //refreshLayout = view.findViewById(R.id.exploreRefresher);
-
-        ((AppCompatActivity)getActivity()).setSupportActionBar(exploreToolbar);
 
         postRef = FirebaseDatabase.getInstance().getReference("SecretPosts");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -101,58 +96,6 @@ public class ExploreImagesFragment extends Fragment {
 
         declareRecycler();
         getAllExploreItems();
-
-        exploreMoreBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(getActivity(), exploreMoreBTN);
-                popupMenu.getMenu().add(0, 0, Menu.NONE, "All");
-                popupMenu.getMenu().add(0, 1, Menu.NONE, "Posts");
-                popupMenu.getMenu().add(0, 2, Menu.NONE, "Users");
-
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-
-                        switch (menuItem.getItemId()){
-                            case 0:
-                                pd.setMessage("Loading...");
-                                pd.show();
-
-                                declareRecycler();
-                                getAllExploreItems();
-                                pd.dismiss();
-                                break;
-
-                            case 1:
-                                pd.setMessage("Loading Posts");
-                                pd.show();
-
-                                declareRecycler();
-                                getNormalPostsItems();
-                                pd.dismiss();
-
-                                break;
-
-                            case 2:
-                                pd.setMessage("Loading Users");
-                                pd.show();
-
-                                declareRecycler();
-                                getExploreUsers();
-                                pd.dismiss();
-
-                                break;
-
-                            default:
-                                Toast.makeText(getActivity(), "Unknown Selection", Toast.LENGTH_SHORT).show();
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            }
-        });
 
         /*refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -295,28 +238,6 @@ public class ExploreImagesFragment extends Fragment {
 
         exploreAdapter = new ExploreAdapter(exploreItems, getContext());
         exploreRecycler.setAdapter(exploreAdapter);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.explore_menu, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        switch (item.getItemId()){
-            case R.id.exploreSearch:
-                startActivity(new Intent(getActivity(), SearchActivity.class));
-                break;
-
-            default:
-                Toast.makeText(getContext(), "Unknown Selection", Toast.LENGTH_SHORT).show();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
 }

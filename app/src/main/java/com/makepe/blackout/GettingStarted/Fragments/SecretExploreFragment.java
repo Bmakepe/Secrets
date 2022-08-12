@@ -52,7 +52,7 @@ public class SecretExploreFragment extends Fragment {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getChildFragmentManager());
         viewPagerAdapter.addFragment(new ExploreImagesFragment());
         viewPagerAdapter.addFragment(new ExploreNewsFragment());
-        viewPagerAdapter.addFragment(new ExploreShoppingFragment());
+        //viewPagerAdapter.addFragment(new ExploreShoppingFragment());
 
         exploreFragmentPager.setAdapter(viewPagerAdapter);
 

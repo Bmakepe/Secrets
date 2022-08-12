@@ -52,7 +52,6 @@ public class ExploreFragment extends Fragment {
         try{
             tabAdapter = new VideoTabAdapter(getChildFragmentManager(), videosTab.getTabCount(), videoTabList, getContext());
             explorePager.setAdapter(tabAdapter);
-            //videosTab.setupWithViewPager(explorePager);
             explorePager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(videosTab));
 
             videosTab.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {

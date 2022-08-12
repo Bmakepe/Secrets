@@ -42,7 +42,7 @@ public class SearchActivity extends AppCompatActivity {
         searchCategories.add("Videos");
         searchCategories.add("Users");
         searchCategories.add("Groups");
-        searchCategories.add("Stores");
+        //searchCategories.add("Stores");
         searchCategories.add("News");
 
         Collections.sort(searchCategories);
